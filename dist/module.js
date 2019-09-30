@@ -76,6 +76,1324 @@ System.register(['app/plugins/sdk'], function (exports) {
         return _assertThisInitialized(self);
       }
 
+      function _toConsumableArray(arr) {
+        return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+      }
+
+      function _arrayWithoutHoles(arr) {
+        if (Array.isArray(arr)) {
+          for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+          return arr2;
+        }
+      }
+
+      function _iterableToArray(iter) {
+        if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+      }
+
+      function _nonIterableSpread() {
+        throw new TypeError("Invalid attempt to spread non-iterable instance");
+      }
+
+      /** Detect free variable `global` from Node.js. */
+      var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
+
+      /** Detect free variable `self`. */
+      var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
+
+      /** Used as a reference to the global object. */
+      var root = freeGlobal || freeSelf || Function('return this')();
+
+      /** Built-in value references. */
+      var Symbol$1 = root.Symbol;
+
+      /** Used for built-in method references. */
+      var objectProto = Object.prototype;
+
+      /** Used to check objects for own properties. */
+      var hasOwnProperty = objectProto.hasOwnProperty;
+
+      /**
+       * Used to resolve the
+       * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+       * of values.
+       */
+      var nativeObjectToString = objectProto.toString;
+
+      /** Built-in value references. */
+      var symToStringTag = Symbol$1 ? Symbol$1.toStringTag : undefined;
+
+      /**
+       * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+       *
+       * @private
+       * @param {*} value The value to query.
+       * @returns {string} Returns the raw `toStringTag`.
+       */
+      function getRawTag(value) {
+        var isOwn = hasOwnProperty.call(value, symToStringTag),
+            tag = value[symToStringTag];
+
+        try {
+          value[symToStringTag] = undefined;
+          var unmasked = true;
+        } catch (e) {}
+
+        var result = nativeObjectToString.call(value);
+        if (unmasked) {
+          if (isOwn) {
+            value[symToStringTag] = tag;
+          } else {
+            delete value[symToStringTag];
+          }
+        }
+        return result;
+      }
+
+      /** Used for built-in method references. */
+      var objectProto$1 = Object.prototype;
+
+      /**
+       * Used to resolve the
+       * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+       * of values.
+       */
+      var nativeObjectToString$1 = objectProto$1.toString;
+
+      /**
+       * Converts `value` to a string using `Object.prototype.toString`.
+       *
+       * @private
+       * @param {*} value The value to convert.
+       * @returns {string} Returns the converted string.
+       */
+      function objectToString(value) {
+        return nativeObjectToString$1.call(value);
+      }
+
+      /** `Object#toString` result references. */
+      var nullTag = '[object Null]',
+          undefinedTag = '[object Undefined]';
+
+      /** Built-in value references. */
+      var symToStringTag$1 = Symbol$1 ? Symbol$1.toStringTag : undefined;
+
+      /**
+       * The base implementation of `getTag` without fallbacks for buggy environments.
+       *
+       * @private
+       * @param {*} value The value to query.
+       * @returns {string} Returns the `toStringTag`.
+       */
+      function baseGetTag(value) {
+        if (value == null) {
+          return value === undefined ? undefinedTag : nullTag;
+        }
+        return (symToStringTag$1 && symToStringTag$1 in Object(value))
+          ? getRawTag(value)
+          : objectToString(value);
+      }
+
+      /**
+       * Checks if `value` is object-like. A value is object-like if it's not `null`
+       * and has a `typeof` result of "object".
+       *
+       * @static
+       * @memberOf _
+       * @since 4.0.0
+       * @category Lang
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
+       * @example
+       *
+       * _.isObjectLike({});
+       * // => true
+       *
+       * _.isObjectLike([1, 2, 3]);
+       * // => true
+       *
+       * _.isObjectLike(_.noop);
+       * // => false
+       *
+       * _.isObjectLike(null);
+       * // => false
+       */
+      function isObjectLike(value) {
+        return value != null && typeof value == 'object';
+      }
+
+      /** `Object#toString` result references. */
+      var symbolTag = '[object Symbol]';
+
+      /**
+       * Checks if `value` is classified as a `Symbol` primitive or object.
+       *
+       * @static
+       * @memberOf _
+       * @since 4.0.0
+       * @category Lang
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
+       * @example
+       *
+       * _.isSymbol(Symbol.iterator);
+       * // => true
+       *
+       * _.isSymbol('abc');
+       * // => false
+       */
+      function isSymbol(value) {
+        return typeof value == 'symbol' ||
+          (isObjectLike(value) && baseGetTag(value) == symbolTag);
+      }
+
+      /**
+       * Checks if `value` is classified as an `Array` object.
+       *
+       * @static
+       * @memberOf _
+       * @since 0.1.0
+       * @category Lang
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is an array, else `false`.
+       * @example
+       *
+       * _.isArray([1, 2, 3]);
+       * // => true
+       *
+       * _.isArray(document.body.children);
+       * // => false
+       *
+       * _.isArray('abc');
+       * // => false
+       *
+       * _.isArray(_.noop);
+       * // => false
+       */
+      var isArray = Array.isArray;
+
+      /**
+       * Checks if `value` is the
+       * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
+       * of `Object`. (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+       *
+       * @static
+       * @memberOf _
+       * @since 0.1.0
+       * @category Lang
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+       * @example
+       *
+       * _.isObject({});
+       * // => true
+       *
+       * _.isObject([1, 2, 3]);
+       * // => true
+       *
+       * _.isObject(_.noop);
+       * // => true
+       *
+       * _.isObject(null);
+       * // => false
+       */
+      function isObject(value) {
+        var type = typeof value;
+        return value != null && (type == 'object' || type == 'function');
+      }
+
+      /** Used as references for various `Number` constants. */
+      var NAN = 0 / 0;
+
+      /** Used to match leading and trailing whitespace. */
+      var reTrim = /^\s+|\s+$/g;
+
+      /** Used to detect bad signed hexadecimal string values. */
+      var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+
+      /** Used to detect binary string values. */
+      var reIsBinary = /^0b[01]+$/i;
+
+      /** Used to detect octal string values. */
+      var reIsOctal = /^0o[0-7]+$/i;
+
+      /** Built-in method references without a dependency on `root`. */
+      var freeParseInt = parseInt;
+
+      /**
+       * Converts `value` to a number.
+       *
+       * @static
+       * @memberOf _
+       * @since 4.0.0
+       * @category Lang
+       * @param {*} value The value to process.
+       * @returns {number} Returns the number.
+       * @example
+       *
+       * _.toNumber(3.2);
+       * // => 3.2
+       *
+       * _.toNumber(Number.MIN_VALUE);
+       * // => 5e-324
+       *
+       * _.toNumber(Infinity);
+       * // => Infinity
+       *
+       * _.toNumber('3.2');
+       * // => 3.2
+       */
+      function toNumber(value) {
+        if (typeof value == 'number') {
+          return value;
+        }
+        if (isSymbol(value)) {
+          return NAN;
+        }
+        if (isObject(value)) {
+          var other = typeof value.valueOf == 'function' ? value.valueOf() : value;
+          value = isObject(other) ? (other + '') : other;
+        }
+        if (typeof value != 'string') {
+          return value === 0 ? value : +value;
+        }
+        value = value.replace(reTrim, '');
+        var isBinary = reIsBinary.test(value);
+        return (isBinary || reIsOctal.test(value))
+          ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
+          : (reIsBadHex.test(value) ? NAN : +value);
+      }
+
+      /** Used as references for various `Number` constants. */
+      var INFINITY = 1 / 0,
+          MAX_INTEGER = 1.7976931348623157e+308;
+
+      /**
+       * Converts `value` to a finite number.
+       *
+       * @static
+       * @memberOf _
+       * @since 4.12.0
+       * @category Lang
+       * @param {*} value The value to convert.
+       * @returns {number} Returns the converted number.
+       * @example
+       *
+       * _.toFinite(3.2);
+       * // => 3.2
+       *
+       * _.toFinite(Number.MIN_VALUE);
+       * // => 5e-324
+       *
+       * _.toFinite(Infinity);
+       * // => 1.7976931348623157e+308
+       *
+       * _.toFinite('3.2');
+       * // => 3.2
+       */
+      function toFinite(value) {
+        if (!value) {
+          return value === 0 ? value : 0;
+        }
+        value = toNumber(value);
+        if (value === INFINITY || value === -INFINITY) {
+          var sign = (value < 0 ? -1 : 1);
+          return sign * MAX_INTEGER;
+        }
+        return value === value ? value : 0;
+      }
+
+      /**
+       * This method returns the first argument it receives.
+       *
+       * @static
+       * @since 0.1.0
+       * @memberOf _
+       * @category Util
+       * @param {*} value Any value.
+       * @returns {*} Returns `value`.
+       * @example
+       *
+       * var object = { 'a': 1 };
+       *
+       * console.log(_.identity(object) === object);
+       * // => true
+       */
+      function identity(value) {
+        return value;
+      }
+
+      /** `Object#toString` result references. */
+      var asyncTag = '[object AsyncFunction]',
+          funcTag = '[object Function]',
+          genTag = '[object GeneratorFunction]',
+          proxyTag = '[object Proxy]';
+
+      /**
+       * Checks if `value` is classified as a `Function` object.
+       *
+       * @static
+       * @memberOf _
+       * @since 0.1.0
+       * @category Lang
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is a function, else `false`.
+       * @example
+       *
+       * _.isFunction(_);
+       * // => true
+       *
+       * _.isFunction(/abc/);
+       * // => false
+       */
+      function isFunction(value) {
+        if (!isObject(value)) {
+          return false;
+        }
+        // The use of `Object#toString` avoids issues with the `typeof` operator
+        // in Safari 9 which returns 'object' for typed arrays and other constructors.
+        var tag = baseGetTag(value);
+        return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
+      }
+
+      /** Used to detect overreaching core-js shims. */
+      var coreJsData = root['__core-js_shared__'];
+
+      /** Used to detect methods masquerading as native. */
+      var maskSrcKey = (function() {
+        var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
+        return uid ? ('Symbol(src)_1.' + uid) : '';
+      }());
+
+      /**
+       * Checks if `func` has its source masked.
+       *
+       * @private
+       * @param {Function} func The function to check.
+       * @returns {boolean} Returns `true` if `func` is masked, else `false`.
+       */
+      function isMasked(func) {
+        return !!maskSrcKey && (maskSrcKey in func);
+      }
+
+      /** Used for built-in method references. */
+      var funcProto = Function.prototype;
+
+      /** Used to resolve the decompiled source of functions. */
+      var funcToString = funcProto.toString;
+
+      /**
+       * Converts `func` to its source code.
+       *
+       * @private
+       * @param {Function} func The function to convert.
+       * @returns {string} Returns the source code.
+       */
+      function toSource(func) {
+        if (func != null) {
+          try {
+            return funcToString.call(func);
+          } catch (e) {}
+          try {
+            return (func + '');
+          } catch (e) {}
+        }
+        return '';
+      }
+
+      /**
+       * Used to match `RegExp`
+       * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
+       */
+      var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+
+      /** Used to detect host constructors (Safari). */
+      var reIsHostCtor = /^\[object .+?Constructor\]$/;
+
+      /** Used for built-in method references. */
+      var funcProto$1 = Function.prototype,
+          objectProto$2 = Object.prototype;
+
+      /** Used to resolve the decompiled source of functions. */
+      var funcToString$1 = funcProto$1.toString;
+
+      /** Used to check objects for own properties. */
+      var hasOwnProperty$1 = objectProto$2.hasOwnProperty;
+
+      /** Used to detect if a method is native. */
+      var reIsNative = RegExp('^' +
+        funcToString$1.call(hasOwnProperty$1).replace(reRegExpChar, '\\$&')
+        .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+      );
+
+      /**
+       * The base implementation of `_.isNative` without bad shim checks.
+       *
+       * @private
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is a native function,
+       *  else `false`.
+       */
+      function baseIsNative(value) {
+        if (!isObject(value) || isMasked(value)) {
+          return false;
+        }
+        var pattern = isFunction(value) ? reIsNative : reIsHostCtor;
+        return pattern.test(toSource(value));
+      }
+
+      /**
+       * Gets the value at `key` of `object`.
+       *
+       * @private
+       * @param {Object} [object] The object to query.
+       * @param {string} key The key of the property to get.
+       * @returns {*} Returns the property value.
+       */
+      function getValue(object, key) {
+        return object == null ? undefined : object[key];
+      }
+
+      /**
+       * Gets the native function at `key` of `object`.
+       *
+       * @private
+       * @param {Object} object The object to query.
+       * @param {string} key The key of the method to get.
+       * @returns {*} Returns the function if it's native, else `undefined`.
+       */
+      function getNative(object, key) {
+        var value = getValue(object, key);
+        return baseIsNative(value) ? value : undefined;
+      }
+
+      /**
+       * A faster alternative to `Function#apply`, this function invokes `func`
+       * with the `this` binding of `thisArg` and the arguments of `args`.
+       *
+       * @private
+       * @param {Function} func The function to invoke.
+       * @param {*} thisArg The `this` binding of `func`.
+       * @param {Array} args The arguments to invoke `func` with.
+       * @returns {*} Returns the result of `func`.
+       */
+      function apply(func, thisArg, args) {
+        switch (args.length) {
+          case 0: return func.call(thisArg);
+          case 1: return func.call(thisArg, args[0]);
+          case 2: return func.call(thisArg, args[0], args[1]);
+          case 3: return func.call(thisArg, args[0], args[1], args[2]);
+        }
+        return func.apply(thisArg, args);
+      }
+
+      /** Used to detect hot functions by number of calls within a span of milliseconds. */
+      var HOT_COUNT = 800,
+          HOT_SPAN = 16;
+
+      /* Built-in method references for those with the same name as other `lodash` methods. */
+      var nativeNow = Date.now;
+
+      /**
+       * Creates a function that'll short out and invoke `identity` instead
+       * of `func` when it's called `HOT_COUNT` or more times in `HOT_SPAN`
+       * milliseconds.
+       *
+       * @private
+       * @param {Function} func The function to restrict.
+       * @returns {Function} Returns the new shortable function.
+       */
+      function shortOut(func) {
+        var count = 0,
+            lastCalled = 0;
+
+        return function() {
+          var stamp = nativeNow(),
+              remaining = HOT_SPAN - (stamp - lastCalled);
+
+          lastCalled = stamp;
+          if (remaining > 0) {
+            if (++count >= HOT_COUNT) {
+              return arguments[0];
+            }
+          } else {
+            count = 0;
+          }
+          return func.apply(undefined, arguments);
+        };
+      }
+
+      /**
+       * Creates a function that returns `value`.
+       *
+       * @static
+       * @memberOf _
+       * @since 2.4.0
+       * @category Util
+       * @param {*} value The value to return from the new function.
+       * @returns {Function} Returns the new constant function.
+       * @example
+       *
+       * var objects = _.times(2, _.constant({ 'a': 1 }));
+       *
+       * console.log(objects);
+       * // => [{ 'a': 1 }, { 'a': 1 }]
+       *
+       * console.log(objects[0] === objects[1]);
+       * // => true
+       */
+      function constant(value) {
+        return function() {
+          return value;
+        };
+      }
+
+      var defineProperty = (function() {
+        try {
+          var func = getNative(Object, 'defineProperty');
+          func({}, '', {});
+          return func;
+        } catch (e) {}
+      }());
+
+      /**
+       * The base implementation of `setToString` without support for hot loop shorting.
+       *
+       * @private
+       * @param {Function} func The function to modify.
+       * @param {Function} string The `toString` result.
+       * @returns {Function} Returns `func`.
+       */
+      var baseSetToString = !defineProperty ? identity : function(func, string) {
+        return defineProperty(func, 'toString', {
+          'configurable': true,
+          'enumerable': false,
+          'value': constant(string),
+          'writable': true
+        });
+      };
+
+      /**
+       * Sets the `toString` method of `func` to return `string`.
+       *
+       * @private
+       * @param {Function} func The function to modify.
+       * @param {Function} string The `toString` result.
+       * @returns {Function} Returns `func`.
+       */
+      var setToString = shortOut(baseSetToString);
+
+      /** Used as references for various `Number` constants. */
+      var MAX_SAFE_INTEGER = 9007199254740991;
+
+      /** Used to detect unsigned integer values. */
+      var reIsUint = /^(?:0|[1-9]\d*)$/;
+
+      /**
+       * Checks if `value` is a valid array-like index.
+       *
+       * @private
+       * @param {*} value The value to check.
+       * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
+       * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
+       */
+      function isIndex(value, length) {
+        var type = typeof value;
+        length = length == null ? MAX_SAFE_INTEGER : length;
+
+        return !!length &&
+          (type == 'number' ||
+            (type != 'symbol' && reIsUint.test(value))) &&
+              (value > -1 && value % 1 == 0 && value < length);
+      }
+
+      /**
+       * Performs a
+       * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
+       * comparison between two values to determine if they are equivalent.
+       *
+       * @static
+       * @memberOf _
+       * @since 4.0.0
+       * @category Lang
+       * @param {*} value The value to compare.
+       * @param {*} other The other value to compare.
+       * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
+       * @example
+       *
+       * var object = { 'a': 1 };
+       * var other = { 'a': 1 };
+       *
+       * _.eq(object, object);
+       * // => true
+       *
+       * _.eq(object, other);
+       * // => false
+       *
+       * _.eq('a', 'a');
+       * // => true
+       *
+       * _.eq('a', Object('a'));
+       * // => false
+       *
+       * _.eq(NaN, NaN);
+       * // => true
+       */
+      function eq(value, other) {
+        return value === other || (value !== value && other !== other);
+      }
+
+      /* Built-in method references for those with the same name as other `lodash` methods. */
+      var nativeMax = Math.max;
+
+      /**
+       * A specialized version of `baseRest` which transforms the rest array.
+       *
+       * @private
+       * @param {Function} func The function to apply a rest parameter to.
+       * @param {number} [start=func.length-1] The start position of the rest parameter.
+       * @param {Function} transform The rest array transform.
+       * @returns {Function} Returns the new function.
+       */
+      function overRest(func, start, transform) {
+        start = nativeMax(start === undefined ? (func.length - 1) : start, 0);
+        return function() {
+          var args = arguments,
+              index = -1,
+              length = nativeMax(args.length - start, 0),
+              array = Array(length);
+
+          while (++index < length) {
+            array[index] = args[start + index];
+          }
+          index = -1;
+          var otherArgs = Array(start + 1);
+          while (++index < start) {
+            otherArgs[index] = args[index];
+          }
+          otherArgs[start] = transform(array);
+          return apply(func, this, otherArgs);
+        };
+      }
+
+      /**
+       * The base implementation of `_.rest` which doesn't validate or coerce arguments.
+       *
+       * @private
+       * @param {Function} func The function to apply a rest parameter to.
+       * @param {number} [start=func.length-1] The start position of the rest parameter.
+       * @returns {Function} Returns the new function.
+       */
+      function baseRest(func, start) {
+        return setToString(overRest(func, start, identity), func + '');
+      }
+
+      /** Used as references for various `Number` constants. */
+      var MAX_SAFE_INTEGER$1 = 9007199254740991;
+
+      /**
+       * Checks if `value` is a valid array-like length.
+       *
+       * **Note:** This method is loosely based on
+       * [`ToLength`](http://ecma-international.org/ecma-262/7.0/#sec-tolength).
+       *
+       * @static
+       * @memberOf _
+       * @since 4.0.0
+       * @category Lang
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is a valid length, else `false`.
+       * @example
+       *
+       * _.isLength(3);
+       * // => true
+       *
+       * _.isLength(Number.MIN_VALUE);
+       * // => false
+       *
+       * _.isLength(Infinity);
+       * // => false
+       *
+       * _.isLength('3');
+       * // => false
+       */
+      function isLength(value) {
+        return typeof value == 'number' &&
+          value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER$1;
+      }
+
+      /**
+       * Checks if `value` is array-like. A value is considered array-like if it's
+       * not a function and has a `value.length` that's an integer greater than or
+       * equal to `0` and less than or equal to `Number.MAX_SAFE_INTEGER`.
+       *
+       * @static
+       * @memberOf _
+       * @since 4.0.0
+       * @category Lang
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is array-like, else `false`.
+       * @example
+       *
+       * _.isArrayLike([1, 2, 3]);
+       * // => true
+       *
+       * _.isArrayLike(document.body.children);
+       * // => true
+       *
+       * _.isArrayLike('abc');
+       * // => true
+       *
+       * _.isArrayLike(_.noop);
+       * // => false
+       */
+      function isArrayLike(value) {
+        return value != null && isLength(value.length) && !isFunction(value);
+      }
+
+      /**
+       * Checks if the given arguments are from an iteratee call.
+       *
+       * @private
+       * @param {*} value The potential iteratee value argument.
+       * @param {*} index The potential iteratee index or key argument.
+       * @param {*} object The potential iteratee object argument.
+       * @returns {boolean} Returns `true` if the arguments are from an iteratee call,
+       *  else `false`.
+       */
+      function isIterateeCall(value, index, object) {
+        if (!isObject(object)) {
+          return false;
+        }
+        var type = typeof index;
+        if (type == 'number'
+              ? (isArrayLike(object) && isIndex(index, object.length))
+              : (type == 'string' && index in object)
+            ) {
+          return eq(object[index], value);
+        }
+        return false;
+      }
+
+      /** Used for built-in method references. */
+      var objectProto$3 = Object.prototype;
+
+      /**
+       * Checks if `value` is likely a prototype object.
+       *
+       * @private
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is a prototype, else `false`.
+       */
+      function isPrototype(value) {
+        var Ctor = value && value.constructor,
+            proto = (typeof Ctor == 'function' && Ctor.prototype) || objectProto$3;
+
+        return value === proto;
+      }
+
+      /**
+       * The base implementation of `_.times` without support for iteratee shorthands
+       * or max array length checks.
+       *
+       * @private
+       * @param {number} n The number of times to invoke `iteratee`.
+       * @param {Function} iteratee The function invoked per iteration.
+       * @returns {Array} Returns the array of results.
+       */
+      function baseTimes(n, iteratee) {
+        var index = -1,
+            result = Array(n);
+
+        while (++index < n) {
+          result[index] = iteratee(index);
+        }
+        return result;
+      }
+
+      /** `Object#toString` result references. */
+      var argsTag = '[object Arguments]';
+
+      /**
+       * The base implementation of `_.isArguments`.
+       *
+       * @private
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is an `arguments` object,
+       */
+      function baseIsArguments(value) {
+        return isObjectLike(value) && baseGetTag(value) == argsTag;
+      }
+
+      /** Used for built-in method references. */
+      var objectProto$4 = Object.prototype;
+
+      /** Used to check objects for own properties. */
+      var hasOwnProperty$2 = objectProto$4.hasOwnProperty;
+
+      /** Built-in value references. */
+      var propertyIsEnumerable = objectProto$4.propertyIsEnumerable;
+
+      /**
+       * Checks if `value` is likely an `arguments` object.
+       *
+       * @static
+       * @memberOf _
+       * @since 0.1.0
+       * @category Lang
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is an `arguments` object,
+       *  else `false`.
+       * @example
+       *
+       * _.isArguments(function() { return arguments; }());
+       * // => true
+       *
+       * _.isArguments([1, 2, 3]);
+       * // => false
+       */
+      var isArguments = baseIsArguments(function() { return arguments; }()) ? baseIsArguments : function(value) {
+        return isObjectLike(value) && hasOwnProperty$2.call(value, 'callee') &&
+          !propertyIsEnumerable.call(value, 'callee');
+      };
+
+      /**
+       * This method returns `false`.
+       *
+       * @static
+       * @memberOf _
+       * @since 4.13.0
+       * @category Util
+       * @returns {boolean} Returns `false`.
+       * @example
+       *
+       * _.times(2, _.stubFalse);
+       * // => [false, false]
+       */
+      function stubFalse() {
+        return false;
+      }
+
+      /** Detect free variable `exports`. */
+      var freeExports = typeof exports == 'object' && exports && !exports.nodeType && exports;
+
+      /** Detect free variable `module`. */
+      var freeModule = freeExports && typeof module == 'object' && module && !module.nodeType && module;
+
+      /** Detect the popular CommonJS extension `module.exports`. */
+      var moduleExports = freeModule && freeModule.exports === freeExports;
+
+      /** Built-in value references. */
+      var Buffer = moduleExports ? root.Buffer : undefined;
+
+      /* Built-in method references for those with the same name as other `lodash` methods. */
+      var nativeIsBuffer = Buffer ? Buffer.isBuffer : undefined;
+
+      /**
+       * Checks if `value` is a buffer.
+       *
+       * @static
+       * @memberOf _
+       * @since 4.3.0
+       * @category Lang
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is a buffer, else `false`.
+       * @example
+       *
+       * _.isBuffer(new Buffer(2));
+       * // => true
+       *
+       * _.isBuffer(new Uint8Array(2));
+       * // => false
+       */
+      var isBuffer = nativeIsBuffer || stubFalse;
+
+      /** `Object#toString` result references. */
+      var argsTag$1 = '[object Arguments]',
+          arrayTag = '[object Array]',
+          boolTag = '[object Boolean]',
+          dateTag = '[object Date]',
+          errorTag = '[object Error]',
+          funcTag$1 = '[object Function]',
+          mapTag = '[object Map]',
+          numberTag = '[object Number]',
+          objectTag = '[object Object]',
+          regexpTag = '[object RegExp]',
+          setTag = '[object Set]',
+          stringTag = '[object String]',
+          weakMapTag = '[object WeakMap]';
+
+      var arrayBufferTag = '[object ArrayBuffer]',
+          dataViewTag = '[object DataView]',
+          float32Tag = '[object Float32Array]',
+          float64Tag = '[object Float64Array]',
+          int8Tag = '[object Int8Array]',
+          int16Tag = '[object Int16Array]',
+          int32Tag = '[object Int32Array]',
+          uint8Tag = '[object Uint8Array]',
+          uint8ClampedTag = '[object Uint8ClampedArray]',
+          uint16Tag = '[object Uint16Array]',
+          uint32Tag = '[object Uint32Array]';
+
+      /** Used to identify `toStringTag` values of typed arrays. */
+      var typedArrayTags = {};
+      typedArrayTags[float32Tag] = typedArrayTags[float64Tag] =
+      typedArrayTags[int8Tag] = typedArrayTags[int16Tag] =
+      typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] =
+      typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] =
+      typedArrayTags[uint32Tag] = true;
+      typedArrayTags[argsTag$1] = typedArrayTags[arrayTag] =
+      typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] =
+      typedArrayTags[dataViewTag] = typedArrayTags[dateTag] =
+      typedArrayTags[errorTag] = typedArrayTags[funcTag$1] =
+      typedArrayTags[mapTag] = typedArrayTags[numberTag] =
+      typedArrayTags[objectTag] = typedArrayTags[regexpTag] =
+      typedArrayTags[setTag] = typedArrayTags[stringTag] =
+      typedArrayTags[weakMapTag] = false;
+
+      /**
+       * The base implementation of `_.isTypedArray` without Node.js optimizations.
+       *
+       * @private
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
+       */
+      function baseIsTypedArray(value) {
+        return isObjectLike(value) &&
+          isLength(value.length) && !!typedArrayTags[baseGetTag(value)];
+      }
+
+      /**
+       * The base implementation of `_.unary` without support for storing metadata.
+       *
+       * @private
+       * @param {Function} func The function to cap arguments for.
+       * @returns {Function} Returns the new capped function.
+       */
+      function baseUnary(func) {
+        return function(value) {
+          return func(value);
+        };
+      }
+
+      /** Detect free variable `exports`. */
+      var freeExports$1 = typeof exports == 'object' && exports && !exports.nodeType && exports;
+
+      /** Detect free variable `module`. */
+      var freeModule$1 = freeExports$1 && typeof module == 'object' && module && !module.nodeType && module;
+
+      /** Detect the popular CommonJS extension `module.exports`. */
+      var moduleExports$1 = freeModule$1 && freeModule$1.exports === freeExports$1;
+
+      /** Detect free variable `process` from Node.js. */
+      var freeProcess = moduleExports$1 && freeGlobal.process;
+
+      /** Used to access faster Node.js helpers. */
+      var nodeUtil = (function() {
+        try {
+          // Use `util.types` for Node.js 10+.
+          var types = freeModule$1 && freeModule$1.require && freeModule$1.require('util').types;
+
+          if (types) {
+            return types;
+          }
+
+          // Legacy `process.binding('util')` for Node.js < 10.
+          return freeProcess && freeProcess.binding && freeProcess.binding('util');
+        } catch (e) {}
+      }());
+
+      /* Node.js helper references. */
+      var nodeIsTypedArray = nodeUtil && nodeUtil.isTypedArray;
+
+      /**
+       * Checks if `value` is classified as a typed array.
+       *
+       * @static
+       * @memberOf _
+       * @since 3.0.0
+       * @category Lang
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is a typed array, else `false`.
+       * @example
+       *
+       * _.isTypedArray(new Uint8Array);
+       * // => true
+       *
+       * _.isTypedArray([]);
+       * // => false
+       */
+      var isTypedArray = nodeIsTypedArray ? baseUnary(nodeIsTypedArray) : baseIsTypedArray;
+
+      /** Used for built-in method references. */
+      var objectProto$5 = Object.prototype;
+
+      /** Used to check objects for own properties. */
+      var hasOwnProperty$3 = objectProto$5.hasOwnProperty;
+
+      /**
+       * Creates an array of the enumerable property names of the array-like `value`.
+       *
+       * @private
+       * @param {*} value The value to query.
+       * @param {boolean} inherited Specify returning inherited property names.
+       * @returns {Array} Returns the array of property names.
+       */
+      function arrayLikeKeys(value, inherited) {
+        var isArr = isArray(value),
+            isArg = !isArr && isArguments(value),
+            isBuff = !isArr && !isArg && isBuffer(value),
+            isType = !isArr && !isArg && !isBuff && isTypedArray(value),
+            skipIndexes = isArr || isArg || isBuff || isType,
+            result = skipIndexes ? baseTimes(value.length, String) : [],
+            length = result.length;
+
+        for (var key in value) {
+          if ((inherited || hasOwnProperty$3.call(value, key)) &&
+              !(skipIndexes && (
+                 // Safari 9 has enumerable `arguments.length` in strict mode.
+                 key == 'length' ||
+                 // Node.js 0.10 has enumerable non-index properties on buffers.
+                 (isBuff && (key == 'offset' || key == 'parent')) ||
+                 // PhantomJS 2 has enumerable non-index properties on typed arrays.
+                 (isType && (key == 'buffer' || key == 'byteLength' || key == 'byteOffset')) ||
+                 // Skip index properties.
+                 isIndex(key, length)
+              ))) {
+            result.push(key);
+          }
+        }
+        return result;
+      }
+
+      /**
+       * This function is like
+       * [`Object.keys`](http://ecma-international.org/ecma-262/7.0/#sec-object.keys)
+       * except that it includes inherited enumerable properties.
+       *
+       * @private
+       * @param {Object} object The object to query.
+       * @returns {Array} Returns the array of property names.
+       */
+      function nativeKeysIn(object) {
+        var result = [];
+        if (object != null) {
+          for (var key in Object(object)) {
+            result.push(key);
+          }
+        }
+        return result;
+      }
+
+      /** Used for built-in method references. */
+      var objectProto$6 = Object.prototype;
+
+      /** Used to check objects for own properties. */
+      var hasOwnProperty$4 = objectProto$6.hasOwnProperty;
+
+      /**
+       * The base implementation of `_.keysIn` which doesn't treat sparse arrays as dense.
+       *
+       * @private
+       * @param {Object} object The object to query.
+       * @returns {Array} Returns the array of property names.
+       */
+      function baseKeysIn(object) {
+        if (!isObject(object)) {
+          return nativeKeysIn(object);
+        }
+        var isProto = isPrototype(object),
+            result = [];
+
+        for (var key in object) {
+          if (!(key == 'constructor' && (isProto || !hasOwnProperty$4.call(object, key)))) {
+            result.push(key);
+          }
+        }
+        return result;
+      }
+
+      /**
+       * Creates an array of the own and inherited enumerable property names of `object`.
+       *
+       * **Note:** Non-object values are coerced to objects.
+       *
+       * @static
+       * @memberOf _
+       * @since 3.0.0
+       * @category Object
+       * @param {Object} object The object to query.
+       * @returns {Array} Returns the array of property names.
+       * @example
+       *
+       * function Foo() {
+       *   this.a = 1;
+       *   this.b = 2;
+       * }
+       *
+       * Foo.prototype.c = 3;
+       *
+       * _.keysIn(new Foo);
+       * // => ['a', 'b', 'c'] (iteration order is not guaranteed)
+       */
+      function keysIn(object) {
+        return isArrayLike(object) ? arrayLikeKeys(object, true) : baseKeysIn(object);
+      }
+
+      /** Used for built-in method references. */
+      var objectProto$7 = Object.prototype;
+
+      /** Used to check objects for own properties. */
+      var hasOwnProperty$5 = objectProto$7.hasOwnProperty;
+
+      /**
+       * Assigns own and inherited enumerable string keyed properties of source
+       * objects to the destination object for all destination properties that
+       * resolve to `undefined`. Source objects are applied from left to right.
+       * Once a property is set, additional values of the same property are ignored.
+       *
+       * **Note:** This method mutates `object`.
+       *
+       * @static
+       * @since 0.1.0
+       * @memberOf _
+       * @category Object
+       * @param {Object} object The destination object.
+       * @param {...Object} [sources] The source objects.
+       * @returns {Object} Returns `object`.
+       * @see _.defaultsDeep
+       * @example
+       *
+       * _.defaults({ 'a': 1 }, { 'b': 2 }, { 'a': 3 });
+       * // => { 'a': 1, 'b': 2 }
+       */
+      var defaults = baseRest(function(object, sources) {
+        object = Object(object);
+
+        var index = -1;
+        var length = sources.length;
+        var guard = length > 2 ? sources[2] : undefined;
+
+        if (guard && isIterateeCall(sources[0], sources[1], guard)) {
+          length = 1;
+        }
+
+        while (++index < length) {
+          var source = sources[index];
+          var props = keysIn(source);
+          var propsIndex = -1;
+          var propsLength = props.length;
+
+          while (++propsIndex < propsLength) {
+            var key = props[propsIndex];
+            var value = object[key];
+
+            if (value === undefined ||
+                (eq(value, objectProto$7[key]) && !hasOwnProperty$5.call(object, key))) {
+              object[key] = source[key];
+            }
+          }
+        }
+
+        return object;
+      });
+
+      /* Built-in method references for those with the same name as other `lodash` methods. */
+      var nativeCeil = Math.ceil,
+          nativeMax$1 = Math.max;
+
+      /**
+       * The base implementation of `_.range` and `_.rangeRight` which doesn't
+       * coerce arguments.
+       *
+       * @private
+       * @param {number} start The start of the range.
+       * @param {number} end The end of the range.
+       * @param {number} step The value to increment or decrement by.
+       * @param {boolean} [fromRight] Specify iterating from right to left.
+       * @returns {Array} Returns the range of numbers.
+       */
+      function baseRange(start, end, step, fromRight) {
+        var index = -1,
+            length = nativeMax$1(nativeCeil((end - start) / (step || 1)), 0),
+            result = Array(length);
+
+        while (length--) {
+          result[fromRight ? length : ++index] = start;
+          start += step;
+        }
+        return result;
+      }
+
+      /**
+       * Creates a `_.range` or `_.rangeRight` function.
+       *
+       * @private
+       * @param {boolean} [fromRight] Specify iterating from right to left.
+       * @returns {Function} Returns the new range function.
+       */
+      function createRange(fromRight) {
+        return function(start, end, step) {
+          if (step && typeof step != 'number' && isIterateeCall(start, end, step)) {
+            end = step = undefined;
+          }
+          // Ensure the sign of `-0` is preserved.
+          start = toFinite(start);
+          if (end === undefined) {
+            end = start;
+            start = 0;
+          } else {
+            end = toFinite(end);
+          }
+          step = step === undefined ? (start < end ? 1 : -1) : toFinite(step);
+          return baseRange(start, end, step, fromRight);
+        };
+      }
+
+      /**
+       * Creates an array of numbers (positive and/or negative) progressing from
+       * `start` up to, but not including, `end`. A step of `-1` is used if a negative
+       * `start` is specified without an `end` or `step`. If `end` is not specified,
+       * it's set to `start` with `start` then set to `0`.
+       *
+       * **Note:** JavaScript follows the IEEE-754 standard for resolving
+       * floating-point values which can produce unexpected results.
+       *
+       * @static
+       * @since 0.1.0
+       * @memberOf _
+       * @category Util
+       * @param {number} [start=0] The start of the range.
+       * @param {number} end The end of the range.
+       * @param {number} [step=1] The value to increment or decrement by.
+       * @returns {Array} Returns the range of numbers.
+       * @see _.inRange, _.rangeRight
+       * @example
+       *
+       * _.range(4);
+       * // => [0, 1, 2, 3]
+       *
+       * _.range(-4);
+       * // => [0, -1, -2, -3]
+       *
+       * _.range(1, 5);
+       * // => [1, 2, 3, 4]
+       *
+       * _.range(0, 20, 5);
+       * // => [0, 5, 10, 15]
+       *
+       * _.range(0, -4, -1);
+       * // => [0, -1, -2, -3]
+       *
+       * _.range(1, 4, 0);
+       * // => [1, 1, 1]
+       *
+       * _.range(0);
+       * // => []
+       */
+      var range = createRange();
+
       function ascending(a, b) {
         return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
       }
@@ -218,7 +1536,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       var slice = Array.prototype.slice;
 
-      function identity(x) {
+      function identity$1(x) {
         return x;
       }
 
@@ -267,7 +1585,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
         function axis(context) {
           var values = tickValues == null ? (scale.ticks ? scale.ticks.apply(scale, tickArguments) : scale.domain()) : tickValues,
-              format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : identity) : tickFormat,
+              format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : identity$1) : tickFormat,
               spacing = Math.max(tickSizeInner, 0) + tickPadding,
               range = scale.range(),
               range0 = +range[0] + 0.5,
@@ -596,7 +1914,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
       };
 
-      function constant(x) {
+      function constant$1(x) {
         return function() {
           return x;
         };
@@ -685,7 +2003,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             parents = this._parents,
             groups = this._groups;
 
-        if (typeof value !== "function") value = constant(value);
+        if (typeof value !== "function") value = constant$1(value);
 
         for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
           var parent = parents[j],
@@ -1269,7 +2587,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             : dispatchConstant)(type, params));
       }
 
-      var root = [null];
+      var root$1 = [null];
 
       function Selection(groups, parents) {
         this._groups = groups;
@@ -1277,7 +2595,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       function selection() {
-        return new Selection([[document.documentElement]], root);
+        return new Selection([[document.documentElement]], root$1);
       }
 
       Selection.prototype = selection.prototype = {
@@ -1318,7 +2636,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       function select(selector) {
         return typeof selector === "string"
             ? new Selection([[document.querySelector(selector)]], [document.documentElement])
-            : new Selection([[selector]], root);
+            : new Selection([[selector]], root$1);
       }
 
       function define(constructor, factory, prototype) {
@@ -1702,7 +3020,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             : m1) * 255;
       }
 
-      function constant$1(x) {
+      function constant$2(x) {
         return function() {
           return x;
         };
@@ -1722,13 +3040,13 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       function gamma(y) {
         return (y = +y) === 1 ? nogamma : function(a, b) {
-          return b - a ? exponential(a, b, y) : constant$1(isNaN(a) ? b : a);
+          return b - a ? exponential(a, b, y) : constant$2(isNaN(a) ? b : a);
         };
       }
 
       function nogamma(a, b) {
         var d = b - a;
-        return d ? linear(a, d) : constant$1(isNaN(a) ? b : a);
+        return d ? linear(a, d) : constant$2(isNaN(a) ? b : a);
       }
 
       var interpolateRgb = (function rgbGamma(y) {
@@ -1869,7 +3187,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       function interpolateValue(a, b) {
         var t = typeof b, c;
-        return b == null || t === "boolean" ? constant$1(b)
+        return b == null || t === "boolean" ? constant$2(b)
             : (t === "number" ? interpolateNumber
             : t === "string" ? ((c = color(b)) ? (b = c, interpolateRgb) : interpolateString)
             : b instanceof color ? interpolateRgb
@@ -1887,7 +3205,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       var degrees = 180 / Math.PI;
 
-      var identity$1 = {
+      var identity$2 = {
         translateX: 0,
         translateY: 0,
         rotate: 0,
@@ -1918,7 +3236,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           svgNode;
 
       function parseCss(value) {
-        if (value === "none") return identity$1;
+        if (value === "none") return identity$2;
         if (!cssNode) cssNode = document.createElement("DIV"), cssRoot = document.documentElement, cssView = document.defaultView;
         cssNode.style.transform = value;
         value = cssView.getComputedStyle(cssRoot.appendChild(cssNode), null).getPropertyValue("transform");
@@ -1928,10 +3246,10 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       function parseSvg(value) {
-        if (value == null) return identity$1;
+        if (value == null) return identity$2;
         if (!svgNode) svgNode = document.createElementNS("http://www.w3.org/2000/svg", "g");
         svgNode.setAttribute("transform", value);
-        if (!(value = svgNode.transform.baseVal.consolidate())) return identity$1;
+        if (!(value = svgNode.transform.baseVal.consolidate())) return identity$2;
         value = value.matrix;
         return decompose(value.a, value.b, value.c, value.d, value.e, value.f);
       }
@@ -3903,7 +5221,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         "x": function(x) { return Math.round(x).toString(16); }
       };
 
-      function identity$2(x) {
+      function identity$3(x) {
         return x;
       }
 
@@ -3911,11 +5229,11 @@ System.register(['app/plugins/sdk'], function (exports) {
           prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
       function formatLocale(locale) {
-        var group = locale.grouping === undefined || locale.thousands === undefined ? identity$2 : formatGroup(map$1.call(locale.grouping, Number), locale.thousands + ""),
+        var group = locale.grouping === undefined || locale.thousands === undefined ? identity$3 : formatGroup(map$1.call(locale.grouping, Number), locale.thousands + ""),
             currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
             currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
             decimal = locale.decimal === undefined ? "." : locale.decimal + "",
-            numerals = locale.numerals === undefined ? identity$2 : formatNumerals(map$1.call(locale.numerals, String)),
+            numerals = locale.numerals === undefined ? identity$3 : formatNumerals(map$1.call(locale.numerals, String)),
             percent = locale.percent === undefined ? "%" : locale.percent + "",
             minus = locale.minus === undefined ? "-" : locale.minus + "",
             nan = locale.nan === undefined ? "NaN" : locale.nan + "";
@@ -4269,7 +5587,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         return initRange.apply(rescale(), arguments);
       }
 
-      function constant$2(x) {
+      function constant$3(x) {
         return function() {
           return x;
         };
@@ -4281,14 +5599,14 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       var unit = [0, 1];
 
-      function identity$3(x) {
+      function identity$4(x) {
         return x;
       }
 
       function normalize(a, b) {
         return (b -= (a = +a))
             ? function(x) { return (x - a) / b; }
-            : constant$2(isNaN(b) ? NaN : 0.5);
+            : constant$3(isNaN(b) ? NaN : 0.5);
       }
 
       function clamper(domain) {
@@ -4345,7 +5663,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             transform,
             untransform,
             unknown,
-            clamp = identity$3,
+            clamp = identity$4,
             piecewise,
             output,
             input;
@@ -4365,7 +5683,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         };
 
         scale.domain = function(_) {
-          return arguments.length ? (domain = map$2.call(_, number$1), clamp === identity$3 || (clamp = clamper(domain)), rescale()) : domain.slice();
+          return arguments.length ? (domain = map$2.call(_, number$1), clamp === identity$4 || (clamp = clamper(domain)), rescale()) : domain.slice();
         };
 
         scale.range = function(_) {
@@ -4377,7 +5695,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         };
 
         scale.clamp = function(_) {
-          return arguments.length ? (clamp = _ ? clamper(domain) : identity$3, scale) : clamp !== identity$3;
+          return arguments.length ? (clamp = _ ? clamper(domain) : identity$4, scale) : clamp !== identity$4;
         };
 
         scale.interpolate = function(_) {
@@ -4482,7 +5800,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       function linear$1() {
-        var scale = continuous(identity$3, identity$3);
+        var scale = continuous(identity$4, identity$4);
 
         scale.copy = function() {
           return copy(scale, linear$1());
@@ -5343,7 +6661,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           ? parseIsoNative
           : utcParse(isoSpecifier);
 
-      function constant$3(x) {
+      function constant$4(x) {
         return function constant() {
           return x;
         };
@@ -5445,7 +6763,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       function arc() {
         var innerRadius = arcInnerRadius,
             outerRadius = arcOuterRadius,
-            cornerRadius = constant$3(0),
+            cornerRadius = constant$4(0),
             padRadius = null,
             startAngle = arcStartAngle,
             endAngle = arcEndAngle,
@@ -5594,31 +6912,31 @@ System.register(['app/plugins/sdk'], function (exports) {
         };
 
         arc.innerRadius = function(_) {
-          return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$3(+_), arc) : innerRadius;
+          return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$4(+_), arc) : innerRadius;
         };
 
         arc.outerRadius = function(_) {
-          return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$3(+_), arc) : outerRadius;
+          return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$4(+_), arc) : outerRadius;
         };
 
         arc.cornerRadius = function(_) {
-          return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$3(+_), arc) : cornerRadius;
+          return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$4(+_), arc) : cornerRadius;
         };
 
         arc.padRadius = function(_) {
-          return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$3(+_), arc) : padRadius;
+          return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$4(+_), arc) : padRadius;
         };
 
         arc.startAngle = function(_) {
-          return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$3(+_), arc) : startAngle;
+          return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$4(+_), arc) : startAngle;
         };
 
         arc.endAngle = function(_) {
-          return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$3(+_), arc) : endAngle;
+          return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$4(+_), arc) : endAngle;
         };
 
         arc.padAngle = function(_) {
-          return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$3(+_), arc) : padAngle;
+          return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$4(+_), arc) : padAngle;
         };
 
         arc.context = function(_) {
@@ -5748,7 +7066,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       function stack() {
-        var keys = constant$3([]),
+        var keys = constant$4([]),
             order = none$2,
             offset = none$1,
             value = stackValue;
@@ -5778,15 +7096,15 @@ System.register(['app/plugins/sdk'], function (exports) {
         }
 
         stack.keys = function(_) {
-          return arguments.length ? (keys = typeof _ === "function" ? _ : constant$3(slice$2.call(_)), stack) : keys;
+          return arguments.length ? (keys = typeof _ === "function" ? _ : constant$4(slice$2.call(_)), stack) : keys;
         };
 
         stack.value = function(_) {
-          return arguments.length ? (value = typeof _ === "function" ? _ : constant$3(+_), stack) : value;
+          return arguments.length ? (value = typeof _ === "function" ? _ : constant$4(+_), stack) : value;
         };
 
         stack.order = function(_) {
-          return arguments.length ? (order = _ == null ? none$2 : typeof _ === "function" ? _ : constant$3(slice$2.call(_)), stack) : order;
+          return arguments.length ? (order = _ == null ? none$2 : typeof _ === "function" ? _ : constant$4(slice$2.call(_)), stack) : order;
         };
 
         stack.offset = function(_) {
@@ -5795,6 +7113,10 @@ System.register(['app/plugins/sdk'], function (exports) {
 
         return stack;
       }
+
+      var panelDefaults = {
+        petals: ''
+      };
 
       var WindroseCtrl = exports('PanelCtrl',
       /*#__PURE__*/
@@ -5806,11 +7128,16 @@ System.register(['app/plugins/sdk'], function (exports) {
 
           _classCallCheck(this, WindroseCtrl);
 
-          _this = _possibleConstructorReturn(this, _getPrototypeOf(WindroseCtrl).call(this, $scope, $injector)); //this.events.on('init-edit-mode', this.onInitEditMode.bind(this));
+          _this = _possibleConstructorReturn(this, _getPrototypeOf(WindroseCtrl).call(this, $scope, $injector));
+          defaults(_this.panel, panelDefaults);
+
+          _this.events.on('data-error', _this.onDataError.bind(_assertThisInitialized(_this)));
 
           _this.events.on('data-received', _this.onDataReceived.bind(_assertThisInitialized(_this)));
 
-          _this.events.on('data-error', _this.onDataError.bind(_assertThisInitialized(_this)));
+          _this.events.on('init-edit-mode', _this.onInitEditMode.bind(_assertThisInitialized(_this)));
+
+          _this.events.on('render', _this.onRender.bind(_assertThisInitialized(_this)));
 
           return _this;
         }
@@ -5819,6 +7146,8 @@ System.register(['app/plugins/sdk'], function (exports) {
           key: "onInitEditMode",
           value: function onInitEditMode() {
             console.debug('init-edit-mode');
+            var template = 'public/plugins/spectraphilic-windrose-panel/editor.html';
+            this.addEditorTab('Options', template, 2);
           }
         }, {
           key: "onDataError",
@@ -5869,7 +7198,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           }
         }, {
           key: "onDataReceived",
-          value: function onDataReceived(dataIn) {
+          value: function onDataReceived(data) {
             var speeds = [];
             var angles = [];
             var _iteratorNormalCompletion = true;
@@ -5877,7 +7206,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             var _iteratorError = undefined;
 
             try {
-              for (var _iterator = dataIn[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              for (var _iterator = data[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                 var serie = _step.value;
                 var datapoints = serie.datapoints.map(function (x) {
                   return x[0];
@@ -5891,11 +7220,6 @@ System.register(['app/plugins/sdk'], function (exports) {
                   console.warn('unexpected target ' + serie.target);
                 }
               }
-              /*
-                  let speedMax = Math.max(...speeds);
-                  console.info('SPEED 0-' + speedMax);
-              */
-
             } catch (err) {
               _didIteratorError = true;
               _iteratorError = err;
@@ -5911,19 +7235,30 @@ System.register(['app/plugins/sdk'], function (exports) {
               }
             }
 
-            var gridX = [];
+            this.speeds = speeds;
+            this.angles = angles;
+            this.render();
+          }
+        }, {
+          key: "onRender",
+          value: function onRender() {
+            console.debug('render');
+            var speeds = this.speeds;
+            var angles = this.angles;
+            var gridX = range(0, 360, 360 / 8);
+            var angleLimits = range(0, 360 + 0.1, 360 / 32);
+            var speedMax = Math.max.apply(Math, _toConsumableArray(speeds));
+            var petals = this.panel.petals;
 
-            for (var _x = 0; _x < 360; _x += 360 / 8) {
-              gridX.push(_x);
+            if (petals == '') {
+              petals = Math.ceil(speedMax / 8);
+            } else {
+              petals = +petals;
             }
 
-            var angleLimits = [];
-
-            for (var _x2 = 0; _x2 <= 360; _x2 += 360 / 32) {
-              angleLimits.push(_x2);
-            }
-
-            var speedLimits = [0, 3, 6, 9, 12, 15, Infinity]; // [angle-index][speed-index] = 0
+            var speedLimits = range(0, speedMax, petals);
+            speedLimits.push(Infinity); //console.info('SPEED 0-' + speedMax, speedStep, speedLimits);
+            // [angle-index][speed-index] = 0
 
             var matrix = {};
 

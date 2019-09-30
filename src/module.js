@@ -1,17 +1,26 @@
 import { MetricsPanelCtrl } from 'app/plugins/sdk';
+import { defaults, range } from 'lodash-es';
 import * as d3 from 'd3';
+
+const panelDefaults = {
+  petals: ''
+};
 
 class WindroseCtrl extends MetricsPanelCtrl {
 
   constructor($scope, $injector) {
     super($scope, $injector);
-    //this.events.on('init-edit-mode', this.onInitEditMode.bind(this));
-    this.events.on('data-received', this.onDataReceived.bind(this));
+    defaults(this.panel, panelDefaults);
     this.events.on('data-error', this.onDataError.bind(this));
+    this.events.on('data-received', this.onDataReceived.bind(this));
+    this.events.on('init-edit-mode', this.onInitEditMode.bind(this));
+    this.events.on('render', this.onRender.bind(this));
   }
 
   onInitEditMode() {
     console.debug('init-edit-mode');
+    let template = 'public/plugins/spectraphilic-windrose-panel/editor.html';
+    this.addEditorTab('Options', template, 2);
   }
 
   onDataError(err) {
@@ -57,10 +66,10 @@ class WindroseCtrl extends MetricsPanelCtrl {
     return (high === Infinity) ? (low + ' +') : (low + ' - ' + high);
   }
 
-  onDataReceived(dataIn) {
-    let speeds= [];
+  onDataReceived(data) {
+    let speeds = [];
     let angles = [];
-    for (let serie of dataIn) {
+    for (let serie of data) {
       let datapoints = serie.datapoints.map(function(x) { return x[0]; });
       if (serie.target === 'speed') {
         speeds = datapoints;
@@ -71,17 +80,31 @@ class WindroseCtrl extends MetricsPanelCtrl {
       }
     }
 
-/*
+    this.speeds = speeds;
+    this.angles = angles;
+    this.render()
+  }
+
+
+  onRender() {
+    console.debug('render');
+
+    let speeds = this.speeds;
+    let angles = this.angles;
+
+    let gridX = range(0, 360, 360 / 8);
+    let angleLimits = range(0, 360 + 0.1, 360 / 32);
+
     let speedMax = Math.max(...speeds);
-    console.info('SPEED 0-' + speedMax);
-*/
-
-    let gridX = [];
-    for (let x = 0; x < 360; x += (360/8)) { gridX.push(x); }
-
-    let angleLimits = [];
-    for (let x = 0; x <= 360; x += (360/32)) { angleLimits.push(x); }
-    let speedLimits = [0, 3, 6, 9, 12, 15, Infinity];
+    let petals = this.panel.petals;
+    if (petals == '') {
+      petals = Math.ceil(speedMax / 8);
+    } else {
+      petals = +petals;
+    }
+    let speedLimits = range(0, speedMax, petals);
+    speedLimits.push(Infinity);
+    //console.info('SPEED 0-' + speedMax, speedStep, speedLimits);
 
     // [angle-index][speed-index] = 0
     let matrix = {};
