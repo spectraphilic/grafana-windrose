@@ -1,0 +1,30 @@
+{
+  "id": "spectraphilic-windrose-panel",
+  "name": "Windrose",
+  "type": "panel",
+
+  "info": {
+    "author": {
+      "name": "Spectraphilic",
+      "url": "https://github.com/spectraphilic/"
+    },
+    "description": "Windrose panel",
+    "keywords": ["windrose", "panel"],
+    "links": [
+      {
+        "name": "Github",
+        "url": "https://github.com/spectraphilic/grafana-windrose/"
+      }
+    ],
+    "logos": {
+      "small": "logo.svg",
+      "large": "logo.svg"
+    },
+    "updated": "2019-09-30",
+    "version": "0.0.1"
+  },
+  "dependencies": {
+    "grafanaVersion": "6.3.x",
+    "plugins": []
+  }
+}
