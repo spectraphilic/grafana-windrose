@@ -3,7 +3,7 @@ import { defaults, range } from 'lodash-es';
 import * as d3 from 'd3';
 
 const panelDefaults = {
-  petals: ''
+  step: ''
 };
 
 class WindroseCtrl extends MetricsPanelCtrl {
@@ -96,13 +96,13 @@ class WindroseCtrl extends MetricsPanelCtrl {
     let angleLimits = range(0, 360 + 0.1, 360 / 32);
 
     let speedMax = Math.max(...speeds);
-    let petals = this.panel.petals;
-    if (petals == '') {
-      petals = Math.ceil(speedMax / 8);
+    let step = this.panel.step;
+    if (step == '') {
+      step = Math.ceil(speedMax / 8);
     } else {
-      petals = +petals;
+      step = +step;
     }
-    let speedLimits = range(0, speedMax, petals);
+    let speedLimits = range(0, speedMax, step);
     speedLimits.push(Infinity);
     //console.info('SPEED 0-' + speedMax, speedStep, speedLimits);
 

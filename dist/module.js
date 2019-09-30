@@ -7115,7 +7115,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       var panelDefaults = {
-        petals: ''
+        step: ''
       };
 
       var WindroseCtrl = exports('PanelCtrl',
@@ -7248,15 +7248,15 @@ System.register(['app/plugins/sdk'], function (exports) {
             var gridX = range(0, 360, 360 / 8);
             var angleLimits = range(0, 360 + 0.1, 360 / 32);
             var speedMax = Math.max.apply(Math, _toConsumableArray(speeds));
-            var petals = this.panel.petals;
+            var step = this.panel.step;
 
-            if (petals == '') {
-              petals = Math.ceil(speedMax / 8);
+            if (step == '') {
+              step = Math.ceil(speedMax / 8);
             } else {
-              petals = +petals;
+              step = +step;
             }
 
-            var speedLimits = range(0, speedMax, petals);
+            var speedLimits = range(0, speedMax, step);
             speedLimits.push(Infinity); //console.info('SPEED 0-' + speedMax, speedStep, speedLimits);
             // [angle-index][speed-index] = 0
 
