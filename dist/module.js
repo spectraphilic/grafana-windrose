@@ -5911,7 +5911,18 @@ System.register(['app/plugins/sdk'], function (exports) {
               }
             }
 
-            var angleLimits = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360];
+            var gridX = [];
+
+            for (var _x = 0; _x < 360; _x += 360 / 8) {
+              gridX.push(_x);
+            }
+
+            var angleLimits = [];
+
+            for (var _x2 = 0; _x2 <= 360; _x2 += 360 / 32) {
+              angleLimits.push(_x2);
+            }
+
             var speedLimits = [0, 3, 6, 9, 12, 15, Infinity]; // [angle-index][speed-index] = 0
 
             var matrix = {};
@@ -5937,7 +5948,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
             console.debug('matrix=', matrix); // Columns
 
-            var columns = ['angle'];
+            var columns = [];
 
             for (var _i2 = 1; _i2 < speedLimits.length; _i2++) {
               columns.push(this.getColumnName(speedLimits, _i2));
@@ -5953,7 +5964,7 @@ System.register(['app/plugins/sdk'], function (exports) {
               var total = 0;
 
               for (var _j2 = 1; _j2 < speedLimits.length; _j2++) {
-                var name = columns[_j2];
+                var name = columns[_j2 - 1];
                 total += row[name] = matrix[_i3][_j2];
               }
 
@@ -5961,8 +5972,8 @@ System.register(['app/plugins/sdk'], function (exports) {
               data.push(row);
             }
 
-            data['columns'] = columns;
-            console.debug('data=', data);
+            console.debug('data=', data); // SVG
+
             var svg = select("svg#windrose-" + this.panel.id);
             svg.selectAll('*').remove(); // Set width and height
 
@@ -5983,10 +5994,9 @@ System.register(['app/plugins/sdk'], function (exports) {
                 outerRadius = Math.min(chartWidth, chartHeight) / 2,
                 g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
             var angle = linear$1().range([0, 2 * Math.PI]);
-            var radius = linear$1().range([innerRadius, outerRadius]);
-            var x = band().range([0, 2 * Math.PI]).align(0);
-            var y = linear$1() //you can try scaleRadial but it scales differently
-            .range([innerRadius, outerRadius]);
+            var x = band().range([0, 2 * Math.PI]).align(0); // you can try scaleRadial but it scales differently
+
+            var y = linear$1().range([innerRadius, outerRadius]);
             var z = ordinal().range(["#4242f4", "#42c5f4", "#42f4ce", "#42f456", "#adf442", "#f4e242", "#f4a142", "#f44242"]);
             x.domain(data.map(function (d) {
               return d.angle;
@@ -5994,16 +6004,13 @@ System.register(['app/plugins/sdk'], function (exports) {
             y.domain([0, max(data, function (d) {
               return d.total;
             })]);
-            z.domain(data.columns.slice(1)); // Extend the domain slightly to match the range of [0, 2π].
+            z.domain(columns); // Extend the domain slightly to match the range of [0, 2π].
 
             angle.domain([0, max(data, function (d, i) {
               return i + 1;
-            })]);
-            radius.domain([0, max(data, function (d) {
-              return d.y0 + d.y;
-            })]);
-            var angleOffset = -360.0 / data.length / 2.0;
-            g.append("g").selectAll("g").data(stack().keys(data.columns.slice(1))(data)).enter().append("g").attr("fill", function (d) {
+            })]); // Draw data
+
+            g.append("g").selectAll("g").data(stack().keys(columns)(data)).enter().append("g").attr("fill", function (d) {
               return z(d.key);
             }).selectAll("path").data(function (d) {
               return d;
@@ -6015,34 +6022,42 @@ System.register(['app/plugins/sdk'], function (exports) {
               return x(d.data.angle);
             }).endAngle(function (d) {
               return x(d.data.angle) + x.bandwidth();
-            }).padAngle(0.01).padRadius(innerRadius)).attr("transform", function () {
-              return "rotate(" + angleOffset + ")";
-            });
-            var label = g.append("g").selectAll("g").data(data).enter().append("g").attr("text-anchor", "middle").attr("transform", function (d) {
-              var rotate = (x(d.angle) + x.bandwidth() / 2) * 180 / Math.PI - (90 - angleOffset);
+            }).padAngle(0.01).padRadius(innerRadius)); // X axis (angle)
+
+            var xLinear = linear$1().range([0, 2 * Math.PI]).domain([0, max(gridX, function (d, i) {
+              return i + 1;
+            })]);
+            var xBand = band().range([0, 2 * Math.PI]).align(0).domain(gridX);
+            var angleOffset = -360.0 / gridX.length / 2.0;
+            var label = g.append("g").selectAll("g").data(gridX).enter().append("g").attr("text-anchor", "middle").attr("transform", function (d) {
+              var rotate = (xBand(d) + xBand.bandwidth() / 2) * 180 / Math.PI - (90 - angleOffset);
               return "rotate(" + rotate + ")translate(" + (outerRadius + 30) + ",0)";
             });
             label.append("text").attr("transform", function (d) {
-              return (x(d.angle) + x.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) < Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)";
+              return (xBand(d) + xBand.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) < Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)";
             }).attr('fill', 'white').text(function (d) {
-              return d.angle;
+              return d;
             }).style("font-size", '14px');
-            g.selectAll(".axis").data(sequence(angle.domain()[1])).enter().append("g").attr("class", "axis").attr("transform", function (d) {
-              return "rotate(" + angle(d) * 180 / Math.PI + ")";
-            }).call(axisLeft().scale(radius.copy().range([-innerRadius, -(outerRadius + 10)])));
+            var radius = linear$1().range([innerRadius, outerRadius]).domain([0, max(gridX, function (d) {
+              return d.y0 + d.y;
+            })]);
+            g.selectAll(".axis").data(sequence(xLinear.domain()[1])).enter().append("g").attr("class", "axis").attr("transform", function (d) {
+              return "rotate(" + xLinear(d) * 180 / Math.PI + ")";
+            }).call(axisLeft().scale(radius.copy().range([-innerRadius, -(outerRadius + 10)]))); // Y axis
+
             var yAxis = g.append("g").attr("text-anchor", "middle");
-            var yTick = yAxis.selectAll("g").data(y.ticks(5).slice(1)).enter().append("g");
-            yTick.append("circle").attr("fill", "none").attr("stroke", "gray").attr("stroke-dasharray", "4,4").attr("r", y);
+            var yTick = yAxis.selectAll("g").data(y.ticks(5).slice(1)).enter().append("g"); // Y axis: circles
+
+            yTick.append("circle").attr("fill", "none").attr("stroke", "gray").attr("stroke-dasharray", "4,4").attr("r", y); // Y axis: labels
+
             yTick.append("text").attr("y", function (d) {
               return -y(d);
             }).attr("dy", "-0.35em").attr("x", function () {
               return -10;
-            }).text(y.tickFormat(5, "s")).attr('fill', 'white').style("font-size", '14px');
-            var legend = g.append("g").selectAll("g").data(data.columns.slice(1).reverse()).enter().append("g") //      .attr("transform", function(d, i) {
-            //        return "translate(-40," + (i - (data.columns.length - 1) / 2) * 20 + ")";
-            //      });
-            .attr("transform", function (d, i) {
-              var translate = outerRadius + 0 + "," + (-outerRadius + 40 + (i - (data.columns.length - 1) / 2) * 20);
+            }).text(y.tickFormat(5, "s")).attr('fill', 'white').style("font-size", '14px'); // Legend
+
+            var legend = g.append("g").selectAll("g").data(columns.reverse()).enter().append("g").attr("transform", function (d, i) {
+              var translate = outerRadius + 0 + "," + (-outerRadius + 40 + (i - columns.length / 2) * 20);
               return "translate(" + translate + ")";
             });
             legend.append("rect").attr("width", 18).attr("height", 18).attr("fill", z);
