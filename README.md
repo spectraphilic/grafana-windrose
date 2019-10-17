@@ -8,10 +8,13 @@ configuration.
 
 Install:
 
-    $ sudo su -
-    # cd /var/lib/grafana/plugins
-    # git clone https://github.com/spectraphilic/grafana-windrose.git
-    # systemctl systemctl restart grafana.service
+```sh
+$ sudo su -
+# cd /var/lib/grafana/plugins
+# git clone https://github.com/spectraphilic/grafana-windrose.git
+```
+
+Restart Grafana service.
 
 Example query:
 
@@ -31,10 +34,14 @@ ORDER BY time
 
 Install:
 
-    $ npm install
+```sh
+$ npm install
+```
 
 Use make:
 
-    $ make   # prints help
-    $ make b # builds the sources to dist
-    $ make w # runs the watch server
+```sh
+$ make   # prints help
+$ make b # builds the sources to dist
+$ make w # runs the watch server
+```
