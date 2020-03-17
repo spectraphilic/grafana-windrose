@@ -113,13 +113,13 @@ class WindroseCtrl extends MetricsPanelCtrl {
     let slices = this.panel.slices;
     let start = this.panel.start;
     let step = this.panel.step;
-    step = (step == '') ? Math.ceil(speedMax / 8): +step;
     let unit = this.panel.unit;
 
     // Variables
     let gridX = range(0, 360, 360 / 8);
     let angleLimits = range(0, 360 + 0.1, 360 / slices);
     let speedMax = Math.max(...speeds);
+    step = (step == '') ? Math.ceil(speedMax / 8): +step;
     let speedLimits = range(start, speedMax, step);
     speedLimits.push(Infinity);
     //console.info('SPEED 0-' + speedMax, speedStep, speedLimits);
