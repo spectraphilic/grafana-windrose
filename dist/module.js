@@ -5582,7 +5582,10 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       var panelDefaults = {
+        // X axis
         slices: 32,
+        // Y axis
+        start: 0,
         step: ''
       };
 
@@ -5713,14 +5716,15 @@ System.register(['app/plugins/sdk'], function (exports) {
             var speeds = this.speeds;
             var angles = this.angles; // Configuration
 
+            var slices = this.panel.slices;
+            var start = this.panel.start;
             var step = this.panel.step;
-            step = step == '' ? Math.ceil(speedMax / 8) : +step;
-            var slices = this.panel.slices; // Variables
+            step = step == '' ? Math.ceil(speedMax / 8) : +step; // Variables
 
             var gridX = range(0, 360, 360 / 8);
             var angleLimits = range(0, 360 + 0.1, 360 / slices);
             var speedMax = Math.max.apply(Math, _toConsumableArray(speeds));
-            var speedLimits = range(0, speedMax, step);
+            var speedLimits = range(start, speedMax, step);
             speedLimits.push(Infinity); //console.info('SPEED 0-' + speedMax, speedStep, speedLimits);
             // [angle-index][speed-index] = 0
 

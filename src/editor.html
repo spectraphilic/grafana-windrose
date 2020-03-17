@@ -1,17 +1,27 @@
 <div class="section gf-form-group">
 
+<!-- X axis -->
 <div class="gf-form">
-  <label class="gf-form-label width-8">Speed step</label>
+  <label class="gf-form-label width-8">Cake slices</label>
   <input type="text" class="gf-form-input width-4"
-         ng-model="ctrl.panel.step"
+         ng-model="ctrl.panel.slices"
+         ng-change="ctrl.render()"
+         ng-model-onblur>
+</div>
+
+<!-- Y axis -->
+<div class="gf-form">
+  <label class="gf-form-label width-8">Speed start</label>
+  <input type="text" class="gf-form-input width-4"
+         ng-model="ctrl.panel.start"
          ng-change="ctrl.render()"
          ng-model-onblur>
 </div>
 
 <div class="gf-form">
-  <label class="gf-form-label width-8">Cake slices</label>
+  <label class="gf-form-label width-8">Speed step</label>
   <input type="text" class="gf-form-input width-4"
-         ng-model="ctrl.panel.slices"
+         ng-model="ctrl.panel.step"
          ng-change="ctrl.render()"
          ng-model-onblur>
 </div>
