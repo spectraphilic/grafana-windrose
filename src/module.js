@@ -1,5 +1,5 @@
 import { MetricsPanelCtrl } from 'app/plugins/sdk';
-import { defaults, range } from 'lodash-es';
+import { debounce, defaults, range } from 'lodash-es';
 import * as d3 from 'd3';
 
 const panelDefaults = {
@@ -7,7 +7,8 @@ const panelDefaults = {
   slices: 32,
   // Y axis
   start: 0,
-  step: ''
+  step: '',
+  unit: 'm/s'
 };
 
 class WindroseCtrl extends MetricsPanelCtrl {
@@ -18,7 +19,18 @@ class WindroseCtrl extends MetricsPanelCtrl {
     this.events.on('data-error', this.onDataError.bind(this));
     this.events.on('data-received', this.onDataReceived.bind(this));
     this.events.on('init-edit-mode', this.onInitEditMode.bind(this));
-    this.events.on('render', this.onRender.bind(this));
+
+    let render = this.onRender.bind(this);
+    this.events.on('render', render);
+
+    // When viewing a single panel resizing the window does not emit
+    // panel-size-changed (but it does when looking a dashboard).
+    window.addEventListener('resize', debounce(render, 200));
+
+    //this.events.on('data-snapshot-load', () => { console.log('data-snapshot-load'); });
+    //this.events.on('panel-size-changed', () => { console.log('panel-size-changed'); });
+    //this.events.on('panel-teardown', () => { console.log('panel-teardown'); });
+    //this.events.on('refresh', () => { console.log('refresh'); });
   }
 
   onInitEditMode() {
@@ -91,7 +103,7 @@ class WindroseCtrl extends MetricsPanelCtrl {
 
 
   onRender() {
-    console.debug('render');
+    //console.log(this);
 
     // Data
     let speeds = this.speeds;
@@ -102,6 +114,7 @@ class WindroseCtrl extends MetricsPanelCtrl {
     let start = this.panel.start;
     let step = this.panel.step;
     step = (step == '') ? Math.ceil(speedMax / 8): +step;
+    let unit = this.panel.unit;
 
     // Variables
     let gridX = range(0, 360, 360 / 8);
@@ -159,14 +172,13 @@ class WindroseCtrl extends MetricsPanelCtrl {
 
     // Set width and height
     let node = svg.node().parentNode;
-    let size = Math.min(node.offsetWidth, node.offsetHeight);
-    let width = size, height = size;
+    let width = node.offsetWidth, height = node.offsetHeight;
     svg.attr('width', width).attr('height', height);
 
     let margin = {top: 40, right: 80, bottom: 40, left: 40},
         innerRadius = 0,
         chartWidth = width - margin.left - margin.right,
-        chartHeight= height - margin.top - margin.bottom,
+        chartHeight = height - margin.top - margin.bottom,
         outerRadius = (Math.min(chartWidth, chartHeight) / 2),
         g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
@@ -265,8 +277,9 @@ class WindroseCtrl extends MetricsPanelCtrl {
         .data(columns.reverse())
         .enter().append("g")
         .attr("transform", function(d, i) {
-          let translate = (outerRadius+0) + "," + (-outerRadius + 40 +(i - columns.length / 2) * 20);
-          return "translate(" + translate + ")"; 
+          let translate_x = outerRadius + 30;
+          let translate_y = -outerRadius + 40 + (i - columns.length / 2) * 20;
+          return "translate(" + translate_x + "," + translate_y + ")";
         });
 
     legend.append("rect")
@@ -278,7 +291,7 @@ class WindroseCtrl extends MetricsPanelCtrl {
         .attr("x", 24)
         .attr("y", 9)
         .attr("dy", "0.35em")
-        .text(function(d) { return d; })
+        .text(function(d) { return d + ' ' + unit; })
         .attr('fill', 'white')
         .style("font-size", '12px');
 

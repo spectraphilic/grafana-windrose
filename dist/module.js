@@ -1241,6 +1241,212 @@ System.register(['app/plugins/sdk'], function (exports) {
         return isArrayLike(object) ? arrayLikeKeys(object, true) : baseKeysIn(object);
       }
 
+      /**
+       * Gets the timestamp of the number of milliseconds that have elapsed since
+       * the Unix epoch (1 January 1970 00:00:00 UTC).
+       *
+       * @static
+       * @memberOf _
+       * @since 2.4.0
+       * @category Date
+       * @returns {number} Returns the timestamp.
+       * @example
+       *
+       * _.defer(function(stamp) {
+       *   console.log(_.now() - stamp);
+       * }, _.now());
+       * // => Logs the number of milliseconds it took for the deferred invocation.
+       */
+      var now = function() {
+        return root.Date.now();
+      };
+
+      /** Error message constants. */
+      var FUNC_ERROR_TEXT = 'Expected a function';
+
+      /* Built-in method references for those with the same name as other `lodash` methods. */
+      var nativeMax$1 = Math.max,
+          nativeMin = Math.min;
+
+      /**
+       * Creates a debounced function that delays invoking `func` until after `wait`
+       * milliseconds have elapsed since the last time the debounced function was
+       * invoked. The debounced function comes with a `cancel` method to cancel
+       * delayed `func` invocations and a `flush` method to immediately invoke them.
+       * Provide `options` to indicate whether `func` should be invoked on the
+       * leading and/or trailing edge of the `wait` timeout. The `func` is invoked
+       * with the last arguments provided to the debounced function. Subsequent
+       * calls to the debounced function return the result of the last `func`
+       * invocation.
+       *
+       * **Note:** If `leading` and `trailing` options are `true`, `func` is
+       * invoked on the trailing edge of the timeout only if the debounced function
+       * is invoked more than once during the `wait` timeout.
+       *
+       * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
+       * until to the next tick, similar to `setTimeout` with a timeout of `0`.
+       *
+       * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
+       * for details over the differences between `_.debounce` and `_.throttle`.
+       *
+       * @static
+       * @memberOf _
+       * @since 0.1.0
+       * @category Function
+       * @param {Function} func The function to debounce.
+       * @param {number} [wait=0] The number of milliseconds to delay.
+       * @param {Object} [options={}] The options object.
+       * @param {boolean} [options.leading=false]
+       *  Specify invoking on the leading edge of the timeout.
+       * @param {number} [options.maxWait]
+       *  The maximum time `func` is allowed to be delayed before it's invoked.
+       * @param {boolean} [options.trailing=true]
+       *  Specify invoking on the trailing edge of the timeout.
+       * @returns {Function} Returns the new debounced function.
+       * @example
+       *
+       * // Avoid costly calculations while the window size is in flux.
+       * jQuery(window).on('resize', _.debounce(calculateLayout, 150));
+       *
+       * // Invoke `sendMail` when clicked, debouncing subsequent calls.
+       * jQuery(element).on('click', _.debounce(sendMail, 300, {
+       *   'leading': true,
+       *   'trailing': false
+       * }));
+       *
+       * // Ensure `batchLog` is invoked once after 1 second of debounced calls.
+       * var debounced = _.debounce(batchLog, 250, { 'maxWait': 1000 });
+       * var source = new EventSource('/stream');
+       * jQuery(source).on('message', debounced);
+       *
+       * // Cancel the trailing debounced invocation.
+       * jQuery(window).on('popstate', debounced.cancel);
+       */
+      function debounce(func, wait, options) {
+        var lastArgs,
+            lastThis,
+            maxWait,
+            result,
+            timerId,
+            lastCallTime,
+            lastInvokeTime = 0,
+            leading = false,
+            maxing = false,
+            trailing = true;
+
+        if (typeof func != 'function') {
+          throw new TypeError(FUNC_ERROR_TEXT);
+        }
+        wait = toNumber(wait) || 0;
+        if (isObject(options)) {
+          leading = !!options.leading;
+          maxing = 'maxWait' in options;
+          maxWait = maxing ? nativeMax$1(toNumber(options.maxWait) || 0, wait) : maxWait;
+          trailing = 'trailing' in options ? !!options.trailing : trailing;
+        }
+
+        function invokeFunc(time) {
+          var args = lastArgs,
+              thisArg = lastThis;
+
+          lastArgs = lastThis = undefined;
+          lastInvokeTime = time;
+          result = func.apply(thisArg, args);
+          return result;
+        }
+
+        function leadingEdge(time) {
+          // Reset any `maxWait` timer.
+          lastInvokeTime = time;
+          // Start the timer for the trailing edge.
+          timerId = setTimeout(timerExpired, wait);
+          // Invoke the leading edge.
+          return leading ? invokeFunc(time) : result;
+        }
+
+        function remainingWait(time) {
+          var timeSinceLastCall = time - lastCallTime,
+              timeSinceLastInvoke = time - lastInvokeTime,
+              timeWaiting = wait - timeSinceLastCall;
+
+          return maxing
+            ? nativeMin(timeWaiting, maxWait - timeSinceLastInvoke)
+            : timeWaiting;
+        }
+
+        function shouldInvoke(time) {
+          var timeSinceLastCall = time - lastCallTime,
+              timeSinceLastInvoke = time - lastInvokeTime;
+
+          // Either this is the first call, activity has stopped and we're at the
+          // trailing edge, the system time has gone backwards and we're treating
+          // it as the trailing edge, or we've hit the `maxWait` limit.
+          return (lastCallTime === undefined || (timeSinceLastCall >= wait) ||
+            (timeSinceLastCall < 0) || (maxing && timeSinceLastInvoke >= maxWait));
+        }
+
+        function timerExpired() {
+          var time = now();
+          if (shouldInvoke(time)) {
+            return trailingEdge(time);
+          }
+          // Restart the timer.
+          timerId = setTimeout(timerExpired, remainingWait(time));
+        }
+
+        function trailingEdge(time) {
+          timerId = undefined;
+
+          // Only invoke if we have `lastArgs` which means `func` has been
+          // debounced at least once.
+          if (trailing && lastArgs) {
+            return invokeFunc(time);
+          }
+          lastArgs = lastThis = undefined;
+          return result;
+        }
+
+        function cancel() {
+          if (timerId !== undefined) {
+            clearTimeout(timerId);
+          }
+          lastInvokeTime = 0;
+          lastArgs = lastCallTime = lastThis = timerId = undefined;
+        }
+
+        function flush() {
+          return timerId === undefined ? result : trailingEdge(now());
+        }
+
+        function debounced() {
+          var time = now(),
+              isInvoking = shouldInvoke(time);
+
+          lastArgs = arguments;
+          lastThis = this;
+          lastCallTime = time;
+
+          if (isInvoking) {
+            if (timerId === undefined) {
+              return leadingEdge(lastCallTime);
+            }
+            if (maxing) {
+              // Handle invocations in a tight loop.
+              clearTimeout(timerId);
+              timerId = setTimeout(timerExpired, wait);
+              return invokeFunc(lastCallTime);
+            }
+          }
+          if (timerId === undefined) {
+            timerId = setTimeout(timerExpired, wait);
+          }
+          return result;
+        }
+        debounced.cancel = cancel;
+        debounced.flush = flush;
+        return debounced;
+      }
+
       /** Used for built-in method references. */
       var objectProto$7 = Object.prototype;
 
@@ -1301,7 +1507,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       /* Built-in method references for those with the same name as other `lodash` methods. */
       var nativeCeil = Math.ceil,
-          nativeMax$1 = Math.max;
+          nativeMax$2 = Math.max;
 
       /**
        * The base implementation of `_.range` and `_.rangeRight` which doesn't
@@ -1316,7 +1522,7 @@ System.register(['app/plugins/sdk'], function (exports) {
        */
       function baseRange(start, end, step, fromRight) {
         var index = -1,
-            length = nativeMax$1(nativeCeil((end - start) / (step || 1)), 0),
+            length = nativeMax$2(nativeCeil((end - start) / (step || 1)), 0),
             result = Array(length);
 
         while (length--) {
@@ -3345,7 +3551,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           clock = typeof performance === "object" && performance.now ? performance : Date,
           setFrame = typeof window === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
 
-      function now() {
+      function now$1() {
         return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);
       }
 
@@ -3363,7 +3569,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         constructor: Timer,
         restart: function(callback, delay, time) {
           if (typeof callback !== "function") throw new TypeError("callback is not a function");
-          time = (time == null ? now() : +time) + (delay == null ? 0 : +delay);
+          time = (time == null ? now$1() : +time) + (delay == null ? 0 : +delay);
           if (!this._next && taskTail !== this) {
             if (taskTail) taskTail._next = this;
             else taskHead = this;
@@ -3389,7 +3595,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       function timerFlush() {
-        now(); // Get the current time, if not already set.
+        now$1(); // Get the current time, if not already set.
         ++frame; // Pretend we’ve set an alarm, if we haven’t already.
         var t = taskHead, e;
         while (t) {
@@ -4275,7 +4481,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         var timing;
         while (!(timing = node.__transition) || !(timing = timing[id])) {
           if (!(node = node.parentNode)) {
-            return defaultTiming.time = now(), defaultTiming;
+            return defaultTiming.time = now$1(), defaultTiming;
           }
         }
         return timing;
@@ -4288,7 +4494,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         if (name instanceof Transition) {
           id = name._id, name = name._name;
         } else {
-          id = newId(), (timing = defaultTiming).time = now(), name = name == null ? null : name + "";
+          id = newId(), (timing = defaultTiming).time = now$1(), name = name == null ? null : name + "";
         }
 
         for (var groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
@@ -5586,7 +5792,8 @@ System.register(['app/plugins/sdk'], function (exports) {
         slices: 32,
         // Y axis
         start: 0,
-        step: ''
+        step: '',
+        unit: 'm/s'
       };
 
       var WindroseCtrl = exports('PanelCtrl', /*#__PURE__*/function (_MetricsPanelCtrl) {
@@ -5606,7 +5813,16 @@ System.register(['app/plugins/sdk'], function (exports) {
 
           _this.events.on('init-edit-mode', _this.onInitEditMode.bind(_assertThisInitialized(_this)));
 
-          _this.events.on('render', _this.onRender.bind(_assertThisInitialized(_this)));
+          var render = _this.onRender.bind(_assertThisInitialized(_this));
+
+          _this.events.on('render', render); // When viewing a single panel resizing the window does not emit
+          // panel-size-changed (but it does when looking a dashboard).
+
+
+          window.addEventListener('resize', debounce(render, 200)); //this.events.on('data-snapshot-load', () => { console.log('data-snapshot-load'); });
+          //this.events.on('panel-size-changed', () => { console.log('panel-size-changed'); });
+          //this.events.on('panel-teardown', () => { console.log('panel-teardown'); });
+          //this.events.on('refresh', () => { console.log('refresh'); });
 
           return _this;
         }
@@ -5711,15 +5927,16 @@ System.register(['app/plugins/sdk'], function (exports) {
         }, {
           key: "onRender",
           value: function onRender() {
-            console.debug('render'); // Data
-
+            //console.log(this);
+            // Data
             var speeds = this.speeds;
             var angles = this.angles; // Configuration
 
             var slices = this.panel.slices;
             var start = this.panel.start;
             var step = this.panel.step;
-            step = step == '' ? Math.ceil(speedMax / 8) : +step; // Variables
+            step = step == '' ? Math.ceil(speedMax / 8) : +step;
+            var unit = this.panel.unit; // Variables
 
             var gridX = range(0, 360, 360 / 8);
             var angleLimits = range(0, 360 + 0.1, 360 / slices);
@@ -5781,9 +5998,8 @@ System.register(['app/plugins/sdk'], function (exports) {
             svg.selectAll('*').remove(); // Set width and height
 
             var node = svg.node().parentNode;
-            var size = Math.min(node.offsetWidth, node.offsetHeight);
-            var width = size,
-                height = size;
+            var width = node.offsetWidth,
+                height = node.offsetHeight;
             svg.attr('width', width).attr('height', height);
             var margin = {
               top: 40,
@@ -5860,12 +6076,13 @@ System.register(['app/plugins/sdk'], function (exports) {
             }).text(y.tickFormat(5, "s")).attr('fill', 'white').style("font-size", '14px'); // Legend
 
             var legend = g.append("g").selectAll("g").data(columns.reverse()).enter().append("g").attr("transform", function (d, i) {
-              var translate = outerRadius + 0 + "," + (-outerRadius + 40 + (i - columns.length / 2) * 20);
-              return "translate(" + translate + ")";
+              var translate_x = outerRadius + 30;
+              var translate_y = -outerRadius + 40 + (i - columns.length / 2) * 20;
+              return "translate(" + translate_x + "," + translate_y + ")";
             });
             legend.append("rect").attr("width", 18).attr("height", 18).attr("fill", z);
             legend.append("text").attr("x", 24).attr("y", 9).attr("dy", "0.35em").text(function (d) {
-              return d;
+              return d + ' ' + unit;
             }).attr('fill', 'white').style("font-size", '12px');
           }
         }]);
