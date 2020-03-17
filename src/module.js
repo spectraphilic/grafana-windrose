@@ -159,7 +159,7 @@ class WindroseCtrl extends MetricsPanelCtrl {
     svg.attr('width', width).attr('height', height);
 
     let margin = {top: 40, right: 80, bottom: 40, left: 40},
-        innerRadius = 20,
+        innerRadius = 0,
         chartWidth = width - margin.left - margin.right,
         chartHeight= height - margin.top - margin.bottom,
         outerRadius = (Math.min(chartWidth, chartHeight) / 2),

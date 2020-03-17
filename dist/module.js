@@ -1704,7 +1704,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       function dispatch() {
         for (var i = 0, n = arguments.length, _ = {}, t; i < n; ++i) {
-          if (!(t = arguments[i] + "") || (t in _)) throw new Error("illegal type: " + t);
+          if (!(t = arguments[i] + "") || (t in _) || /[\s.]/.test(t)) throw new Error("illegal type: " + t);
           _[t] = [];
         }
         return new Dispatch(_);
@@ -2445,11 +2445,13 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       function selection_cloneShallow() {
-        return this.parentNode.insertBefore(this.cloneNode(false), this.nextSibling);
+        var clone = this.cloneNode(false), parent = this.parentNode;
+        return parent ? parent.insertBefore(clone, this.nextSibling) : clone;
       }
 
       function selection_cloneDeep() {
-        return this.parentNode.insertBefore(this.cloneNode(true), this.nextSibling);
+        var clone = this.cloneNode(true), parent = this.parentNode;
+        return parent ? parent.insertBefore(clone, this.nextSibling) : clone;
       }
 
       function selection_clone(deep) {
@@ -3071,7 +3073,22 @@ System.register(['app/plugins/sdk'], function (exports) {
         return rgb$1;
       })(1);
 
-      function array(a, b) {
+      function numberArray(a, b) {
+        if (!b) b = [];
+        var n = a ? Math.min(b.length, a.length) : 0,
+            c = b.slice(),
+            i;
+        return function(t) {
+          for (i = 0; i < n; ++i) c[i] = a[i] * (1 - t) + b[i] * t;
+          return c;
+        };
+      }
+
+      function isNumberArray(x) {
+        return ArrayBuffer.isView(x) && !(x instanceof DataView);
+      }
+
+      function genericArray(a, b) {
         var nb = b ? b.length : 0,
             na = a ? Math.min(nb, a.length) : 0,
             x = new Array(na),
@@ -3089,14 +3106,14 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       function date(a, b) {
         var d = new Date;
-        return a = +a, b -= a, function(t) {
-          return d.setTime(a + b * t), d;
+        return a = +a, b = +b, function(t) {
+          return d.setTime(a * (1 - t) + b * t), d;
         };
       }
 
       function interpolateNumber(a, b) {
-        return a = +a, b -= a, function(t) {
-          return a + b * t;
+        return a = +a, b = +b, function(t) {
+          return a * (1 - t) + b * t;
         };
       }
 
@@ -3192,14 +3209,15 @@ System.register(['app/plugins/sdk'], function (exports) {
             : t === "string" ? ((c = color(b)) ? (b = c, interpolateRgb) : interpolateString)
             : b instanceof color ? interpolateRgb
             : b instanceof Date ? date
-            : Array.isArray(b) ? array
+            : isNumberArray(b) ? numberArray
+            : Array.isArray(b) ? genericArray
             : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object
             : interpolateNumber)(a, b);
       }
 
       function interpolateRound(a, b) {
-        return a = +a, b -= a, function(t) {
-          return Math.round(a + b * t);
+        return a = +a, b = +b, function(t) {
+          return Math.round(a * (1 - t) + b * t);
         };
       }
 
@@ -3780,13 +3798,13 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       function attrInterpolate(name, i) {
         return function(t) {
-          this.setAttribute(name, i(t));
+          this.setAttribute(name, i.call(this, t));
         };
       }
 
       function attrInterpolateNS(fullname, i) {
         return function(t) {
-          this.setAttributeNS(fullname.space, fullname.local, i(t));
+          this.setAttributeNS(fullname.space, fullname.local, i.call(this, t));
         };
       }
 
@@ -4080,7 +4098,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       function styleInterpolate(name, i, priority) {
         return function(t) {
-          this.style.setProperty(name, i(t), priority);
+          this.style.setProperty(name, i.call(this, t), priority);
         };
       }
 
@@ -4120,6 +4138,31 @@ System.register(['app/plugins/sdk'], function (exports) {
         return this.tween("text", typeof value === "function"
             ? textFunction$1(tweenValue(this, "text", value))
             : textConstant$1(value == null ? "" : value + ""));
+      }
+
+      function textInterpolate(i) {
+        return function(t) {
+          this.textContent = i.call(this, t);
+        };
+      }
+
+      function textTween(value) {
+        var t0, i0;
+        function tween() {
+          var i = value.apply(this, arguments);
+          if (i !== i0) t0 = (i0 = i) && textInterpolate(i);
+          return t0;
+        }
+        tween._value = value;
+        return tween;
+      }
+
+      function transition_textTween(value) {
+        var key = "text";
+        if (arguments.length < 1) return (key = this.tween(key)) && key._value;
+        if (value == null) return this.tween(key, null);
+        if (typeof value !== "function") throw new Error;
+        return this.tween(key, textTween(value));
       }
 
       function transition_transition() {
@@ -4208,6 +4251,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         style: transition_style,
         styleTween: transition_styleTween,
         text: transition_text,
+        textTween: transition_textTween,
         remove: transition_remove,
         tween: transition_tween,
         delay: transition_delay,
@@ -4500,580 +4544,6 @@ System.register(['app/plugins/sdk'], function (exports) {
         return set;
       }
 
-      var EOL = {},
-          EOF = {},
-          QUOTE = 34,
-          NEWLINE = 10,
-          RETURN = 13;
-
-      function objectConverter(columns) {
-        return new Function("d", "return {" + columns.map(function(name, i) {
-          return JSON.stringify(name) + ": d[" + i + "]";
-        }).join(",") + "}");
-      }
-
-      function customConverter(columns, f) {
-        var object = objectConverter(columns);
-        return function(row, i) {
-          return f(object(row), i, columns);
-        };
-      }
-
-      // Compute unique columns in order of discovery.
-      function inferColumns(rows) {
-        var columnSet = Object.create(null),
-            columns = [];
-
-        rows.forEach(function(row) {
-          for (var column in row) {
-            if (!(column in columnSet)) {
-              columns.push(columnSet[column] = column);
-            }
-          }
-        });
-
-        return columns;
-      }
-
-      function pad(value, width) {
-        var s = value + "", length = s.length;
-        return length < width ? new Array(width - length + 1).join(0) + s : s;
-      }
-
-      function formatYear(year) {
-        return year < 0 ? "-" + pad(-year, 6)
-          : year > 9999 ? "+" + pad(year, 6)
-          : pad(year, 4);
-      }
-
-      function formatDate(date) {
-        var hours = date.getUTCHours(),
-            minutes = date.getUTCMinutes(),
-            seconds = date.getUTCSeconds(),
-            milliseconds = date.getUTCMilliseconds();
-        return isNaN(date) ? "Invalid Date"
-            : formatYear(date.getUTCFullYear()) + "-" + pad(date.getUTCMonth() + 1, 2) + "-" + pad(date.getUTCDate(), 2)
-            + (milliseconds ? "T" + pad(hours, 2) + ":" + pad(minutes, 2) + ":" + pad(seconds, 2) + "." + pad(milliseconds, 3) + "Z"
-            : seconds ? "T" + pad(hours, 2) + ":" + pad(minutes, 2) + ":" + pad(seconds, 2) + "Z"
-            : minutes || hours ? "T" + pad(hours, 2) + ":" + pad(minutes, 2) + "Z"
-            : "");
-      }
-
-      function dsvFormat(delimiter) {
-        var reFormat = new RegExp("[\"" + delimiter + "\n\r]"),
-            DELIMITER = delimiter.charCodeAt(0);
-
-        function parse(text, f) {
-          var convert, columns, rows = parseRows(text, function(row, i) {
-            if (convert) return convert(row, i - 1);
-            columns = row, convert = f ? customConverter(row, f) : objectConverter(row);
-          });
-          rows.columns = columns || [];
-          return rows;
-        }
-
-        function parseRows(text, f) {
-          var rows = [], // output rows
-              N = text.length,
-              I = 0, // current character index
-              n = 0, // current line number
-              t, // current token
-              eof = N <= 0, // current token followed by EOF?
-              eol = false; // current token followed by EOL?
-
-          // Strip the trailing newline.
-          if (text.charCodeAt(N - 1) === NEWLINE) --N;
-          if (text.charCodeAt(N - 1) === RETURN) --N;
-
-          function token() {
-            if (eof) return EOF;
-            if (eol) return eol = false, EOL;
-
-            // Unescape quotes.
-            var i, j = I, c;
-            if (text.charCodeAt(j) === QUOTE) {
-              while (I++ < N && text.charCodeAt(I) !== QUOTE || text.charCodeAt(++I) === QUOTE);
-              if ((i = I) >= N) eof = true;
-              else if ((c = text.charCodeAt(I++)) === NEWLINE) eol = true;
-              else if (c === RETURN) { eol = true; if (text.charCodeAt(I) === NEWLINE) ++I; }
-              return text.slice(j + 1, i - 1).replace(/""/g, "\"");
-            }
-
-            // Find next delimiter or newline.
-            while (I < N) {
-              if ((c = text.charCodeAt(i = I++)) === NEWLINE) eol = true;
-              else if (c === RETURN) { eol = true; if (text.charCodeAt(I) === NEWLINE) ++I; }
-              else if (c !== DELIMITER) continue;
-              return text.slice(j, i);
-            }
-
-            // Return last token before EOF.
-            return eof = true, text.slice(j, N);
-          }
-
-          while ((t = token()) !== EOF) {
-            var row = [];
-            while (t !== EOL && t !== EOF) row.push(t), t = token();
-            if (f && (row = f(row, n++)) == null) continue;
-            rows.push(row);
-          }
-
-          return rows;
-        }
-
-        function preformatBody(rows, columns) {
-          return rows.map(function(row) {
-            return columns.map(function(column) {
-              return formatValue(row[column]);
-            }).join(delimiter);
-          });
-        }
-
-        function format(rows, columns) {
-          if (columns == null) columns = inferColumns(rows);
-          return [columns.map(formatValue).join(delimiter)].concat(preformatBody(rows, columns)).join("\n");
-        }
-
-        function formatBody(rows, columns) {
-          if (columns == null) columns = inferColumns(rows);
-          return preformatBody(rows, columns).join("\n");
-        }
-
-        function formatRows(rows) {
-          return rows.map(formatRow).join("\n");
-        }
-
-        function formatRow(row) {
-          return row.map(formatValue).join(delimiter);
-        }
-
-        function formatValue(value) {
-          return value == null ? ""
-              : value instanceof Date ? formatDate(value)
-              : reFormat.test(value += "") ? "\"" + value.replace(/"/g, "\"\"") + "\""
-              : value;
-        }
-
-        return {
-          parse: parse,
-          parseRows: parseRows,
-          format: format,
-          formatBody: formatBody,
-          formatRows: formatRows
-        };
-      }
-
-      var csv = dsvFormat(",");
-
-      var tsv = dsvFormat("\t");
-
-      function tree_add(d) {
-        var x = +this._x.call(null, d),
-            y = +this._y.call(null, d);
-        return add(this.cover(x, y), x, y, d);
-      }
-
-      function add(tree, x, y, d) {
-        if (isNaN(x) || isNaN(y)) return tree; // ignore invalid points
-
-        var parent,
-            node = tree._root,
-            leaf = {data: d},
-            x0 = tree._x0,
-            y0 = tree._y0,
-            x1 = tree._x1,
-            y1 = tree._y1,
-            xm,
-            ym,
-            xp,
-            yp,
-            right,
-            bottom,
-            i,
-            j;
-
-        // If the tree is empty, initialize the root as a leaf.
-        if (!node) return tree._root = leaf, tree;
-
-        // Find the existing leaf for the new point, or add it.
-        while (node.length) {
-          if (right = x >= (xm = (x0 + x1) / 2)) x0 = xm; else x1 = xm;
-          if (bottom = y >= (ym = (y0 + y1) / 2)) y0 = ym; else y1 = ym;
-          if (parent = node, !(node = node[i = bottom << 1 | right])) return parent[i] = leaf, tree;
-        }
-
-        // Is the new point is exactly coincident with the existing point?
-        xp = +tree._x.call(null, node.data);
-        yp = +tree._y.call(null, node.data);
-        if (x === xp && y === yp) return leaf.next = node, parent ? parent[i] = leaf : tree._root = leaf, tree;
-
-        // Otherwise, split the leaf node until the old and new point are separated.
-        do {
-          parent = parent ? parent[i] = new Array(4) : tree._root = new Array(4);
-          if (right = x >= (xm = (x0 + x1) / 2)) x0 = xm; else x1 = xm;
-          if (bottom = y >= (ym = (y0 + y1) / 2)) y0 = ym; else y1 = ym;
-        } while ((i = bottom << 1 | right) === (j = (yp >= ym) << 1 | (xp >= xm)));
-        return parent[j] = node, parent[i] = leaf, tree;
-      }
-
-      function addAll(data) {
-        var d, i, n = data.length,
-            x,
-            y,
-            xz = new Array(n),
-            yz = new Array(n),
-            x0 = Infinity,
-            y0 = Infinity,
-            x1 = -Infinity,
-            y1 = -Infinity;
-
-        // Compute the points and their extent.
-        for (i = 0; i < n; ++i) {
-          if (isNaN(x = +this._x.call(null, d = data[i])) || isNaN(y = +this._y.call(null, d))) continue;
-          xz[i] = x;
-          yz[i] = y;
-          if (x < x0) x0 = x;
-          if (x > x1) x1 = x;
-          if (y < y0) y0 = y;
-          if (y > y1) y1 = y;
-        }
-
-        // If there were no (valid) points, abort.
-        if (x0 > x1 || y0 > y1) return this;
-
-        // Expand the tree to cover the new points.
-        this.cover(x0, y0).cover(x1, y1);
-
-        // Add the new points.
-        for (i = 0; i < n; ++i) {
-          add(this, xz[i], yz[i], data[i]);
-        }
-
-        return this;
-      }
-
-      function tree_cover(x, y) {
-        if (isNaN(x = +x) || isNaN(y = +y)) return this; // ignore invalid points
-
-        var x0 = this._x0,
-            y0 = this._y0,
-            x1 = this._x1,
-            y1 = this._y1;
-
-        // If the quadtree has no extent, initialize them.
-        // Integer extent are necessary so that if we later double the extent,
-        // the existing quadrant boundaries don’t change due to floating point error!
-        if (isNaN(x0)) {
-          x1 = (x0 = Math.floor(x)) + 1;
-          y1 = (y0 = Math.floor(y)) + 1;
-        }
-
-        // Otherwise, double repeatedly to cover.
-        else {
-          var z = x1 - x0,
-              node = this._root,
-              parent,
-              i;
-
-          while (x0 > x || x >= x1 || y0 > y || y >= y1) {
-            i = (y < y0) << 1 | (x < x0);
-            parent = new Array(4), parent[i] = node, node = parent, z *= 2;
-            switch (i) {
-              case 0: x1 = x0 + z, y1 = y0 + z; break;
-              case 1: x0 = x1 - z, y1 = y0 + z; break;
-              case 2: x1 = x0 + z, y0 = y1 - z; break;
-              case 3: x0 = x1 - z, y0 = y1 - z; break;
-            }
-          }
-
-          if (this._root && this._root.length) this._root = node;
-        }
-
-        this._x0 = x0;
-        this._y0 = y0;
-        this._x1 = x1;
-        this._y1 = y1;
-        return this;
-      }
-
-      function tree_data() {
-        var data = [];
-        this.visit(function(node) {
-          if (!node.length) do data.push(node.data); while (node = node.next)
-        });
-        return data;
-      }
-
-      function tree_extent(_) {
-        return arguments.length
-            ? this.cover(+_[0][0], +_[0][1]).cover(+_[1][0], +_[1][1])
-            : isNaN(this._x0) ? undefined : [[this._x0, this._y0], [this._x1, this._y1]];
-      }
-
-      function Quad(node, x0, y0, x1, y1) {
-        this.node = node;
-        this.x0 = x0;
-        this.y0 = y0;
-        this.x1 = x1;
-        this.y1 = y1;
-      }
-
-      function tree_find(x, y, radius) {
-        var data,
-            x0 = this._x0,
-            y0 = this._y0,
-            x1,
-            y1,
-            x2,
-            y2,
-            x3 = this._x1,
-            y3 = this._y1,
-            quads = [],
-            node = this._root,
-            q,
-            i;
-
-        if (node) quads.push(new Quad(node, x0, y0, x3, y3));
-        if (radius == null) radius = Infinity;
-        else {
-          x0 = x - radius, y0 = y - radius;
-          x3 = x + radius, y3 = y + radius;
-          radius *= radius;
-        }
-
-        while (q = quads.pop()) {
-
-          // Stop searching if this quadrant can’t contain a closer node.
-          if (!(node = q.node)
-              || (x1 = q.x0) > x3
-              || (y1 = q.y0) > y3
-              || (x2 = q.x1) < x0
-              || (y2 = q.y1) < y0) continue;
-
-          // Bisect the current quadrant.
-          if (node.length) {
-            var xm = (x1 + x2) / 2,
-                ym = (y1 + y2) / 2;
-
-            quads.push(
-              new Quad(node[3], xm, ym, x2, y2),
-              new Quad(node[2], x1, ym, xm, y2),
-              new Quad(node[1], xm, y1, x2, ym),
-              new Quad(node[0], x1, y1, xm, ym)
-            );
-
-            // Visit the closest quadrant first.
-            if (i = (y >= ym) << 1 | (x >= xm)) {
-              q = quads[quads.length - 1];
-              quads[quads.length - 1] = quads[quads.length - 1 - i];
-              quads[quads.length - 1 - i] = q;
-            }
-          }
-
-          // Visit this point. (Visiting coincident points isn’t necessary!)
-          else {
-            var dx = x - +this._x.call(null, node.data),
-                dy = y - +this._y.call(null, node.data),
-                d2 = dx * dx + dy * dy;
-            if (d2 < radius) {
-              var d = Math.sqrt(radius = d2);
-              x0 = x - d, y0 = y - d;
-              x3 = x + d, y3 = y + d;
-              data = node.data;
-            }
-          }
-        }
-
-        return data;
-      }
-
-      function tree_remove(d) {
-        if (isNaN(x = +this._x.call(null, d)) || isNaN(y = +this._y.call(null, d))) return this; // ignore invalid points
-
-        var parent,
-            node = this._root,
-            retainer,
-            previous,
-            next,
-            x0 = this._x0,
-            y0 = this._y0,
-            x1 = this._x1,
-            y1 = this._y1,
-            x,
-            y,
-            xm,
-            ym,
-            right,
-            bottom,
-            i,
-            j;
-
-        // If the tree is empty, initialize the root as a leaf.
-        if (!node) return this;
-
-        // Find the leaf node for the point.
-        // While descending, also retain the deepest parent with a non-removed sibling.
-        if (node.length) while (true) {
-          if (right = x >= (xm = (x0 + x1) / 2)) x0 = xm; else x1 = xm;
-          if (bottom = y >= (ym = (y0 + y1) / 2)) y0 = ym; else y1 = ym;
-          if (!(parent = node, node = node[i = bottom << 1 | right])) return this;
-          if (!node.length) break;
-          if (parent[(i + 1) & 3] || parent[(i + 2) & 3] || parent[(i + 3) & 3]) retainer = parent, j = i;
-        }
-
-        // Find the point to remove.
-        while (node.data !== d) if (!(previous = node, node = node.next)) return this;
-        if (next = node.next) delete node.next;
-
-        // If there are multiple coincident points, remove just the point.
-        if (previous) return (next ? previous.next = next : delete previous.next), this;
-
-        // If this is the root point, remove it.
-        if (!parent) return this._root = next, this;
-
-        // Remove this leaf.
-        next ? parent[i] = next : delete parent[i];
-
-        // If the parent now contains exactly one leaf, collapse superfluous parents.
-        if ((node = parent[0] || parent[1] || parent[2] || parent[3])
-            && node === (parent[3] || parent[2] || parent[1] || parent[0])
-            && !node.length) {
-          if (retainer) retainer[j] = node;
-          else this._root = node;
-        }
-
-        return this;
-      }
-
-      function removeAll(data) {
-        for (var i = 0, n = data.length; i < n; ++i) this.remove(data[i]);
-        return this;
-      }
-
-      function tree_root() {
-        return this._root;
-      }
-
-      function tree_size() {
-        var size = 0;
-        this.visit(function(node) {
-          if (!node.length) do ++size; while (node = node.next)
-        });
-        return size;
-      }
-
-      function tree_visit(callback) {
-        var quads = [], q, node = this._root, child, x0, y0, x1, y1;
-        if (node) quads.push(new Quad(node, this._x0, this._y0, this._x1, this._y1));
-        while (q = quads.pop()) {
-          if (!callback(node = q.node, x0 = q.x0, y0 = q.y0, x1 = q.x1, y1 = q.y1) && node.length) {
-            var xm = (x0 + x1) / 2, ym = (y0 + y1) / 2;
-            if (child = node[3]) quads.push(new Quad(child, xm, ym, x1, y1));
-            if (child = node[2]) quads.push(new Quad(child, x0, ym, xm, y1));
-            if (child = node[1]) quads.push(new Quad(child, xm, y0, x1, ym));
-            if (child = node[0]) quads.push(new Quad(child, x0, y0, xm, ym));
-          }
-        }
-        return this;
-      }
-
-      function tree_visitAfter(callback) {
-        var quads = [], next = [], q;
-        if (this._root) quads.push(new Quad(this._root, this._x0, this._y0, this._x1, this._y1));
-        while (q = quads.pop()) {
-          var node = q.node;
-          if (node.length) {
-            var child, x0 = q.x0, y0 = q.y0, x1 = q.x1, y1 = q.y1, xm = (x0 + x1) / 2, ym = (y0 + y1) / 2;
-            if (child = node[0]) quads.push(new Quad(child, x0, y0, xm, ym));
-            if (child = node[1]) quads.push(new Quad(child, xm, y0, x1, ym));
-            if (child = node[2]) quads.push(new Quad(child, x0, ym, xm, y1));
-            if (child = node[3]) quads.push(new Quad(child, xm, ym, x1, y1));
-          }
-          next.push(q);
-        }
-        while (q = next.pop()) {
-          callback(q.node, q.x0, q.y0, q.x1, q.y1);
-        }
-        return this;
-      }
-
-      function defaultX(d) {
-        return d[0];
-      }
-
-      function tree_x(_) {
-        return arguments.length ? (this._x = _, this) : this._x;
-      }
-
-      function defaultY(d) {
-        return d[1];
-      }
-
-      function tree_y(_) {
-        return arguments.length ? (this._y = _, this) : this._y;
-      }
-
-      function quadtree(nodes, x, y) {
-        var tree = new Quadtree(x == null ? defaultX : x, y == null ? defaultY : y, NaN, NaN, NaN, NaN);
-        return nodes == null ? tree : tree.addAll(nodes);
-      }
-
-      function Quadtree(x, y, x0, y0, x1, y1) {
-        this._x = x;
-        this._y = y;
-        this._x0 = x0;
-        this._y0 = y0;
-        this._x1 = x1;
-        this._y1 = y1;
-        this._root = undefined;
-      }
-
-      function leaf_copy(leaf) {
-        var copy = {data: leaf.data}, next = copy;
-        while (leaf = leaf.next) next = next.next = {data: leaf.data};
-        return copy;
-      }
-
-      var treeProto = quadtree.prototype = Quadtree.prototype;
-
-      treeProto.copy = function() {
-        var copy = new Quadtree(this._x, this._y, this._x0, this._y0, this._x1, this._y1),
-            node = this._root,
-            nodes,
-            child;
-
-        if (!node) return copy;
-
-        if (!node.length) return copy._root = leaf_copy(node), copy;
-
-        nodes = [{source: node, target: copy._root = new Array(4)}];
-        while (node = nodes.pop()) {
-          for (var i = 0; i < 4; ++i) {
-            if (child = node.source[i]) {
-              if (child.length) nodes.push({source: child, target: node.target[i] = new Array(4)});
-              else node.target[i] = leaf_copy(child);
-            }
-          }
-        }
-
-        return copy;
-      };
-
-      treeProto.add = tree_add;
-      treeProto.addAll = addAll;
-      treeProto.cover = tree_cover;
-      treeProto.data = tree_data;
-      treeProto.extent = tree_extent;
-      treeProto.find = tree_find;
-      treeProto.remove = tree_remove;
-      treeProto.removeAll = removeAll;
-      treeProto.root = tree_root;
-      treeProto.size = tree_size;
-      treeProto.visit = tree_visit;
-      treeProto.visitAfter = tree_visitAfter;
-      treeProto.x = tree_x;
-      treeProto.y = tree_y;
-
       // Computes the decimal coefficient and exponent of the specified number x with
       // significant digits p, where x is positive and p is in [1, 21] or undefined.
       // For example, formatDecimal(1.23) returns ["123", 0].
@@ -5174,7 +4644,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           switch (s[i]) {
             case ".": i0 = i1 = i; break;
             case "0": if (i0 === 0) i0 = i; i1 = i; break;
-            default: if (i0 > 0) { if (!+s[i]) break out; i0 = 0; } break;
+            default: if (!+s[i]) break out; if (i0 > 0) i0 = 0; break;
           }
         }
         return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
@@ -5396,62 +4866,6 @@ System.register(['app/plugins/sdk'], function (exports) {
         return Math.max(0, exponent(max) - exponent(step)) + 1;
       }
 
-      // Adds floating point numbers with twice the normal precision.
-      // Reference: J. R. Shewchuk, Adaptive Precision Floating-Point Arithmetic and
-      // Fast Robust Geometric Predicates, Discrete & Computational Geometry 18(3)
-      // 305–363 (1997).
-      // Code adapted from GeographicLib by Charles F. F. Karney,
-      // http://geographiclib.sourceforge.net/
-
-      function adder() {
-        return new Adder;
-      }
-
-      function Adder() {
-        this.reset();
-      }
-
-      Adder.prototype = {
-        constructor: Adder,
-        reset: function() {
-          this.s = // rounded value
-          this.t = 0; // exact error
-        },
-        add: function(y) {
-          add$1(temp, y, this.t);
-          add$1(this, temp.s, this.s);
-          if (this.s) this.t += temp.t;
-          else this.s = temp.t;
-        },
-        valueOf: function() {
-          return this.s;
-        }
-      };
-
-      var temp = new Adder;
-
-      function add$1(adder, a, b) {
-        var x = adder.s = a + b,
-            bv = x - a,
-            av = x - bv;
-        adder.t = (a - av) + (b - bv);
-      }
-
-      var areaRingSum = adder();
-
-      var areaSum = adder();
-
-      var deltaSum = adder();
-
-      var sum = adder();
-
-      var lengthSum = adder();
-
-      var areaSum$1 = adder(),
-          areaRingSum$1 = adder();
-
-      var lengthSum$1 = adder();
-
       function initRange(domain, range) {
         switch (arguments.length) {
           case 0: break;
@@ -5461,10 +4875,10 @@ System.register(['app/plugins/sdk'], function (exports) {
         return this;
       }
 
-      var array$1 = Array.prototype;
+      var array = Array.prototype;
 
-      var map$2 = array$1.map;
-      var slice$1 = array$1.slice;
+      var map$2 = array.map;
+      var slice$1 = array.slice;
 
       var implicit = {name: "implicit"};
 
@@ -5811,856 +5225,6 @@ System.register(['app/plugins/sdk'], function (exports) {
         return linearish(scale);
       }
 
-      var t0 = new Date,
-          t1 = new Date;
-
-      function newInterval(floori, offseti, count, field) {
-
-        function interval(date) {
-          return floori(date = arguments.length === 0 ? new Date : new Date(+date)), date;
-        }
-
-        interval.floor = function(date) {
-          return floori(date = new Date(+date)), date;
-        };
-
-        interval.ceil = function(date) {
-          return floori(date = new Date(date - 1)), offseti(date, 1), floori(date), date;
-        };
-
-        interval.round = function(date) {
-          var d0 = interval(date),
-              d1 = interval.ceil(date);
-          return date - d0 < d1 - date ? d0 : d1;
-        };
-
-        interval.offset = function(date, step) {
-          return offseti(date = new Date(+date), step == null ? 1 : Math.floor(step)), date;
-        };
-
-        interval.range = function(start, stop, step) {
-          var range = [], previous;
-          start = interval.ceil(start);
-          step = step == null ? 1 : Math.floor(step);
-          if (!(start < stop) || !(step > 0)) return range; // also handles Invalid Date
-          do range.push(previous = new Date(+start)), offseti(start, step), floori(start);
-          while (previous < start && start < stop);
-          return range;
-        };
-
-        interval.filter = function(test) {
-          return newInterval(function(date) {
-            if (date >= date) while (floori(date), !test(date)) date.setTime(date - 1);
-          }, function(date, step) {
-            if (date >= date) {
-              if (step < 0) while (++step <= 0) {
-                while (offseti(date, -1), !test(date)) {} // eslint-disable-line no-empty
-              } else while (--step >= 0) {
-                while (offseti(date, +1), !test(date)) {} // eslint-disable-line no-empty
-              }
-            }
-          });
-        };
-
-        if (count) {
-          interval.count = function(start, end) {
-            t0.setTime(+start), t1.setTime(+end);
-            floori(t0), floori(t1);
-            return Math.floor(count(t0, t1));
-          };
-
-          interval.every = function(step) {
-            step = Math.floor(step);
-            return !isFinite(step) || !(step > 0) ? null
-                : !(step > 1) ? interval
-                : interval.filter(field
-                    ? function(d) { return field(d) % step === 0; }
-                    : function(d) { return interval.count(0, d) % step === 0; });
-          };
-        }
-
-        return interval;
-      }
-
-      var durationMinute = 6e4;
-      var durationDay = 864e5;
-      var durationWeek = 6048e5;
-
-      var day = newInterval(function(date) {
-        date.setHours(0, 0, 0, 0);
-      }, function(date, step) {
-        date.setDate(date.getDate() + step);
-      }, function(start, end) {
-        return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute) / durationDay;
-      }, function(date) {
-        return date.getDate() - 1;
-      });
-
-      function weekday(i) {
-        return newInterval(function(date) {
-          date.setDate(date.getDate() - (date.getDay() + 7 - i) % 7);
-          date.setHours(0, 0, 0, 0);
-        }, function(date, step) {
-          date.setDate(date.getDate() + step * 7);
-        }, function(start, end) {
-          return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute) / durationWeek;
-        });
-      }
-
-      var sunday = weekday(0);
-      var monday = weekday(1);
-      var tuesday = weekday(2);
-      var wednesday = weekday(3);
-      var thursday = weekday(4);
-      var friday = weekday(5);
-      var saturday = weekday(6);
-
-      var year = newInterval(function(date) {
-        date.setMonth(0, 1);
-        date.setHours(0, 0, 0, 0);
-      }, function(date, step) {
-        date.setFullYear(date.getFullYear() + step);
-      }, function(start, end) {
-        return end.getFullYear() - start.getFullYear();
-      }, function(date) {
-        return date.getFullYear();
-      });
-
-      // An optimized implementation for this simple case.
-      year.every = function(k) {
-        return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval(function(date) {
-          date.setFullYear(Math.floor(date.getFullYear() / k) * k);
-          date.setMonth(0, 1);
-          date.setHours(0, 0, 0, 0);
-        }, function(date, step) {
-          date.setFullYear(date.getFullYear() + step * k);
-        });
-      };
-
-      var utcDay = newInterval(function(date) {
-        date.setUTCHours(0, 0, 0, 0);
-      }, function(date, step) {
-        date.setUTCDate(date.getUTCDate() + step);
-      }, function(start, end) {
-        return (end - start) / durationDay;
-      }, function(date) {
-        return date.getUTCDate() - 1;
-      });
-
-      function utcWeekday(i) {
-        return newInterval(function(date) {
-          date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 7 - i) % 7);
-          date.setUTCHours(0, 0, 0, 0);
-        }, function(date, step) {
-          date.setUTCDate(date.getUTCDate() + step * 7);
-        }, function(start, end) {
-          return (end - start) / durationWeek;
-        });
-      }
-
-      var utcSunday = utcWeekday(0);
-      var utcMonday = utcWeekday(1);
-      var utcTuesday = utcWeekday(2);
-      var utcWednesday = utcWeekday(3);
-      var utcThursday = utcWeekday(4);
-      var utcFriday = utcWeekday(5);
-      var utcSaturday = utcWeekday(6);
-
-      var utcYear = newInterval(function(date) {
-        date.setUTCMonth(0, 1);
-        date.setUTCHours(0, 0, 0, 0);
-      }, function(date, step) {
-        date.setUTCFullYear(date.getUTCFullYear() + step);
-      }, function(start, end) {
-        return end.getUTCFullYear() - start.getUTCFullYear();
-      }, function(date) {
-        return date.getUTCFullYear();
-      });
-
-      // An optimized implementation for this simple case.
-      utcYear.every = function(k) {
-        return !isFinite(k = Math.floor(k)) || !(k > 0) ? null : newInterval(function(date) {
-          date.setUTCFullYear(Math.floor(date.getUTCFullYear() / k) * k);
-          date.setUTCMonth(0, 1);
-          date.setUTCHours(0, 0, 0, 0);
-        }, function(date, step) {
-          date.setUTCFullYear(date.getUTCFullYear() + step * k);
-        });
-      };
-
-      function localDate(d) {
-        if (0 <= d.y && d.y < 100) {
-          var date = new Date(-1, d.m, d.d, d.H, d.M, d.S, d.L);
-          date.setFullYear(d.y);
-          return date;
-        }
-        return new Date(d.y, d.m, d.d, d.H, d.M, d.S, d.L);
-      }
-
-      function utcDate(d) {
-        if (0 <= d.y && d.y < 100) {
-          var date = new Date(Date.UTC(-1, d.m, d.d, d.H, d.M, d.S, d.L));
-          date.setUTCFullYear(d.y);
-          return date;
-        }
-        return new Date(Date.UTC(d.y, d.m, d.d, d.H, d.M, d.S, d.L));
-      }
-
-      function newYear(y) {
-        return {y: y, m: 0, d: 1, H: 0, M: 0, S: 0, L: 0};
-      }
-
-      function formatLocale$1(locale) {
-        var locale_dateTime = locale.dateTime,
-            locale_date = locale.date,
-            locale_time = locale.time,
-            locale_periods = locale.periods,
-            locale_weekdays = locale.days,
-            locale_shortWeekdays = locale.shortDays,
-            locale_months = locale.months,
-            locale_shortMonths = locale.shortMonths;
-
-        var periodRe = formatRe(locale_periods),
-            periodLookup = formatLookup(locale_periods),
-            weekdayRe = formatRe(locale_weekdays),
-            weekdayLookup = formatLookup(locale_weekdays),
-            shortWeekdayRe = formatRe(locale_shortWeekdays),
-            shortWeekdayLookup = formatLookup(locale_shortWeekdays),
-            monthRe = formatRe(locale_months),
-            monthLookup = formatLookup(locale_months),
-            shortMonthRe = formatRe(locale_shortMonths),
-            shortMonthLookup = formatLookup(locale_shortMonths);
-
-        var formats = {
-          "a": formatShortWeekday,
-          "A": formatWeekday,
-          "b": formatShortMonth,
-          "B": formatMonth,
-          "c": null,
-          "d": formatDayOfMonth,
-          "e": formatDayOfMonth,
-          "f": formatMicroseconds,
-          "H": formatHour24,
-          "I": formatHour12,
-          "j": formatDayOfYear,
-          "L": formatMilliseconds,
-          "m": formatMonthNumber,
-          "M": formatMinutes,
-          "p": formatPeriod,
-          "Q": formatUnixTimestamp,
-          "s": formatUnixTimestampSeconds,
-          "S": formatSeconds,
-          "u": formatWeekdayNumberMonday,
-          "U": formatWeekNumberSunday,
-          "V": formatWeekNumberISO,
-          "w": formatWeekdayNumberSunday,
-          "W": formatWeekNumberMonday,
-          "x": null,
-          "X": null,
-          "y": formatYear$1,
-          "Y": formatFullYear,
-          "Z": formatZone,
-          "%": formatLiteralPercent
-        };
-
-        var utcFormats = {
-          "a": formatUTCShortWeekday,
-          "A": formatUTCWeekday,
-          "b": formatUTCShortMonth,
-          "B": formatUTCMonth,
-          "c": null,
-          "d": formatUTCDayOfMonth,
-          "e": formatUTCDayOfMonth,
-          "f": formatUTCMicroseconds,
-          "H": formatUTCHour24,
-          "I": formatUTCHour12,
-          "j": formatUTCDayOfYear,
-          "L": formatUTCMilliseconds,
-          "m": formatUTCMonthNumber,
-          "M": formatUTCMinutes,
-          "p": formatUTCPeriod,
-          "Q": formatUnixTimestamp,
-          "s": formatUnixTimestampSeconds,
-          "S": formatUTCSeconds,
-          "u": formatUTCWeekdayNumberMonday,
-          "U": formatUTCWeekNumberSunday,
-          "V": formatUTCWeekNumberISO,
-          "w": formatUTCWeekdayNumberSunday,
-          "W": formatUTCWeekNumberMonday,
-          "x": null,
-          "X": null,
-          "y": formatUTCYear,
-          "Y": formatUTCFullYear,
-          "Z": formatUTCZone,
-          "%": formatLiteralPercent
-        };
-
-        var parses = {
-          "a": parseShortWeekday,
-          "A": parseWeekday,
-          "b": parseShortMonth,
-          "B": parseMonth,
-          "c": parseLocaleDateTime,
-          "d": parseDayOfMonth,
-          "e": parseDayOfMonth,
-          "f": parseMicroseconds,
-          "H": parseHour24,
-          "I": parseHour24,
-          "j": parseDayOfYear,
-          "L": parseMilliseconds,
-          "m": parseMonthNumber,
-          "M": parseMinutes,
-          "p": parsePeriod,
-          "Q": parseUnixTimestamp,
-          "s": parseUnixTimestampSeconds,
-          "S": parseSeconds,
-          "u": parseWeekdayNumberMonday,
-          "U": parseWeekNumberSunday,
-          "V": parseWeekNumberISO,
-          "w": parseWeekdayNumberSunday,
-          "W": parseWeekNumberMonday,
-          "x": parseLocaleDate,
-          "X": parseLocaleTime,
-          "y": parseYear,
-          "Y": parseFullYear,
-          "Z": parseZone,
-          "%": parseLiteralPercent
-        };
-
-        // These recursive directive definitions must be deferred.
-        formats.x = newFormat(locale_date, formats);
-        formats.X = newFormat(locale_time, formats);
-        formats.c = newFormat(locale_dateTime, formats);
-        utcFormats.x = newFormat(locale_date, utcFormats);
-        utcFormats.X = newFormat(locale_time, utcFormats);
-        utcFormats.c = newFormat(locale_dateTime, utcFormats);
-
-        function newFormat(specifier, formats) {
-          return function(date) {
-            var string = [],
-                i = -1,
-                j = 0,
-                n = specifier.length,
-                c,
-                pad,
-                format;
-
-            if (!(date instanceof Date)) date = new Date(+date);
-
-            while (++i < n) {
-              if (specifier.charCodeAt(i) === 37) {
-                string.push(specifier.slice(j, i));
-                if ((pad = pads[c = specifier.charAt(++i)]) != null) c = specifier.charAt(++i);
-                else pad = c === "e" ? " " : "0";
-                if (format = formats[c]) c = format(date, pad);
-                string.push(c);
-                j = i + 1;
-              }
-            }
-
-            string.push(specifier.slice(j, i));
-            return string.join("");
-          };
-        }
-
-        function newParse(specifier, newDate) {
-          return function(string) {
-            var d = newYear(1900),
-                i = parseSpecifier(d, specifier, string += "", 0),
-                week, day$1;
-            if (i != string.length) return null;
-
-            // If a UNIX timestamp is specified, return it.
-            if ("Q" in d) return new Date(d.Q);
-
-            // The am-pm flag is 0 for AM, and 1 for PM.
-            if ("p" in d) d.H = d.H % 12 + d.p * 12;
-
-            // Convert day-of-week and week-of-year to day-of-year.
-            if ("V" in d) {
-              if (d.V < 1 || d.V > 53) return null;
-              if (!("w" in d)) d.w = 1;
-              if ("Z" in d) {
-                week = utcDate(newYear(d.y)), day$1 = week.getUTCDay();
-                week = day$1 > 4 || day$1 === 0 ? utcMonday.ceil(week) : utcMonday(week);
-                week = utcDay.offset(week, (d.V - 1) * 7);
-                d.y = week.getUTCFullYear();
-                d.m = week.getUTCMonth();
-                d.d = week.getUTCDate() + (d.w + 6) % 7;
-              } else {
-                week = newDate(newYear(d.y)), day$1 = week.getDay();
-                week = day$1 > 4 || day$1 === 0 ? monday.ceil(week) : monday(week);
-                week = day.offset(week, (d.V - 1) * 7);
-                d.y = week.getFullYear();
-                d.m = week.getMonth();
-                d.d = week.getDate() + (d.w + 6) % 7;
-              }
-            } else if ("W" in d || "U" in d) {
-              if (!("w" in d)) d.w = "u" in d ? d.u % 7 : "W" in d ? 1 : 0;
-              day$1 = "Z" in d ? utcDate(newYear(d.y)).getUTCDay() : newDate(newYear(d.y)).getDay();
-              d.m = 0;
-              d.d = "W" in d ? (d.w + 6) % 7 + d.W * 7 - (day$1 + 5) % 7 : d.w + d.U * 7 - (day$1 + 6) % 7;
-            }
-
-            // If a time zone is specified, all fields are interpreted as UTC and then
-            // offset according to the specified time zone.
-            if ("Z" in d) {
-              d.H += d.Z / 100 | 0;
-              d.M += d.Z % 100;
-              return utcDate(d);
-            }
-
-            // Otherwise, all fields are in local time.
-            return newDate(d);
-          };
-        }
-
-        function parseSpecifier(d, specifier, string, j) {
-          var i = 0,
-              n = specifier.length,
-              m = string.length,
-              c,
-              parse;
-
-          while (i < n) {
-            if (j >= m) return -1;
-            c = specifier.charCodeAt(i++);
-            if (c === 37) {
-              c = specifier.charAt(i++);
-              parse = parses[c in pads ? specifier.charAt(i++) : c];
-              if (!parse || ((j = parse(d, string, j)) < 0)) return -1;
-            } else if (c != string.charCodeAt(j++)) {
-              return -1;
-            }
-          }
-
-          return j;
-        }
-
-        function parsePeriod(d, string, i) {
-          var n = periodRe.exec(string.slice(i));
-          return n ? (d.p = periodLookup[n[0].toLowerCase()], i + n[0].length) : -1;
-        }
-
-        function parseShortWeekday(d, string, i) {
-          var n = shortWeekdayRe.exec(string.slice(i));
-          return n ? (d.w = shortWeekdayLookup[n[0].toLowerCase()], i + n[0].length) : -1;
-        }
-
-        function parseWeekday(d, string, i) {
-          var n = weekdayRe.exec(string.slice(i));
-          return n ? (d.w = weekdayLookup[n[0].toLowerCase()], i + n[0].length) : -1;
-        }
-
-        function parseShortMonth(d, string, i) {
-          var n = shortMonthRe.exec(string.slice(i));
-          return n ? (d.m = shortMonthLookup[n[0].toLowerCase()], i + n[0].length) : -1;
-        }
-
-        function parseMonth(d, string, i) {
-          var n = monthRe.exec(string.slice(i));
-          return n ? (d.m = monthLookup[n[0].toLowerCase()], i + n[0].length) : -1;
-        }
-
-        function parseLocaleDateTime(d, string, i) {
-          return parseSpecifier(d, locale_dateTime, string, i);
-        }
-
-        function parseLocaleDate(d, string, i) {
-          return parseSpecifier(d, locale_date, string, i);
-        }
-
-        function parseLocaleTime(d, string, i) {
-          return parseSpecifier(d, locale_time, string, i);
-        }
-
-        function formatShortWeekday(d) {
-          return locale_shortWeekdays[d.getDay()];
-        }
-
-        function formatWeekday(d) {
-          return locale_weekdays[d.getDay()];
-        }
-
-        function formatShortMonth(d) {
-          return locale_shortMonths[d.getMonth()];
-        }
-
-        function formatMonth(d) {
-          return locale_months[d.getMonth()];
-        }
-
-        function formatPeriod(d) {
-          return locale_periods[+(d.getHours() >= 12)];
-        }
-
-        function formatUTCShortWeekday(d) {
-          return locale_shortWeekdays[d.getUTCDay()];
-        }
-
-        function formatUTCWeekday(d) {
-          return locale_weekdays[d.getUTCDay()];
-        }
-
-        function formatUTCShortMonth(d) {
-          return locale_shortMonths[d.getUTCMonth()];
-        }
-
-        function formatUTCMonth(d) {
-          return locale_months[d.getUTCMonth()];
-        }
-
-        function formatUTCPeriod(d) {
-          return locale_periods[+(d.getUTCHours() >= 12)];
-        }
-
-        return {
-          format: function(specifier) {
-            var f = newFormat(specifier += "", formats);
-            f.toString = function() { return specifier; };
-            return f;
-          },
-          parse: function(specifier) {
-            var p = newParse(specifier += "", localDate);
-            p.toString = function() { return specifier; };
-            return p;
-          },
-          utcFormat: function(specifier) {
-            var f = newFormat(specifier += "", utcFormats);
-            f.toString = function() { return specifier; };
-            return f;
-          },
-          utcParse: function(specifier) {
-            var p = newParse(specifier, utcDate);
-            p.toString = function() { return specifier; };
-            return p;
-          }
-        };
-      }
-
-      var pads = {"-": "", "_": " ", "0": "0"},
-          numberRe = /^\s*\d+/, // note: ignores next directive
-          percentRe = /^%/,
-          requoteRe = /[\\^$*+?|[\]().{}]/g;
-
-      function pad$1(value, fill, width) {
-        var sign = value < 0 ? "-" : "",
-            string = (sign ? -value : value) + "",
-            length = string.length;
-        return sign + (length < width ? new Array(width - length + 1).join(fill) + string : string);
-      }
-
-      function requote(s) {
-        return s.replace(requoteRe, "\\$&");
-      }
-
-      function formatRe(names) {
-        return new RegExp("^(?:" + names.map(requote).join("|") + ")", "i");
-      }
-
-      function formatLookup(names) {
-        var map = {}, i = -1, n = names.length;
-        while (++i < n) map[names[i].toLowerCase()] = i;
-        return map;
-      }
-
-      function parseWeekdayNumberSunday(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 1));
-        return n ? (d.w = +n[0], i + n[0].length) : -1;
-      }
-
-      function parseWeekdayNumberMonday(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 1));
-        return n ? (d.u = +n[0], i + n[0].length) : -1;
-      }
-
-      function parseWeekNumberSunday(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 2));
-        return n ? (d.U = +n[0], i + n[0].length) : -1;
-      }
-
-      function parseWeekNumberISO(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 2));
-        return n ? (d.V = +n[0], i + n[0].length) : -1;
-      }
-
-      function parseWeekNumberMonday(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 2));
-        return n ? (d.W = +n[0], i + n[0].length) : -1;
-      }
-
-      function parseFullYear(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 4));
-        return n ? (d.y = +n[0], i + n[0].length) : -1;
-      }
-
-      function parseYear(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 2));
-        return n ? (d.y = +n[0] + (+n[0] > 68 ? 1900 : 2000), i + n[0].length) : -1;
-      }
-
-      function parseZone(d, string, i) {
-        var n = /^(Z)|([+-]\d\d)(?::?(\d\d))?/.exec(string.slice(i, i + 6));
-        return n ? (d.Z = n[1] ? 0 : -(n[2] + (n[3] || "00")), i + n[0].length) : -1;
-      }
-
-      function parseMonthNumber(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 2));
-        return n ? (d.m = n[0] - 1, i + n[0].length) : -1;
-      }
-
-      function parseDayOfMonth(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 2));
-        return n ? (d.d = +n[0], i + n[0].length) : -1;
-      }
-
-      function parseDayOfYear(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 3));
-        return n ? (d.m = 0, d.d = +n[0], i + n[0].length) : -1;
-      }
-
-      function parseHour24(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 2));
-        return n ? (d.H = +n[0], i + n[0].length) : -1;
-      }
-
-      function parseMinutes(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 2));
-        return n ? (d.M = +n[0], i + n[0].length) : -1;
-      }
-
-      function parseSeconds(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 2));
-        return n ? (d.S = +n[0], i + n[0].length) : -1;
-      }
-
-      function parseMilliseconds(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 3));
-        return n ? (d.L = +n[0], i + n[0].length) : -1;
-      }
-
-      function parseMicroseconds(d, string, i) {
-        var n = numberRe.exec(string.slice(i, i + 6));
-        return n ? (d.L = Math.floor(n[0] / 1000), i + n[0].length) : -1;
-      }
-
-      function parseLiteralPercent(d, string, i) {
-        var n = percentRe.exec(string.slice(i, i + 1));
-        return n ? i + n[0].length : -1;
-      }
-
-      function parseUnixTimestamp(d, string, i) {
-        var n = numberRe.exec(string.slice(i));
-        return n ? (d.Q = +n[0], i + n[0].length) : -1;
-      }
-
-      function parseUnixTimestampSeconds(d, string, i) {
-        var n = numberRe.exec(string.slice(i));
-        return n ? (d.Q = (+n[0]) * 1000, i + n[0].length) : -1;
-      }
-
-      function formatDayOfMonth(d, p) {
-        return pad$1(d.getDate(), p, 2);
-      }
-
-      function formatHour24(d, p) {
-        return pad$1(d.getHours(), p, 2);
-      }
-
-      function formatHour12(d, p) {
-        return pad$1(d.getHours() % 12 || 12, p, 2);
-      }
-
-      function formatDayOfYear(d, p) {
-        return pad$1(1 + day.count(year(d), d), p, 3);
-      }
-
-      function formatMilliseconds(d, p) {
-        return pad$1(d.getMilliseconds(), p, 3);
-      }
-
-      function formatMicroseconds(d, p) {
-        return formatMilliseconds(d, p) + "000";
-      }
-
-      function formatMonthNumber(d, p) {
-        return pad$1(d.getMonth() + 1, p, 2);
-      }
-
-      function formatMinutes(d, p) {
-        return pad$1(d.getMinutes(), p, 2);
-      }
-
-      function formatSeconds(d, p) {
-        return pad$1(d.getSeconds(), p, 2);
-      }
-
-      function formatWeekdayNumberMonday(d) {
-        var day = d.getDay();
-        return day === 0 ? 7 : day;
-      }
-
-      function formatWeekNumberSunday(d, p) {
-        return pad$1(sunday.count(year(d), d), p, 2);
-      }
-
-      function formatWeekNumberISO(d, p) {
-        var day = d.getDay();
-        d = (day >= 4 || day === 0) ? thursday(d) : thursday.ceil(d);
-        return pad$1(thursday.count(year(d), d) + (year(d).getDay() === 4), p, 2);
-      }
-
-      function formatWeekdayNumberSunday(d) {
-        return d.getDay();
-      }
-
-      function formatWeekNumberMonday(d, p) {
-        return pad$1(monday.count(year(d), d), p, 2);
-      }
-
-      function formatYear$1(d, p) {
-        return pad$1(d.getFullYear() % 100, p, 2);
-      }
-
-      function formatFullYear(d, p) {
-        return pad$1(d.getFullYear() % 10000, p, 4);
-      }
-
-      function formatZone(d) {
-        var z = d.getTimezoneOffset();
-        return (z > 0 ? "-" : (z *= -1, "+"))
-            + pad$1(z / 60 | 0, "0", 2)
-            + pad$1(z % 60, "0", 2);
-      }
-
-      function formatUTCDayOfMonth(d, p) {
-        return pad$1(d.getUTCDate(), p, 2);
-      }
-
-      function formatUTCHour24(d, p) {
-        return pad$1(d.getUTCHours(), p, 2);
-      }
-
-      function formatUTCHour12(d, p) {
-        return pad$1(d.getUTCHours() % 12 || 12, p, 2);
-      }
-
-      function formatUTCDayOfYear(d, p) {
-        return pad$1(1 + utcDay.count(utcYear(d), d), p, 3);
-      }
-
-      function formatUTCMilliseconds(d, p) {
-        return pad$1(d.getUTCMilliseconds(), p, 3);
-      }
-
-      function formatUTCMicroseconds(d, p) {
-        return formatUTCMilliseconds(d, p) + "000";
-      }
-
-      function formatUTCMonthNumber(d, p) {
-        return pad$1(d.getUTCMonth() + 1, p, 2);
-      }
-
-      function formatUTCMinutes(d, p) {
-        return pad$1(d.getUTCMinutes(), p, 2);
-      }
-
-      function formatUTCSeconds(d, p) {
-        return pad$1(d.getUTCSeconds(), p, 2);
-      }
-
-      function formatUTCWeekdayNumberMonday(d) {
-        var dow = d.getUTCDay();
-        return dow === 0 ? 7 : dow;
-      }
-
-      function formatUTCWeekNumberSunday(d, p) {
-        return pad$1(utcSunday.count(utcYear(d), d), p, 2);
-      }
-
-      function formatUTCWeekNumberISO(d, p) {
-        var day = d.getUTCDay();
-        d = (day >= 4 || day === 0) ? utcThursday(d) : utcThursday.ceil(d);
-        return pad$1(utcThursday.count(utcYear(d), d) + (utcYear(d).getUTCDay() === 4), p, 2);
-      }
-
-      function formatUTCWeekdayNumberSunday(d) {
-        return d.getUTCDay();
-      }
-
-      function formatUTCWeekNumberMonday(d, p) {
-        return pad$1(utcMonday.count(utcYear(d), d), p, 2);
-      }
-
-      function formatUTCYear(d, p) {
-        return pad$1(d.getUTCFullYear() % 100, p, 2);
-      }
-
-      function formatUTCFullYear(d, p) {
-        return pad$1(d.getUTCFullYear() % 10000, p, 4);
-      }
-
-      function formatUTCZone() {
-        return "+0000";
-      }
-
-      function formatLiteralPercent() {
-        return "%";
-      }
-
-      function formatUnixTimestamp(d) {
-        return +d;
-      }
-
-      function formatUnixTimestampSeconds(d) {
-        return Math.floor(+d / 1000);
-      }
-
-      var locale$1;
-      var timeFormat;
-      var timeParse;
-      var utcFormat;
-      var utcParse;
-
-      defaultLocale$1({
-        dateTime: "%x, %X",
-        date: "%-m/%-d/%Y",
-        time: "%-I:%M:%S %p",
-        periods: ["AM", "PM"],
-        days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-        shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-        months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-        shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-      });
-
-      function defaultLocale$1(definition) {
-        locale$1 = formatLocale$1(definition);
-        timeFormat = locale$1.format;
-        timeParse = locale$1.parse;
-        utcFormat = locale$1.utcFormat;
-        utcParse = locale$1.utcParse;
-        return locale$1;
-      }
-
-      var isoSpecifier = "%Y-%m-%dT%H:%M:%S.%LZ";
-
-      function formatIsoNative(date) {
-        return date.toISOString();
-      }
-
-      var formatIso = Date.prototype.toISOString
-          ? formatIsoNative
-          : utcFormat(isoSpecifier);
-
-      function parseIsoNative(string) {
-        var date = new Date(string);
-        return isNaN(date) ? null : date;
-      }
-
-      var parseIso = +new Date("2000-01-01T00:00:00.000Z")
-          ? parseIsoNative
-          : utcParse(isoSpecifier);
-
       function constant$4(x) {
         return function constant() {
           return x;
@@ -6948,103 +5512,6 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       var slice$2 = Array.prototype.slice;
 
-      function sign(x) {
-        return x < 0 ? -1 : 1;
-      }
-
-      // Calculate the slopes of the tangents (Hermite-type interpolation) based on
-      // the following paper: Steffen, M. 1990. A Simple Method for Monotonic
-      // Interpolation in One Dimension. Astronomy and Astrophysics, Vol. 239, NO.
-      // NOV(II), P. 443, 1990.
-      function slope3(that, x2, y2) {
-        var h0 = that._x1 - that._x0,
-            h1 = x2 - that._x1,
-            s0 = (that._y1 - that._y0) / (h0 || h1 < 0 && -0),
-            s1 = (y2 - that._y1) / (h1 || h0 < 0 && -0),
-            p = (s0 * h1 + s1 * h0) / (h0 + h1);
-        return (sign(s0) + sign(s1)) * Math.min(Math.abs(s0), Math.abs(s1), 0.5 * Math.abs(p)) || 0;
-      }
-
-      // Calculate a one-sided slope.
-      function slope2(that, t) {
-        var h = that._x1 - that._x0;
-        return h ? (3 * (that._y1 - that._y0) / h - t) / 2 : t;
-      }
-
-      // According to https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
-      // "you can express cubic Hermite interpolation in terms of cubic Bézier curves
-      // with respect to the four values p0, p0 + m0 / 3, p1 - m1 / 3, p1".
-      function point(that, t0, t1) {
-        var x0 = that._x0,
-            y0 = that._y0,
-            x1 = that._x1,
-            y1 = that._y1,
-            dx = (x1 - x0) / 3;
-        that._context.bezierCurveTo(x0 + dx, y0 + dx * t0, x1 - dx, y1 - dx * t1, x1, y1);
-      }
-
-      function MonotoneX(context) {
-        this._context = context;
-      }
-
-      MonotoneX.prototype = {
-        areaStart: function() {
-          this._line = 0;
-        },
-        areaEnd: function() {
-          this._line = NaN;
-        },
-        lineStart: function() {
-          this._x0 = this._x1 =
-          this._y0 = this._y1 =
-          this._t0 = NaN;
-          this._point = 0;
-        },
-        lineEnd: function() {
-          switch (this._point) {
-            case 2: this._context.lineTo(this._x1, this._y1); break;
-            case 3: point(this, this._t0, slope2(this, this._t0)); break;
-          }
-          if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
-          this._line = 1 - this._line;
-        },
-        point: function(x, y) {
-          var t1 = NaN;
-
-          x = +x, y = +y;
-          if (x === this._x1 && y === this._y1) return; // Ignore coincident points.
-          switch (this._point) {
-            case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-            case 1: this._point = 2; break;
-            case 2: this._point = 3; point(this, slope2(this, t1 = slope3(this, x, y)), t1); break;
-            default: point(this, this._t0, t1 = slope3(this, x, y)); break;
-          }
-
-          this._x0 = this._x1, this._x1 = x;
-          this._y0 = this._y1, this._y1 = y;
-          this._t0 = t1;
-        }
-      };
-
-      function MonotoneY(context) {
-        this._context = new ReflectContext(context);
-      }
-
-      (MonotoneY.prototype = Object.create(MonotoneX.prototype)).point = function(x, y) {
-        MonotoneX.prototype.point.call(this, y, x);
-      };
-
-      function ReflectContext(context) {
-        this._context = context;
-      }
-
-      ReflectContext.prototype = {
-        moveTo: function(x, y) { this._context.moveTo(y, x); },
-        closePath: function() { this._context.closePath(); },
-        lineTo: function(x, y) { this._context.lineTo(y, x); },
-        bezierCurveTo: function(x1, y1, x2, y2, x, y) { this._context.bezierCurveTo(y1, x1, y2, x2, y, x); }
-      };
-
       function none$1(series, order) {
         if (!((n = series.length) > 1)) return;
         for (var i = 1, j, s0, s1 = series[order[0]], n, m = s1.length; i < n; ++i) {
@@ -7118,9 +5585,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         step: ''
       };
 
-      var WindroseCtrl = exports('PanelCtrl',
-      /*#__PURE__*/
-      function (_MetricsPanelCtrl) {
+      var WindroseCtrl = exports('PanelCtrl', /*#__PURE__*/function (_MetricsPanelCtrl) {
         _inherits(WindroseCtrl, _MetricsPanelCtrl);
 
         function WindroseCtrl($scope, $injector) {
@@ -7323,7 +5788,7 @@ System.register(['app/plugins/sdk'], function (exports) {
               bottom: 40,
               left: 40
             },
-                innerRadius = 20,
+                innerRadius = 0,
                 chartWidth = width - margin.left - margin.right,
                 chartHeight = height - margin.top - margin.bottom,
                 outerRadius = Math.min(chartWidth, chartHeight) / 2,
