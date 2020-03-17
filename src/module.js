@@ -3,6 +3,7 @@ import { defaults, range } from 'lodash-es';
 import * as d3 from 'd3';
 
 const panelDefaults = {
+  slices: 32,
   step: ''
 };
 
@@ -89,19 +90,19 @@ class WindroseCtrl extends MetricsPanelCtrl {
   onRender() {
     console.debug('render');
 
+    // Data
     let speeds = this.speeds;
     let angles = this.angles;
 
-    let gridX = range(0, 360, 360 / 8);
-    let angleLimits = range(0, 360 + 0.1, 360 / 32);
-
-    let speedMax = Math.max(...speeds);
+    // Configuration
     let step = this.panel.step;
-    if (step == '') {
-      step = Math.ceil(speedMax / 8);
-    } else {
-      step = +step;
-    }
+    step = (step == '') ? Math.ceil(speedMax / 8): +step;
+    let slices = this.panel.slices;
+
+    // Variables
+    let gridX = range(0, 360, 360 / 8);
+    let angleLimits = range(0, 360 + 0.1, 360 / slices);
+    let speedMax = Math.max(...speeds);
     let speedLimits = range(0, speedMax, step);
     speedLimits.push(Infinity);
     //console.info('SPEED 0-' + speedMax, speedStep, speedLimits);
