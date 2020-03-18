@@ -1,8 +1,9 @@
 System.register(['app/plugins/sdk'], function (exports) {
   'use strict';
-  var MetricsPanelCtrl;
+  var loadPluginCss, MetricsPanelCtrl;
   return {
     setters: [function (module) {
+      loadPluginCss = module.loadPluginCss;
       MetricsPanelCtrl = module.MetricsPanelCtrl;
     }],
     execute: function () {
@@ -5787,6 +5788,10 @@ System.register(['app/plugins/sdk'], function (exports) {
         return stack;
       }
 
+      loadPluginCss({
+        dark: 'plugins/spectraphilic-windrose-panel/css/dark.css',
+        light: 'plugins/spectraphilic-windrose-panel/css/light.css'
+      });
       var panelDefaults = {
         // X axis
         slices: 32,

@@ -1,6 +1,13 @@
-import { MetricsPanelCtrl } from 'app/plugins/sdk';
+import { loadPluginCss, MetricsPanelCtrl } from 'app/plugins/sdk';
 import { debounce, defaults, range } from 'lodash-es';
 import * as d3 from 'd3';
+//import "./css/base.css"
+
+
+loadPluginCss({
+  dark: 'plugins/spectraphilic-windrose-panel/css/dark.css',
+  light: 'plugins/spectraphilic-windrose-panel/css/light.css'
+});
 
 const panelDefaults = {
   // X axis

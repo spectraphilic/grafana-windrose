@@ -17,7 +17,7 @@ export default {
     copy({
       targets: [
         {
-          src: ['src/*.html', 'src/*.json', 'src/*.md', 'src/*.svg'],
+          src: ['src/*.html', 'src/*.json', 'src/*.md', 'src/*.svg', 'src/css'],
           dest: 'dist'
         }
       ]
