@@ -1,37 +1,45 @@
-<div class="section gf-form-group">
+<div class="editor-row">
 
-<!-- X axis -->
-<div class="gf-form">
-  <label class="gf-form-label width-8">Cake slices</label>
-  <input type="text" class="gf-form-input width-4"
-         ng-model="ctrl.panel.slices"
-         ng-change="ctrl.render()"
-         ng-model-onblur>
-</div>
+  <!-- X axis -->
+  <div class="section gf-form-group">
+    <h5 class="section-heading">Direction</h5>
+    <div class="gf-form">
+      <label class="gf-form-label width-8">Cake slices</label>
+      <input type="text" class="gf-form-input width-8" ng-change="ctrl.render()"
+             ng-model="ctrl.panel.slices" ng-model-onblur>
+    </div>
+  </div>
 
-<!-- Y axis -->
-<div class="gf-form">
-  <label class="gf-form-label width-8">Speed start</label>
-  <input type="text" class="gf-form-input width-4"
-         ng-model="ctrl.panel.start"
-         ng-change="ctrl.render()"
-         ng-model-onblur>
-</div>
+  <!-- Y axis -->
+  <div class="section gf-form-group">
+    <h5 class="section-heading">Speed</h5>
 
-<div class="gf-form">
-  <label class="gf-form-label width-8">Speed step</label>
-  <input type="text" class="gf-form-input width-4"
-         ng-model="ctrl.panel.step"
-         ng-change="ctrl.render()"
-         ng-model-onblur>
-</div>
+    <div class="gf-form">
+      <label class="gf-form-label width-8">Start</label>
+      <input type="text" class="gf-form-input width-8" ng-change="ctrl.render()"
+             ng-model="ctrl.panel.start" ng-model-onblur>
+    </div>
 
-<div class="gf-form">
-  <label class="gf-form-label width-8">Speed unit</label>
-  <input type="text" class="gf-form-input width-4"
-         ng-model="ctrl.panel.unit"
-         ng-change="ctrl.render()"
-         ng-model-onblur>
-</div>
+    <div class="gf-form">
+      <label class="gf-form-label width-8">Step</label>
+      <input type="text" class="gf-form-input width-8" ng-change="ctrl.render()"
+             ng-model="ctrl.panel.step" ng-model-onblur>
+    </div>
+
+    <div class="gf-form">
+      <label class="gf-form-label width-8">Unit</label>
+      <input type="text" class="gf-form-input width-8" ng-change="ctrl.render()"
+             ng-model="ctrl.panel.unit" ng-model-onblur>
+    </div>
+
+    <div class="gf-form">
+      <label class="gf-form-label width-8">Scale</label>
+      <select class="gf-form-input width-8" ng-change="ctrl.render()"
+              ng-model="ctrl.panel.scale" ng-model-onblur>
+        <option value="absolute">Absolute</option>
+        <option value="percent">Percent</option>
+      </select>
+    </div>
+  </div>
 
 </div>

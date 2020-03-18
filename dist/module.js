@@ -250,6 +250,26 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       /**
+       * A specialized version of `_.map` for arrays without support for iteratee
+       * shorthands.
+       *
+       * @private
+       * @param {Array} [array] The array to iterate over.
+       * @param {Function} iteratee The function invoked per iteration.
+       * @returns {Array} Returns the new mapped array.
+       */
+      function arrayMap(array, iteratee) {
+        var index = -1,
+            length = array == null ? 0 : array.length,
+            result = Array(length);
+
+        while (++index < length) {
+          result[index] = iteratee(array[index], index, array);
+        }
+        return result;
+      }
+
+      /**
        * Checks if `value` is classified as an `Array` object.
        *
        * @static
@@ -1243,6 +1263,43 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       /**
+       * A specialized version of `_.filter` for arrays without support for
+       * iteratee shorthands.
+       *
+       * @private
+       * @param {Array} [array] The array to iterate over.
+       * @param {Function} predicate The function invoked per iteration.
+       * @returns {Array} Returns the new filtered array.
+       */
+      function arrayFilter(array, predicate) {
+        var index = -1,
+            length = array == null ? 0 : array.length,
+            resIndex = 0,
+            result = [];
+
+        while (++index < length) {
+          var value = array[index];
+          if (predicate(value, index, array)) {
+            result[resIndex++] = value;
+          }
+        }
+        return result;
+      }
+
+      /**
+       * The base implementation of `_.property` without support for deep paths.
+       *
+       * @private
+       * @param {string} key The key of the property to get.
+       * @returns {Function} Returns the new accessor function.
+       */
+      function baseProperty(key) {
+        return function(object) {
+          return object == null ? undefined : object[key];
+        };
+      }
+
+      /**
        * Gets the timestamp of the number of milliseconds that have elapsed since
        * the Unix epoch (1 January 1970 00:00:00 UTC).
        *
@@ -1506,6 +1563,35 @@ System.register(['app/plugins/sdk'], function (exports) {
         return object;
       });
 
+      /**
+       * This method is like `_.isArrayLike` except that it also checks if `value`
+       * is an object.
+       *
+       * @static
+       * @memberOf _
+       * @since 4.0.0
+       * @category Lang
+       * @param {*} value The value to check.
+       * @returns {boolean} Returns `true` if `value` is an array-like object,
+       *  else `false`.
+       * @example
+       *
+       * _.isArrayLikeObject([1, 2, 3]);
+       * // => true
+       *
+       * _.isArrayLikeObject(document.body.children);
+       * // => true
+       *
+       * _.isArrayLikeObject('abc');
+       * // => false
+       *
+       * _.isArrayLikeObject(_.noop);
+       * // => false
+       */
+      function isArrayLikeObject(value) {
+        return isObjectLike(value) && isArrayLike(value);
+      }
+
       /* Built-in method references for those with the same name as other `lodash` methods. */
       var nativeCeil = Math.ceil,
           nativeMax$2 = Math.max;
@@ -1600,6 +1686,62 @@ System.register(['app/plugins/sdk'], function (exports) {
        * // => []
        */
       var range = createRange();
+
+      /* Built-in method references for those with the same name as other `lodash` methods. */
+      var nativeMax$3 = Math.max;
+
+      /**
+       * This method is like `_.zip` except that it accepts an array of grouped
+       * elements and creates an array regrouping the elements to their pre-zip
+       * configuration.
+       *
+       * @static
+       * @memberOf _
+       * @since 1.2.0
+       * @category Array
+       * @param {Array} array The array of grouped elements to process.
+       * @returns {Array} Returns the new array of regrouped elements.
+       * @example
+       *
+       * var zipped = _.zip(['a', 'b'], [1, 2], [true, false]);
+       * // => [['a', 1, true], ['b', 2, false]]
+       *
+       * _.unzip(zipped);
+       * // => [['a', 'b'], [1, 2], [true, false]]
+       */
+      function unzip(array) {
+        if (!(array && array.length)) {
+          return [];
+        }
+        var length = 0;
+        array = arrayFilter(array, function(group) {
+          if (isArrayLikeObject(group)) {
+            length = nativeMax$3(group.length, length);
+            return true;
+          }
+        });
+        return baseTimes(length, function(index) {
+          return arrayMap(array, baseProperty(index));
+        });
+      }
+
+      /**
+       * Creates an array of grouped elements, the first of which contains the
+       * first elements of the given arrays, the second of which contains the
+       * second elements of the given arrays, and so on.
+       *
+       * @static
+       * @memberOf _
+       * @since 0.1.0
+       * @category Array
+       * @param {...Array} [arrays] The arrays to process.
+       * @returns {Array} Returns the new array of grouped elements.
+       * @example
+       *
+       * _.zip(['a', 'b'], [1, 2], [true, false]);
+       * // => [['a', 1, true], ['b', 2, false]]
+       */
+      var zip = baseRest(unzip);
 
       function ascending(a, b) {
         return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
@@ -5798,7 +5940,8 @@ System.register(['app/plugins/sdk'], function (exports) {
         // Y axis
         start: 0,
         step: '',
-        unit: 'm/s'
+        unit: 'm/s',
+        scale: 'absolute'
       };
 
       var WindroseCtrl = exports('PanelCtrl', /*#__PURE__*/function (_MetricsPanelCtrl) {
@@ -5843,14 +5986,30 @@ System.register(['app/plugins/sdk'], function (exports) {
           key: "onDataError",
           value: function onDataError(err) {
             console.error('data-error', err);
-          } // Helper function. Given a value and a sorted array, return the index where
-          // the value would be inserted in order. The first element of the array
-          // defines the minimum allowed value, the last element of the array defines
-          // the maximum allowed value.
+          } // Helper function. Returns an array with the intervals from 'start' to 'end'
+          // defined either by the number of intervals (n) or by the size of the
+          // intervals (step). Examples:
+          // getIntervals(0, 360, {n: 3})     => [[0, 120], [120, 240], [240, 360]]
+          // getIntervals(0, 100, {step: 30}) => [[0, 30], [30, 60], [60, 90], [90, 120]]
 
         }, {
-          key: "getInsertIndex",
-          value: function getInsertIndex(value, array) {
+          key: "getIntervals",
+          value: function getIntervals(start, end, options) {
+            var d = end - start;
+            var n = options.n;
+            var s = options.step;
+            if (n) s = d / n;else if (s) n = Math.ceil(d / s);
+            return Array(n).fill().map(function (_, i) {
+              return [start + i * s, start + (i + 1) * s];
+            });
+          } // Helper function. Given a value and an array of sorted intervals, return
+          // the index of the interval the value belongs to. The first element of the
+          // array defines the minimum allowed value, the last element of the array
+          // defines the maximum allowed value.
+
+        }, {
+          key: "getIntervalIndex",
+          value: function getIntervalIndex(value, array) {
             // Check value
             if (value === null) {
               console.debug('Unexpected value is null');
@@ -5858,15 +6017,15 @@ System.register(['app/plugins/sdk'], function (exports) {
             } // Below lower limit
 
 
-            if (value < array[0]) {
+            if (value < array[0][0]) {
               console.debug('Unexpected ' + value + ' lesser than ' + array[0]);
               return null;
             } // Within range
 
 
-            for (var i = 1; i < array.length; i++) {
-              var low = array[i - 1];
-              var high = array[i];
+            for (var i = 0; i < array.length; i++) {
+              var low = array[i][0];
+              var high = array[i][1];
 
               if (value >= low && value <= high) {
                 return i;
@@ -5876,15 +6035,6 @@ System.register(['app/plugins/sdk'], function (exports) {
 
             console.warn('Unexpected ' + value + ' greater than ' + array[array.length - 1]);
             return null;
-          } // Helper function. Given an array and an index (greater than 0) return the
-          // name for the index as a range.
-
-        }, {
-          key: "getColumnName",
-          value: function getColumnName(array, index) {
-            var low = array[index - 1];
-            var high = array[index];
-            return high === Infinity ? low + ' +' : low + ' - ' + high;
           }
         }, {
           key: "onDataReceived",
@@ -5925,8 +6075,8 @@ System.register(['app/plugins/sdk'], function (exports) {
               }
             }
 
-            this.speeds = speeds;
-            this.angles = angles;
+            this.speedMax = Math.max.apply(Math, _toConsumableArray(speeds));
+            this.data = zip(angles, speeds);
             this.render();
           }
         }, {
@@ -5934,63 +6084,57 @@ System.register(['app/plugins/sdk'], function (exports) {
           value: function onRender() {
             //console.log(this);
             // Data
-            var speeds = this.speeds;
-            var angles = this.angles; // Configuration
+            var raw = this.data; // Configuration
 
             var slices = this.panel.slices;
             var start = this.panel.start;
             var step = this.panel.step;
-            var unit = this.panel.unit; // Variables
+            var unit = this.panel.unit;
+            var scale = this.panel.scale;
+            var speedStep = step == '' ? Math.ceil(this.speedMax / 8) : +step; // Variables
 
             var gridX = range(0, 360, 360 / 8);
-            var angleLimits = range(0, 360 + 0.1, 360 / slices);
-            var speedMax = Math.max.apply(Math, _toConsumableArray(speeds));
-            step = step == '' ? Math.ceil(speedMax / 8) : +step;
-            var speedLimits = range(start, speedMax, step);
-            speedLimits.push(Infinity); //console.info('SPEED 0-' + speedMax, speedStep, speedLimits);
-            // [angle-index][speed-index] = 0
+            var angleIntervals = this.getIntervals(0, 360, {
+              n: slices
+            });
+            var speedIntervals = this.getIntervals(start, this.speedMax, {
+              step: speedStep
+            });
+            console.debug('angleIntervals=', angleIntervals);
+            console.debug('speedIntervals=', speedIntervals); // [angle-index][speed-index] = 0
 
-            var matrix = {};
-
-            for (var i = 1; i < angleLimits.length; i++) {
-              matrix[i] = {};
-
-              for (var j = 1; j < speedLimits.length; j++) {
-                matrix[i][j] = 0;
-              }
-            } // [angle-index][speed-index] = 0
+            var matrix = _toConsumableArray(Array(angleIntervals.length)).map(function (x) {
+              return Array(speedIntervals.length).fill(0);
+            }); // [angle-index][speed-index] = n
 
 
-            for (var _i = 0; _i < speeds.length; _i++) {
-              var _j = this.getInsertIndex(angles[_i], angleLimits);
+            for (var i = 0; i < raw.length; i++) {
+              var j = this.getIntervalIndex(raw[i][0], angleIntervals);
+              var k = this.getIntervalIndex(raw[i][1], speedIntervals);
 
-              var k = this.getInsertIndex(speeds[_i], speedLimits);
-
-              if (_j != null && k != null) {
-                matrix[_j][k]++;
+              if (j != null && k != null) {
+                matrix[j][k]++;
               }
             }
 
             console.debug('matrix=', matrix); // Columns
 
-            var columns = [];
-
-            for (var _i2 = 1; _i2 < speedLimits.length; _i2++) {
-              columns.push(this.getColumnName(speedLimits, _i2));
-            } // [{angle: angle, speed-0: n, ..., speed-n: n, total: n} ... ]
-
+            var columns = speedIntervals.map(function (x) {
+              return x[0] + ' - ' + x[1];
+            });
+            console.debug('columns=', columns); // [{angle: angle, speed-0: n, ..., speed-n: n, total: n} ... ]
 
             var data = [];
 
-            for (var _i3 = 1; _i3 < angleLimits.length; _i3++) {
+            for (var _i = 0; _i < angleIntervals.length; _i++) {
               var row = {
-                angle: angleLimits[_i3 - 1]
+                angle: angleIntervals[_i][0]
               };
               var total = 0;
 
-              for (var _j2 = 1; _j2 < speedLimits.length; _j2++) {
-                var name = columns[_j2 - 1];
-                total += row[name] = matrix[_i3][_j2];
+              for (var _j = 0; _j < speedIntervals.length; _j++) {
+                var name = columns[_j];
+                total += row[name] = matrix[_i][_j];
               }
 
               row['total'] = total;
@@ -6080,7 +6224,7 @@ System.register(['app/plugins/sdk'], function (exports) {
               return -10;
             }).text(y.tickFormat(5, "s")).attr('fill', 'white').style("font-size", '14px'); // Legend
 
-            var legend = g.append("g").selectAll("g").data(columns.reverse()).enter().append("g").attr("transform", function (d, i) {
+            var legend = g.append("g").selectAll("g").data(columns.slice().reverse()).enter().append("g").attr("transform", function (d, i) {
               var translate_x = outerRadius + 30;
               var translate_y = -outerRadius + 40 + (i - columns.length / 2) * 20;
               return "translate(" + translate_x + "," + translate_y + ")";

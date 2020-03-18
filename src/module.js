@@ -1,5 +1,5 @@
 import { loadPluginCss, MetricsPanelCtrl } from 'app/plugins/sdk';
-import { debounce, defaults, range } from 'lodash-es';
+import { debounce, defaults, range, zip } from 'lodash-es';
 import * as d3 from 'd3';
 //import "./css/base.css"
 
@@ -15,7 +15,8 @@ const panelDefaults = {
   // Y axis
   start: 0,
   step: '',
-  unit: 'm/s'
+  unit: 'm/s',
+  scale: 'absolute'
 };
 
 class WindroseCtrl extends MetricsPanelCtrl {
@@ -50,11 +51,27 @@ class WindroseCtrl extends MetricsPanelCtrl {
     console.error('data-error', err);
   }
 
-  // Helper function. Given a value and a sorted array, return the index where
-  // the value would be inserted in order. The first element of the array
-  // defines the minimum allowed value, the last element of the array defines
-  // the maximum allowed value.
-  getInsertIndex(value, array) {
+  // Helper function. Returns an array with the intervals from 'start' to 'end'
+  // defined either by the number of intervals (n) or by the size of the
+  // intervals (step). Examples:
+  // getIntervals(0, 360, {n: 3})     => [[0, 120], [120, 240], [240, 360]]
+  // getIntervals(0, 100, {step: 30}) => [[0, 30], [30, 60], [60, 90], [90, 120]]
+  getIntervals(start, end, options) {
+    let d = end - start;
+    let n = options.n;
+    let s = options.step;
+
+    if (n) s = d / n;
+    else if (s) n = Math.ceil(d / s);
+
+    return Array(n).fill().map((_, i) => [start + i * s, start + (i+1) * s]);
+  }
+
+  // Helper function. Given a value and an array of sorted intervals, return
+  // the index of the interval the value belongs to. The first element of the
+  // array defines the minimum allowed value, the last element of the array
+  // defines the maximum allowed value.
+  getIntervalIndex(value, array) {
     // Check value
     if (value === null) {
       console.debug('Unexpected value is null');
@@ -62,15 +79,15 @@ class WindroseCtrl extends MetricsPanelCtrl {
     }
 
     // Below lower limit
-    if (value < array[0]) {
+    if (value < array[0][0]) {
       console.debug('Unexpected ' + value + ' lesser than ' + array[0]);
       return null;
     }
 
     // Within range
-    for (let i=1; i < array.length; i++) {
-      let low = array[i-1];
-      let high = array[i];
+    for (let i=0; i < array.length; i++) {
+      let low = array[i][0];
+      let high = array[i][1];
       if (value >= low && value <= high) {
         return i;
       }
@@ -81,19 +98,12 @@ class WindroseCtrl extends MetricsPanelCtrl {
     return null;
   }
 
-  // Helper function. Given an array and an index (greater than 0) return the
-  // name for the index as a range.
-  getColumnName(array, index) {
-    let low = array[index-1];
-    let high = array[index];
-    return (high === Infinity) ? (low + ' +') : (low + ' - ' + high);
-  }
 
   onDataReceived(data) {
     let speeds = [];
     let angles = [];
     for (let serie of data) {
-      let datapoints = serie.datapoints.map(function(x) { return x[0]; });
+      let datapoints = serie.datapoints.map((x) => x[0]);
       if (serie.target === 'speed') {
         speeds = datapoints;
       } else if (serie.target === 'direction') {
@@ -103,8 +113,8 @@ class WindroseCtrl extends MetricsPanelCtrl {
       }
     }
 
-    this.speeds = speeds;
-    this.angles = angles;
+    this.speedMax = Math.max(...speeds);
+    this.data = zip(angles, speeds);
     this.render()
   }
 
@@ -113,37 +123,31 @@ class WindroseCtrl extends MetricsPanelCtrl {
     //console.log(this);
 
     // Data
-    let speeds = this.speeds;
-    let angles = this.angles;
+    const raw = this.data;
 
     // Configuration
-    let slices = this.panel.slices;
-    let start = this.panel.start;
-    let step = this.panel.step;
-    let unit = this.panel.unit;
+    const slices = this.panel.slices;
+    const start = this.panel.start;
+    const step = this.panel.step;
+    const unit = this.panel.unit;
+    const scale = this.panel.scale;
+
+    const angleStep = 360 / slices;
+    const speedStep = (step == '') ? Math.ceil(this.speedMax / 8): +step;
 
     // Variables
-    let gridX = range(0, 360, 360 / 8);
-    let angleLimits = range(0, 360 + 0.1, 360 / slices);
-    let speedMax = Math.max(...speeds);
-    step = (step == '') ? Math.ceil(speedMax / 8): +step;
-    let speedLimits = range(start, speedMax, step);
-    speedLimits.push(Infinity);
-    //console.info('SPEED 0-' + speedMax, speedStep, speedLimits);
+    const gridX = range(0, 360, 360 / 8);
+    const angleIntervals = this.getIntervals(0, 360, {n: slices});
+    const speedIntervals = this.getIntervals(start, this.speedMax, {step: speedStep});
+    console.debug('angleIntervals=', angleIntervals);
+    console.debug('speedIntervals=', speedIntervals);
 
     // [angle-index][speed-index] = 0
-    let matrix = {};
-    for (let i=1; i < angleLimits.length; i++) {
-      matrix[i] = {};
-      for (let j=1; j < speedLimits.length; j++) {
-        matrix[i][j] = 0;
-      }
-    }
-
-    // [angle-index][speed-index] = 0
-    for (let i=0; i < speeds.length; i++) {
-      let j = this.getInsertIndex(angles[i], angleLimits);
-      let k = this.getInsertIndex(speeds[i], speedLimits);
+    const matrix = [...Array(angleIntervals.length)].map(x=>Array(speedIntervals.length).fill(0));
+    // [angle-index][speed-index] = n
+    for (let i=0; i < raw.length; i++) {
+      let j = this.getIntervalIndex(raw[i][0], angleIntervals);
+      let k = this.getIntervalIndex(raw[i][1], speedIntervals);
       if (j != null && k != null) {
         matrix[j][k]++;
       }
@@ -151,20 +155,18 @@ class WindroseCtrl extends MetricsPanelCtrl {
     console.debug('matrix=', matrix);
 
     // Columns
-    let columns = [];
-    for (let i=1; i < speedLimits.length; i++) {
-      columns.push(this.getColumnName(speedLimits, i));
-    }
+    const columns = speedIntervals.map((x) => x[0] + ' - ' + x[1]);
+    console.debug('columns=', columns);
 
     // [{angle: angle, speed-0: n, ..., speed-n: n, total: n} ... ]
-    let data = [];
-    for (let i=1; i < angleLimits.length; i++) {
-      let row = {
-        angle: angleLimits[i-1]
+    const data = [];
+    for (let i=0; i < angleIntervals.length; i++) {
+      const row = {
+        angle: angleIntervals[i][0]
       };
       let total = 0;
-      for (let j=1; j < speedLimits.length; j++) {
-        let name = columns[j-1];
+      for (let j=0; j < speedIntervals.length; j++) {
+        let name = columns[j];
         total += row[name] = matrix[i][j];
       }
       row['total'] = total;
@@ -197,32 +199,32 @@ class WindroseCtrl extends MetricsPanelCtrl {
     var z = d3.scaleOrdinal()
         .range(["#4242f4", "#42c5f4", "#42f4ce", "#42f456", "#adf442", "#f4e242", "#f4a142", "#f44242"]);
 
-    x.domain(data.map(function(d) { return d.angle; }));
-    y.domain([0, d3.max(data, function(d) { return d.total; })]);
+    x.domain(data.map((d) => d.angle));
+    y.domain([0, d3.max(data, (d) => d.total)]);
     z.domain(columns);
     // Extend the domain slightly to match the range of [0, 2π].
-    angle.domain([0, d3.max(data, function(d,i) { return i + 1; })]);
+    angle.domain([0, d3.max(data, (d,i) => i + 1)]);
 
     // Draw data
     g.append("g")
         .selectAll("g")
         .data(d3.stack().keys(columns)(data))
         .enter().append("g")
-        .attr("fill", function(d) { return z(d.key); })
+        .attr("fill", (d) => z(d.key))
         .selectAll("path")
-        .data(function(d) { return d; })
+        .data((d) => d)
         .enter().append("path")
         .attr("d", d3.arc()
-            .innerRadius(function(d) { return y(d[0]); })
-            .outerRadius(function(d) { return y(d[1]); })
-            .startAngle(function(d) { return x(d.data.angle); })
-            .endAngle(function(d) { return x(d.data.angle) + x.bandwidth(); })
+            .innerRadius((d) => y(d[0]))
+            .outerRadius((d) => y(d[1]))
+            .startAngle((d) => x(d.data.angle))
+            .endAngle((d) => x(d.data.angle) + x.bandwidth())
             .padAngle(0.01)
             .padRadius(innerRadius));
 
     // X axis (angle)
     var xLinear = d3.scaleLinear().range([0, 2 * Math.PI])
-        .domain([0, d3.max(gridX, function(d, i) { return i + 1; })]);
+        .domain([0, d3.max(gridX, (d, i) => i + 1)]);
     let xBand = d3.scaleBand().range([0, 2 * Math.PI]).align(0).domain(gridX);
     let angleOffset = -360.0/gridX.length/2.0;
     var label = g.append("g")
@@ -242,17 +244,17 @@ class WindroseCtrl extends MetricsPanelCtrl {
             :  "rotate(-90)translate(0,-9)";
         })
         .attr('fill', 'white')
-        .text(function(d) { return d; })
+        .text((d) => d)
         .style("font-size", '14px');
 
     let radius = d3.scaleLinear()
         .range([innerRadius, outerRadius])
-        .domain([0, d3.max(gridX, function(d) { return d.y0 + d.y; })]);
+        .domain([0, d3.max(gridX, (d) => d.y0 + d.y)]);
     g.selectAll(".axis")
         .data(d3.range(xLinear.domain()[1]))
         .enter().append("g")
         .attr("class", "axis")
-        .attr("transform", function(d) { return "rotate(" + xLinear(d) * 180 / Math.PI + ")"; })
+        .attr("transform", (d) => "rotate(" + xLinear(d) * 180 / Math.PI + ")")
         .call(d3.axisLeft().scale(radius.copy().range([-innerRadius, -(outerRadius+10)])));
 
     // Y axis
@@ -271,9 +273,9 @@ class WindroseCtrl extends MetricsPanelCtrl {
 
     // Y axis: labels
     yTick.append("text")
-        .attr("y", function(d) { return -y(d); })
+        .attr("y", (d) => -y(d))
         .attr("dy", "-0.35em")
-        .attr("x", function() { return -10; })
+        .attr("x", () => -10)
         .text(y.tickFormat(5, "s"))
         .attr('fill', 'white')
         .style("font-size", '14px');
@@ -281,7 +283,7 @@ class WindroseCtrl extends MetricsPanelCtrl {
     // Legend
     var legend = g.append("g")
         .selectAll("g")
-        .data(columns.reverse())
+        .data(columns.slice().reverse())
         .enter().append("g")
         .attr("transform", function(d, i) {
           let translate_x = outerRadius + 30;
@@ -298,7 +300,7 @@ class WindroseCtrl extends MetricsPanelCtrl {
         .attr("x", 24)
         .attr("y", 9)
         .attr("dy", "0.35em")
-        .text(function(d) { return d + ' ' + unit; })
+        .text((d) => d + ' ' + unit)
         .attr('fill', 'white')
         .style("font-size", '12px');
 
