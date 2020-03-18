@@ -38,10 +38,14 @@ Install:
 $ npm install
 ```
 
+To run the watch server (automatic build on source changes) we use entr,
+because the rollup watch server does not handle changes to html or css files.
+
 Use make:
 
 ```sh
-$ make   # prints help
-$ make b # builds the sources to dist
-$ make w # runs the watch server
+$ make help
+build:  build the source files, output to dist folder
+watch:  run watch server, for automatic build on source changes
+help:  show this help
 ```
