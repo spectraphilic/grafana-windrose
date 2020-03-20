@@ -80,7 +80,6 @@ class WindroseCtrl extends MetricsPanelCtrl {
 
     // Below lower limit
     if (value < array[0][0]) {
-      console.debug('Unexpected ' + value + ' lesser than ' + array[0]);
       return null;
     }
 
@@ -94,7 +93,7 @@ class WindroseCtrl extends MetricsPanelCtrl {
     }
 
     // Above upper limit
-    console.warn('Unexpected ' + value + ' greater than ' + array[array.length-1]);
+    console.warn('Unexpected ' + value + ' greater than ' + array[array.length-1][1]);
     return null;
   }
 

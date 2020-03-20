@@ -6039,7 +6039,6 @@ System.register(['app/plugins/sdk'], function (exports) {
 
 
             if (value < array[0][0]) {
-              console.debug('Unexpected ' + value + ' lesser than ' + array[0]);
               return null;
             } // Within range
 
@@ -6054,7 +6053,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             } // Above upper limit
 
 
-            console.warn('Unexpected ' + value + ' greater than ' + array[array.length - 1]);
+            console.warn('Unexpected ' + value + ' greater than ' + array[array.length - 1][1]);
             return null;
           }
         }, {
