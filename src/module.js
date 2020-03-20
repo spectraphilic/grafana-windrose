@@ -113,8 +113,8 @@ class WindroseCtrl extends MetricsPanelCtrl {
       }
     }
 
-    this.speedMax = Math.max(...speeds);
-    this.data = zip(angles, speeds);
+    this.speedMax = speeds.length > 0 ? Math.max(...speeds) : 0;
+    this.data = zip(angles, speeds).filter(x => x[1] != null);
     this.render()
   }
 
@@ -127,8 +127,8 @@ class WindroseCtrl extends MetricsPanelCtrl {
 
     // Configuration
     const panel = this.panel;
-    const slices = panel.slices;
-    const start = panel.start;
+    const slices = +panel.slices;
+    const start = +panel.start;
     const step = (panel.step == '') ? Math.ceil(this.speedMax / 8): +panel.step;
     const unit = panel.unit;
     const scale = panel.scale;
@@ -136,6 +136,7 @@ class WindroseCtrl extends MetricsPanelCtrl {
     // Intervals
     const angleIntervals = this.getIntervals(0, 360, {n: slices});
     const speedIntervals = this.getIntervals(start, this.speedMax, {step: step});
+    //console.debug(this.speedMax);
     //console.debug('angleIntervals=', angleIntervals);
     //console.debug('speedIntervals=', speedIntervals);
 

@@ -6096,8 +6096,10 @@ System.register(['app/plugins/sdk'], function (exports) {
               }
             }
 
-            this.speedMax = Math.max.apply(Math, _toConsumableArray(speeds));
-            this.data = zip(angles, speeds);
+            this.speedMax = speeds.length > 0 ? Math.max.apply(Math, _toConsumableArray(speeds)) : 0;
+            this.data = zip(angles, speeds).filter(function (x) {
+              return x[1] != null;
+            });
             this.render();
           }
         }, {
@@ -6108,8 +6110,8 @@ System.register(['app/plugins/sdk'], function (exports) {
             var raw = this.data; // Configuration
 
             var panel = this.panel;
-            var slices = panel.slices;
-            var start = panel.start;
+            var slices = +panel.slices;
+            var start = +panel.start;
             var step = panel.step == '' ? Math.ceil(this.speedMax / 8) : +panel.step;
             var unit = panel.unit;
             var scale = panel.scale; // Intervals
@@ -6119,7 +6121,8 @@ System.register(['app/plugins/sdk'], function (exports) {
             });
             var speedIntervals = this.getIntervals(start, this.speedMax, {
               step: step
-            }); //console.debug('angleIntervals=', angleIntervals);
+            }); //console.debug(this.speedMax);
+            //console.debug('angleIntervals=', angleIntervals);
             //console.debug('speedIntervals=', speedIntervals);
             // [angle-index][speed-index] = 0
 
