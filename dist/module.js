@@ -1883,6 +1883,27 @@ System.register(['app/plugins/sdk'], function (exports) {
         return max;
       }
 
+      function sum(values, valueof) {
+        var n = values.length,
+            i = -1,
+            value,
+            sum = 0;
+
+        if (valueof == null) {
+          while (++i < n) {
+            if (value = +values[i]) sum += value; // Note: zero and null are equivalent.
+          }
+        }
+
+        else {
+          while (++i < n) {
+            if (value = +valueof(values[i], i, values)) sum += value;
+          }
+        }
+
+        return sum;
+      }
+
       var slice = Array.prototype.slice;
 
       function identity$1(x) {
@@ -6082,26 +6103,25 @@ System.register(['app/plugins/sdk'], function (exports) {
         }, {
           key: "onRender",
           value: function onRender() {
-            //console.log(this);
+            //console.debug(this);
             // Data
             var raw = this.data; // Configuration
 
-            var slices = this.panel.slices;
-            var start = this.panel.start;
-            var step = this.panel.step;
-            var unit = this.panel.unit;
-            var scale = this.panel.scale;
-            var speedStep = step == '' ? Math.ceil(this.speedMax / 8) : +step; // Variables
+            var panel = this.panel;
+            var slices = panel.slices;
+            var start = panel.start;
+            var step = panel.step == '' ? Math.ceil(this.speedMax / 8) : +panel.step;
+            var unit = panel.unit;
+            var scale = panel.scale; // Intervals
 
-            var gridX = range(0, 360, 360 / 8);
             var angleIntervals = this.getIntervals(0, 360, {
               n: slices
             });
             var speedIntervals = this.getIntervals(start, this.speedMax, {
-              step: speedStep
-            });
-            console.debug('angleIntervals=', angleIntervals);
-            console.debug('speedIntervals=', speedIntervals); // [angle-index][speed-index] = 0
+              step: step
+            }); //console.debug('angleIntervals=', angleIntervals);
+            //console.debug('speedIntervals=', speedIntervals);
+            // [angle-index][speed-index] = 0
 
             var matrix = _toConsumableArray(Array(angleIntervals.length)).map(function (x) {
               return Array(speedIntervals.length).fill(0);
@@ -6115,14 +6135,17 @@ System.register(['app/plugins/sdk'], function (exports) {
               if (j != null && k != null) {
                 matrix[j][k]++;
               }
-            }
+            } //console.debug('matrix=', matrix);
+            // x = direction - angle
+            // y = count     - radius
+            // z = speed     - color
+            // Columns
 
-            console.debug('matrix=', matrix); // Columns
 
-            var columns = speedIntervals.map(function (x) {
+            var zLabels = speedIntervals.map(function (x) {
               return x[0] + ' - ' + x[1];
-            });
-            console.debug('columns=', columns); // [{angle: angle, speed-0: n, ..., speed-n: n, total: n} ... ]
+            }); //console.debug('zLabels=', zLabels);
+            // [{angle: angle, 0: count-0, ..., n-1: count-n-1, total: count-total} ... ]
 
             var data = [];
 
@@ -6133,23 +6156,46 @@ System.register(['app/plugins/sdk'], function (exports) {
               var total = 0;
 
               for (var _j = 0; _j < speedIntervals.length; _j++) {
-                var name = columns[_j];
+                var name = zLabels[_j];
                 total += row[name] = matrix[_i][_j];
               }
 
               row['total'] = total;
               data.push(row);
-            }
+            } //console.debug('data=', data);
+            // Percent
 
-            console.debug('data=', data); // SVG
 
-            var svg = select("svg#windrose-" + this.panel.id);
-            svg.selectAll('*').remove(); // Set width and height
+            if (scale == 'percent') {
+              var max$1 = sum(data, function (d) {
+                return d.total;
+              });
+              var tmpScale = linear$1([0, max$1], [0, 1]);
 
-            var node = svg.node().parentNode;
-            var width = node.offsetWidth,
+              for (var _i2 = 0; _i2 < data.length; _i2++) {
+                for (var key in data[_i2]) {
+                  if (key != 'angle') {
+                    data[_i2][key] = tmpScale(data[_i2][key]);
+                  }
+                }
+              } //console.debug('data(percent)=', data);
+
+            } // SVG
+
+
+            var svg = select("svg#windrose-" + panel.id);
+            svg.selectAll('*').remove(); // Remove children
+
+            var node = svg.node().parentNode,
+                width = node.offsetWidth,
                 height = node.offsetHeight;
-            svg.attr('width', width).attr('height', height);
+            svg.attr('width', width).attr('height', height); // Set width and height
+
+            var g = svg.append("g"); // Add <g>
+
+            g.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")"); // Center <g>
+            // Radius
+
             var margin = {
               top: 40,
               right: 80,
@@ -6159,77 +6205,79 @@ System.register(['app/plugins/sdk'], function (exports) {
                 innerRadius = 0,
                 chartWidth = width - margin.left - margin.right,
                 chartHeight = height - margin.top - margin.bottom,
-                outerRadius = Math.min(chartWidth, chartHeight) / 2,
-                g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-            var angle = linear$1().range([0, 2 * Math.PI]);
-            var x = band().range([0, 2 * Math.PI]).align(0); // you can try scaleRadial but it scales differently
+                outerRadius = Math.min(chartWidth, chartHeight) / 2;
+            var yRange = [innerRadius, outerRadius]; // X-Axis
 
-            var y = linear$1().range([innerRadius, outerRadius]);
-            var z = ordinal().range(["#4242f4", "#42c5f4", "#42f4ce", "#42f456", "#adf442", "#f4e242", "#f4a142", "#f44242"]);
-            x.domain(data.map(function (d) {
-              return d.angle;
-            }));
-            y.domain([0, max(data, function (d) {
+            var radiansRange = [0, 2 * Math.PI];
+            var getRadiansFromDegrees = linear$1([0, 360], radiansRange); // Y-axis
+
+            var yMax = max(data, function (d) {
               return d.total;
-            })]);
-            z.domain(columns); // Extend the domain slightly to match the range of [0, 2π].
+            });
+            var getRadius = linear$1([0, yMax], yRange); // Z-axis: map speed interval labels to colors
 
-            angle.domain([0, max(data, function (d, i) {
-              return i + 1;
-            })]); // Draw data
+            var getColor = ordinal(zLabels, ["#4242f4", "#42c5f4", "#42f4ce", "#42f456", "#adf442", "#f4e242", "#f4a142", "#f44242"]); // Draw 1 arc for every speed interval in every direction
 
-            g.append("g").selectAll("g").data(stack().keys(columns)(data)).enter().append("g").attr("fill", function (d) {
-              return z(d.key);
-            }).selectAll("path").data(function (d) {
+            var arcWidth = band(data.map(function (d) {
+              return d.angle;
+            }), radiansRange).align(0).bandwidth();
+            g.append("g") // One <g> element per speed interval (color)
+            .selectAll("g").data(stack().keys(zLabels)(data)).enter().append("g").attr("fill", function (d) {
+              return getColor(d.key);
+            }) // One <path> (arc) per spee-interval and direction
+            .selectAll("path").data(function (d) {
               return d;
             }).enter().append("path").attr("d", arc().innerRadius(function (d) {
-              return y(d[0]);
+              return getRadius(d[0]);
             }).outerRadius(function (d) {
-              return y(d[1]);
+              return getRadius(d[1]);
             }).startAngle(function (d) {
-              return x(d.data.angle);
+              return getRadiansFromDegrees(d.data.angle);
             }).endAngle(function (d) {
-              return x(d.data.angle) + x.bandwidth();
+              return getRadiansFromDegrees(d.data.angle) + arcWidth;
             }).padAngle(0.01).padRadius(innerRadius)); // X axis (angle)
 
-            var xLinear = linear$1().range([0, 2 * Math.PI]).domain([0, max(gridX, function (d, i) {
-              return i + 1;
-            })]);
-            var xBand = band().range([0, 2 * Math.PI]).align(0).domain(gridX);
+            var gridN = 8;
+            var gridX = range(0, 360, 360 / gridN);
+            var xScale = linear$1([0, gridN], radiansRange); // Extend the domain slightly to match the range [0, 2π]
+            // Draw the text label (degrees)
+
+            var xGridWidth = band(gridX, radiansRange).align(0).bandwidth();
             var angleOffset = -360.0 / gridX.length / 2.0;
-            var label = g.append("g").selectAll("g").data(gridX).enter().append("g").attr("text-anchor", "middle").attr("transform", function (d) {
-              var rotate = (xBand(d) + xBand.bandwidth() / 2) * 180 / Math.PI - (90 - angleOffset);
+            var label = g.append("g") // One <g> element per x-grid line
+            .selectAll("g").data(gridX).enter().append("g").attr("text-anchor", "middle").attr("transform", function (d) {
+              var rotate = (getRadiansFromDegrees(d) + xGridWidth / 2) * 180 / Math.PI - (90 - angleOffset);
               return "rotate(" + rotate + ")translate(" + (outerRadius + 30) + ",0)";
-            });
-            label.append("text").attr("transform", function (d) {
-              return (xBand(d) + xBand.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) < Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)";
+            }) // <text> element
+            .append("text").attr("transform", function (d) {
+              return (getRadiansFromDegrees(d) + xGridWidth / 2 + Math.PI / 2) % (2 * Math.PI) < Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)";
             }).attr('fill', 'white').text(function (d) {
               return d;
             }).style("font-size", '14px');
-            var radius = linear$1().range([innerRadius, outerRadius]).domain([0, max(gridX, function (d) {
+            var radius = linear$1([0, max(gridX, function (d) {
               return d.y0 + d.y;
-            })]);
-            g.selectAll(".axis").data(sequence(xLinear.domain()[1])).enter().append("g").attr("class", "axis").attr("transform", function (d) {
-              return "rotate(" + xLinear(d) * 180 / Math.PI + ")";
+            })], yRange);
+            g.selectAll(".axis").data(sequence(xScale.domain()[1])).enter().append("g").attr("class", "axis").attr("transform", function (d) {
+              return "rotate(" + xScale(d) * 180 / Math.PI + ")";
             }).call(axisLeft().scale(radius.copy().range([-innerRadius, -(outerRadius + 10)]))); // Y axis
 
             var yAxis = g.append("g").attr("text-anchor", "middle");
-            var yTick = yAxis.selectAll("g").data(y.ticks(5).slice(1)).enter().append("g"); // Y axis: circles
+            var yTick = yAxis.selectAll("g").data(getRadius.ticks(5).slice(1)).enter().append("g"); // Y axis: circles
 
-            yTick.append("circle").attr("fill", "none").attr("stroke", "gray").attr("stroke-dasharray", "4,4").attr("r", y); // Y axis: labels
+            yTick.append("circle").attr("fill", "none").attr("stroke", "gray").attr("stroke-dasharray", "4,4").attr("r", getRadius); // Y axis: labels
 
             yTick.append("text").attr("y", function (d) {
-              return -y(d);
+              return -getRadius(d);
             }).attr("dy", "-0.35em").attr("x", function () {
               return -10;
-            }).text(y.tickFormat(5, "s")).attr('fill', 'white').style("font-size", '14px'); // Legend
+            }).text(getRadius.tickFormat(5, scale == 'percent' ? "%" : "s")).attr('fill', 'white').style("font-size", '14px'); // Legend
 
-            var legend = g.append("g").selectAll("g").data(columns.slice().reverse()).enter().append("g").attr("transform", function (d, i) {
+            var legend = g.append("g").selectAll("g").data(zLabels.slice().reverse()).enter().append("g").attr("transform", function (d, i) {
               var translate_x = outerRadius + 30;
-              var translate_y = -outerRadius + 40 + (i - columns.length / 2) * 20;
+              var translate_y = -outerRadius + 40 + (i - zLabels.length / 2) * 20;
               return "translate(" + translate_x + "," + translate_y + ")";
             });
-            legend.append("rect").attr("width", 18).attr("height", 18).attr("fill", z);
+            legend.append("rect").attr("width", 18).attr("height", 18).attr("fill", getColor);
             legend.append("text").attr("x", 24).attr("y", 9).attr("dy", "0.35em").text(function (d) {
               return d + ' ' + unit;
             }).attr('fill', 'white').style("font-size", '12px');
