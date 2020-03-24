@@ -5958,6 +5958,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       var panelDefaults = {
         // X axis
         slices: 32,
+        x_grid: 'degrees',
         // Y axis
         start: 0,
         step: '',
@@ -6112,8 +6113,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             var slices = +panel.slices;
             var start = +panel.start;
             var step = panel.step == '' ? Math.ceil(this.speedMax / 8) : +panel.step;
-            var unit = panel.unit;
-            var scale = panel.scale; // Intervals
+            var unit = panel.unit; // Intervals
 
             var angleIntervals = this.getIntervals(0, 360, {
               n: slices
@@ -6168,7 +6168,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             // Percent
 
 
-            if (scale == 'percent') {
+            if (panel.scale == 'percent') {
               var max$1 = sum(data, function (d) {
                 return d.total;
               });
@@ -6246,6 +6246,16 @@ System.register(['app/plugins/sdk'], function (exports) {
 
             var xGridWidth = band(gridX, radiansRange).align(0).bandwidth();
             var angleOffset = -360.0 / gridX.length / 2.0;
+            var degrees2compass = {
+              0: 'N',
+              45: 'NE',
+              90: 'E',
+              135: 'SE',
+              180: 'S',
+              225: 'SW',
+              270: 'W',
+              315: 'NW'
+            };
             var label = g.append("g") // One <g> element per x-grid line
             .selectAll("g").data(gridX).enter().append("g").attr("text-anchor", "middle").attr("transform", function (d) {
               var rotate = (getRadiansFromDegrees(d) + xGridWidth / 2) * 180 / Math.PI - (90 - angleOffset);
@@ -6254,7 +6264,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             .append("text").attr("transform", function (d) {
               return (getRadiansFromDegrees(d) + xGridWidth / 2 + Math.PI / 2) % (2 * Math.PI) < Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)";
             }).attr('fill', 'white').text(function (d) {
-              return d;
+              return panel.x_grid == 'compass' ? degrees2compass[d] || d : d;
             }).style("font-size", '14px');
             var radius = linear$1([0, max(gridX, function (d) {
               return d.y0 + d.y;
@@ -6272,7 +6282,7 @@ System.register(['app/plugins/sdk'], function (exports) {
               return -getRadius(d);
             }).attr("dy", "-0.35em").attr("x", function () {
               return -10;
-            }).text(getRadius.tickFormat(5, scale == 'percent' ? "%" : "s")).attr('fill', 'white').style("font-size", '14px'); // Legend
+            }).text(getRadius.tickFormat(5, panel.scale == 'percent' ? "%" : "s")).attr('fill', 'white').style("font-size", '14px'); // Legend
 
             var legend = g.append("g").selectAll("g").data(zLabels.slice().reverse()).enter().append("g").attr("transform", function (d, i) {
               var translate_x = outerRadius + 30;

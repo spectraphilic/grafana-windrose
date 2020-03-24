@@ -8,6 +8,16 @@
       <input type="text" class="gf-form-input width-8" ng-change="ctrl.render()"
              ng-model="ctrl.panel.slices" ng-model-onblur>
     </div>
+
+    <div class="gf-form">
+      <label class="gf-form-label width-8">Grid labels</label>
+      <select class="gf-form-input width-8" ng-change="ctrl.render()"
+              ng-model="ctrl.panel.x_grid" ng-model-onblur>
+        <option value="degrees">Degrees</option>
+        <option value="compass">Compass</option>
+      </select>
+    </div>
+
   </div>
 
   <!-- Y axis -->
@@ -40,6 +50,7 @@
         <option value="percent">Percent</option>
       </select>
     </div>
+
   </div>
 
 </div>

@@ -12,6 +12,7 @@ loadPluginCss({
 const panelDefaults = {
   // X axis
   slices: 32,
+  x_grid: 'degrees',
   // Y axis
   start: 0,
   step: '',
@@ -130,7 +131,6 @@ class WindroseCtrl extends MetricsPanelCtrl {
     const start = +panel.start;
     const step = (panel.step == '') ? Math.ceil(this.speedMax / 8): +panel.step;
     const unit = panel.unit;
-    const scale = panel.scale;
 
     // Intervals
     const angleIntervals = this.getIntervals(0, 360, {n: slices});
@@ -177,7 +177,7 @@ class WindroseCtrl extends MetricsPanelCtrl {
     //console.debug('data=', data);
 
     // Percent
-    if (scale == 'percent') {
+    if (panel.scale == 'percent') {
       const max = d3.sum(data, d => d.total);
       const tmpScale = d3.scaleLinear([0, max], [0, 1]);
       for (let i=0; i < data.length; i++) {
@@ -247,6 +247,16 @@ class WindroseCtrl extends MetricsPanelCtrl {
     // Draw the text label (degrees)
     const xGridWidth = d3.scaleBand(gridX, radiansRange).align(0).bandwidth();
     const angleOffset = -360.0/gridX.length/2.0;
+    const degrees2compass = {
+      0: 'N',
+      45: 'NE',
+      90: 'E',
+      135: 'SE',
+      180: 'S',
+      225: 'SW',
+      270: 'W',
+      315: 'NW',
+    };
     const label = g.append("g")
         // One <g> element per x-grid line
         .selectAll("g")
@@ -265,7 +275,7 @@ class WindroseCtrl extends MetricsPanelCtrl {
             :  "rotate(-90)translate(0,-9)";
         })
         .attr('fill', 'white')
-        .text(d => d)
+        .text(d => panel.x_grid == 'compass' ? degrees2compass[d] || d: d)
         .style("font-size", '14px');
 
     const radius = d3.scaleLinear([0, d3.max(gridX, d => d.y0 + d.y)], yRange);
@@ -295,7 +305,7 @@ class WindroseCtrl extends MetricsPanelCtrl {
         .attr("y", d => -getRadius(d))
         .attr("dy", "-0.35em")
         .attr("x", () => -10)
-        .text(getRadius.tickFormat(5, scale == 'percent' ? "%" : "s"))
+        .text(getRadius.tickFormat(5, panel.scale == 'percent' ? "%" : "s"))
         .attr('fill', 'white')
         .style("font-size", '14px');
 
