@@ -6262,7 +6262,7 @@ System.register(['app/plugins/sdk'], function (exports) {
               return "rotate(" + rotate + ")translate(" + (outerRadius + 30) + ",0)";
             }) // <text> element
             .append("text").attr("transform", function (d) {
-              return (getRadiansFromDegrees(d) + xGridWidth / 2 + Math.PI / 2) % (2 * Math.PI) < Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)";
+              return "rotate(".concat(90 - d, ")");
             }).attr('fill', 'white').text(function (d) {
               return panel.x_grid == 'compass' ? degrees2compass[d] || d : d;
             }).style("font-size", '14px');

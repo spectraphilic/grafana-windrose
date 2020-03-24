@@ -269,11 +269,7 @@ class WindroseCtrl extends MetricsPanelCtrl {
         })
         // <text> element
         .append("text")
-        .attr("transform", d => {
-          return ((getRadiansFromDegrees(d) + xGridWidth / 2 + Math.PI / 2) % (2 * Math.PI) < Math.PI)
-            ? "rotate(90)translate(0,16)"
-            :  "rotate(-90)translate(0,-9)";
-        })
+        .attr("transform", d => `rotate(${90-d})`)
         .attr('fill', 'white')
         .text(d => panel.x_grid == 'compass' ? degrees2compass[d] || d: d)
         .style("font-size", '14px');
