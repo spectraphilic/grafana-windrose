@@ -6016,22 +6016,34 @@ System.register(['app/plugins/sdk'], function (exports) {
 
         }, {
           key: "getIntervals",
-          value: function getIntervals(start, end, options) {
+          value: function getIntervals(start, end, step) {
             var d = end - start;
-            var n = options.n;
-            var s = options.step;
-            if (n) s = d / n;else if (s) n = Math.ceil(d / s);
+            var n = Math.ceil(d / step);
             return Array(n).fill().map(function (_, i) {
-              return [start + i * s, start + (i + 1) * s];
+              return [start + i * step, start + (i + 1) * step];
             });
-          } // Helper function. Given a value and an array of sorted intervals, return
-          // the index of the interval the value belongs to. The first element of the
-          // array defines the minimum allowed value, the last element of the array
-          // defines the maximum allowed value.
+          } // Helper function. Given a value and an array of sorted intervals, returns
+          // the index of the interval the value belongs to, left-closed and
+          // right-open. Returns null if out of bounds. Example:
+          //
+          //   getIntervalIndex(5, [[0, 5], [5, 10], [10, 15]]) => 1
+          //
+          // Supports circular intervals, such as degrees. In this case the maximum
+          // allowed value must be passed as last argument. Example:
+          //
+          //   getIntervalIndex(354, [[-45, 45], [45, 135], [135, 225], [225, 315]], 360) => 0
+          //
+          // If it's not circular, the last interval will be left and right closed.
+          // Example:
+          //
+          //   getIntervalIndex(15, [[0, 5], [5, 10], [10, 15]]) => 2
+          //
 
         }, {
           key: "getIntervalIndex",
           value: function getIntervalIndex(value, array) {
+            var max = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+
             // Check value
             if (value === null) {
               console.debug('Unexpected value is null');
@@ -6041,20 +6053,33 @@ System.register(['app/plugins/sdk'], function (exports) {
 
             if (value < array[0][0]) {
               return null;
+            } // For circular intervals, the 1st interval starts at a negative value
+
+
+            var len = array.length;
+            var last = len - 1;
+
+            if (value >= array[last][1]) {
+              value = value - max;
             } // Within range
 
 
-            for (var i = 0; i < array.length; i++) {
+            for (var i = 0; i < len; i++) {
               var low = array[i][0];
               var high = array[i][1];
 
-              if (value >= low && value <= high) {
+              if (value >= low && value < high) {
                 return i;
               }
+            } // Last interval is right-closed (except in circular intervals)
+
+
+            if (value == array[last][1]) {
+              return last;
             } // Above upper limit
 
 
-            console.warn('Unexpected ' + value + ' greater than ' + array[array.length - 1][1]);
+            console.warn("getIntervalIndex ".concat(value, " too big"));
             return null;
           }
         }, {
@@ -6115,14 +6140,22 @@ System.register(['app/plugins/sdk'], function (exports) {
             var step = panel.step == '' ? Math.ceil(this.speedMax / 8) : +panel.step;
             var unit = panel.unit; // Intervals
 
-            var angleIntervals = this.getIntervals(0, 360, {
-              n: slices
-            });
-            var speedIntervals = this.getIntervals(start, this.speedMax, {
-              step: step
-            }); //console.debug(this.speedMax);
+            var angleStep = 360 / slices;
+            var angleIntervals = this.getIntervals(-angleStep / 2, 360 - angleStep / 2, angleStep);
+            var speedIntervals = this.getIntervals(start, this.speedMax, step); //console.debug(this.speedMax);
             //console.debug('angleIntervals=', angleIntervals);
             //console.debug('speedIntervals=', speedIntervals);
+            //  console.debug('**',
+            //    this.getIntervalIndex(-1, [[0, 5], [5, 10], [10, 15]]), // null
+            //    this.getIntervalIndex(0, [[0, 5], [5, 10], [10, 15]]), // 0
+            //    this.getIntervalIndex(5, [[0, 5], [5, 10], [10, 15]]), // 1
+            //    this.getIntervalIndex(15, [[0, 5], [5, 10], [10, 15]]), // 2
+            //    this.getIntervalIndex(16, [[0, 5], [5, 10], [10, 15]]), // null
+            //    this.getIntervalIndex(0, [[-45, 45], [45, 135], [135, 225], [225, 315]], 360), // 0
+            //    this.getIntervalIndex(45, [[-45, 45], [45, 135], [135, 225], [225, 315]], 360), // 1
+            //    this.getIntervalIndex(354, [[-45, 45], [45, 135], [135, 225], [225, 315]], 360), // 0
+            //    this.getIntervalIndex(360, [[0, 90], [90, 180], [180, 270], [270, 360]], 360), // 0
+            //  );
             // [angle-index][speed-index] = 0
 
             var matrix = _toConsumableArray(Array(angleIntervals.length)).map(function (x) {
@@ -6131,7 +6164,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
 
             for (var i = 0; i < raw.length; i++) {
-              var j = this.getIntervalIndex(raw[i][0], angleIntervals);
+              var j = this.getIntervalIndex(raw[i][0], angleIntervals, 360);
               var k = this.getIntervalIndex(raw[i][1], speedIntervals);
 
               if (j != null && k != null) {

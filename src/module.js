@@ -57,22 +57,29 @@ class WindroseCtrl extends MetricsPanelCtrl {
   // intervals (step). Examples:
   // getIntervals(0, 360, {n: 3})     => [[0, 120], [120, 240], [240, 360]]
   // getIntervals(0, 100, {step: 30}) => [[0, 30], [30, 60], [60, 90], [90, 120]]
-  getIntervals(start, end, options) {
+  getIntervals(start, end, step) {
     const d = end - start;
-    let n = options.n;
-    let s = options.step;
-
-    if (n) s = d / n;
-    else if (s) n = Math.ceil(d / s);
-
-    return Array(n).fill().map((_, i) => [start + i * s, start + (i+1) * s]);
+    const n = Math.ceil(d / step);
+    return Array(n).fill().map((_, i) => [start + i * step, start + (i+1) * step]);
   }
 
-  // Helper function. Given a value and an array of sorted intervals, return
-  // the index of the interval the value belongs to. The first element of the
-  // array defines the minimum allowed value, the last element of the array
-  // defines the maximum allowed value.
-  getIntervalIndex(value, array) {
+  // Helper function. Given a value and an array of sorted intervals, returns
+  // the index of the interval the value belongs to, left-closed and
+  // right-open. Returns null if out of bounds. Example:
+  //
+  //   getIntervalIndex(5, [[0, 5], [5, 10], [10, 15]]) => 1
+  //
+  // Supports circular intervals, such as degrees. In this case the maximum
+  // allowed value must be passed as last argument. Example:
+  //
+  //   getIntervalIndex(354, [[-45, 45], [45, 135], [135, 225], [225, 315]], 360) => 0
+  //
+  // If it's not circular, the last interval will be left and right closed.
+  // Example:
+  //
+  //   getIntervalIndex(15, [[0, 5], [5, 10], [10, 15]]) => 2
+  //
+  getIntervalIndex(value, array, max = 0) {
     // Check value
     if (value === null) {
       console.debug('Unexpected value is null');
@@ -84,17 +91,29 @@ class WindroseCtrl extends MetricsPanelCtrl {
       return null;
     }
 
+    // For circular intervals, the 1st interval starts at a negative value
+    const len = array.length;
+    const last = len - 1;
+    if (value >= array[last][1]) {
+      value = value - max;
+    }
+
     // Within range
-    for (let i=0; i < array.length; i++) {
+    for (let i=0; i < len; i++) {
       let low = array[i][0];
       let high = array[i][1];
-      if (value >= low && value <= high) {
+      if (value >= low && value < high) {
         return i;
       }
     }
 
+    // Last interval is right-closed (except in circular intervals)
+    if (value == array[last][1]) {
+      return last;
+    }
+
     // Above upper limit
-    console.warn('Unexpected ' + value + ' greater than ' + array[array.length-1][1]);
+    console.warn(`getIntervalIndex ${value} too big`);
     return null;
   }
 
@@ -133,17 +152,30 @@ class WindroseCtrl extends MetricsPanelCtrl {
     const unit = panel.unit;
 
     // Intervals
-    const angleIntervals = this.getIntervals(0, 360, {n: slices});
-    const speedIntervals = this.getIntervals(start, this.speedMax, {step: step});
+    const angleStep = 360 / slices;
+    const angleIntervals = this.getIntervals(-angleStep/2, 360-angleStep/2, angleStep);
+    const speedIntervals = this.getIntervals(start, this.speedMax, step);
     //console.debug(this.speedMax);
     //console.debug('angleIntervals=', angleIntervals);
     //console.debug('speedIntervals=', speedIntervals);
+
+//  console.debug('**',
+//    this.getIntervalIndex(-1, [[0, 5], [5, 10], [10, 15]]), // null
+//    this.getIntervalIndex(0, [[0, 5], [5, 10], [10, 15]]), // 0
+//    this.getIntervalIndex(5, [[0, 5], [5, 10], [10, 15]]), // 1
+//    this.getIntervalIndex(15, [[0, 5], [5, 10], [10, 15]]), // 2
+//    this.getIntervalIndex(16, [[0, 5], [5, 10], [10, 15]]), // null
+//    this.getIntervalIndex(0, [[-45, 45], [45, 135], [135, 225], [225, 315]], 360), // 0
+//    this.getIntervalIndex(45, [[-45, 45], [45, 135], [135, 225], [225, 315]], 360), // 1
+//    this.getIntervalIndex(354, [[-45, 45], [45, 135], [135, 225], [225, 315]], 360), // 0
+//    this.getIntervalIndex(360, [[0, 90], [90, 180], [180, 270], [270, 360]], 360), // 0
+//  );
 
     // [angle-index][speed-index] = 0
     const matrix = [...Array(angleIntervals.length)].map(x => Array(speedIntervals.length).fill(0));
     // [angle-index][speed-index] = n
     for (let i=0; i < raw.length; i++) {
-      let j = this.getIntervalIndex(raw[i][0], angleIntervals);
+      let j = this.getIntervalIndex(raw[i][0], angleIntervals, 360);
       let k = this.getIntervalIndex(raw[i][1], speedIntervals);
       if (j != null && k != null) {
         matrix[j][k]++;
