@@ -1,8 +1,13 @@
+This Grafana plugin looks like:
+
+![Image of Windrose Grafana plugin](windrose-light.png)
+
+
 # Disclaimer
 
-This plugin has been tested with Grafana 6.4 but there's still work to do
-before submitting to Grafana. New versions may require changes to the query or
-configuration.
+This plugin has been tested with Grafana 6.4 and 7.1 but there's still work to
+do before submitting to Grafana. New versions may require changes to the query
+or configuration.
 
 # Usage
 
