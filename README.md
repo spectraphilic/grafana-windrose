@@ -5,9 +5,9 @@ This Grafana plugin looks like:
 
 # Disclaimer
 
-This plugin has been tested with Grafana 6.4 and 7.1 but there's still work to
-do before submitting to Grafana. New versions may require changes to the query
-or configuration.
+This plugin has been tested with Grafana 6.4, 7.1 and 7.2 but there's still
+work to do before submitting to Grafana. New versions may require changes to
+the query or configuration.
 
 # Usage
 
@@ -21,17 +21,27 @@ $ sudo su -
 
 Restart Grafana service.
 
-Example query:
+Example query for PostgreSQL:
 
 ```sql
 SELECT
   time,
   field1 AS speed,
   field2 AS direction
-FROM
-  table
-WHERE
-  $__unixEpochFilter("time")
+FROM table
+WHERE $__unixEpochFilter("time")
+ORDER BY time
+```
+
+Example for ClickHouse:
+
+```sql
+SELECT
+  $timeSeries as time,
+  field1 AS speed,
+  field2 AS direction
+FROM table
+WHERE $timeFilter
 ORDER BY time
 ```
 
