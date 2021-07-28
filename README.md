@@ -5,7 +5,7 @@ This Grafana plugin looks like:
 
 # Disclaimer
 
-This plugin has been tested with Grafana 6.4, 7.1 and 7.2 but there's still
+This plugin has been tested with Grafana 6.4, 7.x and 8.x but there's still
 work to do before submitting to Grafana. New versions may require changes to
 the query or configuration.
 
@@ -17,6 +17,13 @@ Install:
 $ sudo su -
 # cd /var/lib/grafana/plugins
 # git clone https://github.com/spectraphilic/grafana-windrose.git
+```
+
+Allow loading this plugin, in ``/etc/grafana/grafana.ini``:
+
+```
+[plugins]
+allow_loading_unsigned_plugins = spectraphilic-windrose-panel
 ```
 
 Restart Grafana service.

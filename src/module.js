@@ -117,26 +117,36 @@ class WindroseCtrl extends MetricsPanelCtrl {
     return null;
   }
 
+    onDataReceived(data) {
+        let speeds = [];
+        let angles = [];
 
-  onDataReceived(data) {
-    let speeds = [];
-    let angles = [];
-    for (let serie of data) {
-      let datapoints = serie.datapoints.map(x => x[0]);
-      if (serie.target === 'speed') {
-        speeds = datapoints;
-      } else if (serie.target === 'direction') {
-        angles = datapoints;
-      } else {
-        console.warn('unexpected target ' + serie.target);
-      }
+        if (data[0].type == 'table') {
+            // e.g. PostgreSQL
+            for (let row of data[0].rows) {
+                speeds.push(row[1]);
+                angles.push(row[2]);
+            }
+        } else if (data[0].datapoints) {
+            // e.g. ClickHouse
+            for (let serie of data) {
+                let datapoints = serie.datapoints.map(x => x[0]);
+                if (serie.target === 'speed') {
+                    speeds = datapoints;
+                } else if (serie.target === 'direction') {
+                    angles = datapoints;
+                } else {
+                    console.warn('unexpected target ' + serie.target);
+                }
+            }
+        } else {
+            console.warn('unexpected data format', data);
+        }
+
+        this.speedMax = speeds.length > 0 ? Math.max(...speeds) : 0;
+        this.data = zip(angles, speeds).filter(x => x[1] != null);
+        this.render()
     }
-
-    this.speedMax = speeds.length > 0 ? Math.max(...speeds) : 0;
-    this.data = zip(angles, speeds).filter(x => x[1] != null);
-    this.render()
-  }
-
 
   onRender() {
     //console.debug(this);

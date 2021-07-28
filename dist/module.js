@@ -61,6 +61,19 @@ System.register(['app/plugins/sdk'], function (exports) {
         return _setPrototypeOf(o, p);
       }
 
+      function _isNativeReflectConstruct() {
+        if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+        if (Reflect.construct.sham) return false;
+        if (typeof Proxy === "function") return true;
+
+        try {
+          Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
       function _assertThisInitialized(self) {
         if (self === void 0) {
           throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -77,24 +90,113 @@ System.register(['app/plugins/sdk'], function (exports) {
         return _assertThisInitialized(self);
       }
 
+      function _createSuper(Derived) {
+        var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
+        return function _createSuperInternal() {
+          var Super = _getPrototypeOf(Derived),
+              result;
+
+          if (hasNativeReflectConstruct) {
+            var NewTarget = _getPrototypeOf(this).constructor;
+
+            result = Reflect.construct(Super, arguments, NewTarget);
+          } else {
+            result = Super.apply(this, arguments);
+          }
+
+          return _possibleConstructorReturn(this, result);
+        };
+      }
+
       function _toConsumableArray(arr) {
-        return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+        return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
       }
 
       function _arrayWithoutHoles(arr) {
-        if (Array.isArray(arr)) {
-          for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-          return arr2;
-        }
+        if (Array.isArray(arr)) return _arrayLikeToArray(arr);
       }
 
       function _iterableToArray(iter) {
-        if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+        if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
+      }
+
+      function _unsupportedIterableToArray(o, minLen) {
+        if (!o) return;
+        if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+        var n = Object.prototype.toString.call(o).slice(8, -1);
+        if (n === "Object" && o.constructor) n = o.constructor.name;
+        if (n === "Map" || n === "Set") return Array.from(o);
+        if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+      }
+
+      function _arrayLikeToArray(arr, len) {
+        if (len == null || len > arr.length) len = arr.length;
+
+        for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+        return arr2;
       }
 
       function _nonIterableSpread() {
-        throw new TypeError("Invalid attempt to spread non-iterable instance");
+        throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+      }
+
+      function _createForOfIteratorHelper(o, allowArrayLike) {
+        var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
+
+        if (!it) {
+          if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
+            if (it) o = it;
+            var i = 0;
+
+            var F = function () {};
+
+            return {
+              s: F,
+              n: function () {
+                if (i >= o.length) return {
+                  done: true
+                };
+                return {
+                  done: false,
+                  value: o[i++]
+                };
+              },
+              e: function (e) {
+                throw e;
+              },
+              f: F
+            };
+          }
+
+          throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+        }
+
+        var normalCompletion = true,
+            didErr = false,
+            err;
+        return {
+          s: function () {
+            it = it.call(o);
+          },
+          n: function () {
+            var step = it.next();
+            normalCompletion = step.done;
+            return step;
+          },
+          e: function (e) {
+            didErr = true;
+            err = e;
+          },
+          f: function () {
+            try {
+              if (!normalCompletion && it.return != null) it.return();
+            } finally {
+              if (didErr) throw err;
+            }
+          }
+        };
       }
 
       /** Detect free variable `global` from Node.js. */
@@ -104,26 +206,26 @@ System.register(['app/plugins/sdk'], function (exports) {
       var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
 
       /** Used as a reference to the global object. */
-      var root = freeGlobal || freeSelf || Function('return this')();
+      var root$1 = freeGlobal || freeSelf || Function('return this')();
 
       /** Built-in value references. */
-      var Symbol$1 = root.Symbol;
+      var Symbol$1 = root$1.Symbol;
 
       /** Used for built-in method references. */
-      var objectProto = Object.prototype;
+      var objectProto$7 = Object.prototype;
 
       /** Used to check objects for own properties. */
-      var hasOwnProperty = objectProto.hasOwnProperty;
+      var hasOwnProperty$5 = objectProto$7.hasOwnProperty;
 
       /**
        * Used to resolve the
        * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
        * of values.
        */
-      var nativeObjectToString = objectProto.toString;
+      var nativeObjectToString$1 = objectProto$7.toString;
 
       /** Built-in value references. */
-      var symToStringTag = Symbol$1 ? Symbol$1.toStringTag : undefined;
+      var symToStringTag$1 = Symbol$1 ? Symbol$1.toStringTag : undefined;
 
       /**
        * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
@@ -133,34 +235,34 @@ System.register(['app/plugins/sdk'], function (exports) {
        * @returns {string} Returns the raw `toStringTag`.
        */
       function getRawTag(value) {
-        var isOwn = hasOwnProperty.call(value, symToStringTag),
-            tag = value[symToStringTag];
+        var isOwn = hasOwnProperty$5.call(value, symToStringTag$1),
+            tag = value[symToStringTag$1];
 
         try {
-          value[symToStringTag] = undefined;
+          value[symToStringTag$1] = undefined;
           var unmasked = true;
         } catch (e) {}
 
-        var result = nativeObjectToString.call(value);
+        var result = nativeObjectToString$1.call(value);
         if (unmasked) {
           if (isOwn) {
-            value[symToStringTag] = tag;
+            value[symToStringTag$1] = tag;
           } else {
-            delete value[symToStringTag];
+            delete value[symToStringTag$1];
           }
         }
         return result;
       }
 
       /** Used for built-in method references. */
-      var objectProto$1 = Object.prototype;
+      var objectProto$6 = Object.prototype;
 
       /**
        * Used to resolve the
        * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
        * of values.
        */
-      var nativeObjectToString$1 = objectProto$1.toString;
+      var nativeObjectToString = objectProto$6.toString;
 
       /**
        * Converts `value` to a string using `Object.prototype.toString`.
@@ -170,7 +272,7 @@ System.register(['app/plugins/sdk'], function (exports) {
        * @returns {string} Returns the converted string.
        */
       function objectToString(value) {
-        return nativeObjectToString$1.call(value);
+        return nativeObjectToString.call(value);
       }
 
       /** `Object#toString` result references. */
@@ -178,7 +280,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           undefinedTag = '[object Undefined]';
 
       /** Built-in value references. */
-      var symToStringTag$1 = Symbol$1 ? Symbol$1.toStringTag : undefined;
+      var symToStringTag = Symbol$1 ? Symbol$1.toStringTag : undefined;
 
       /**
        * The base implementation of `getTag` without fallbacks for buggy environments.
@@ -191,7 +293,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         if (value == null) {
           return value === undefined ? undefinedTag : nullTag;
         }
-        return (symToStringTag$1 && symToStringTag$1 in Object(value))
+        return (symToStringTag && symToStringTag in Object(value))
           ? getRawTag(value)
           : objectToString(value);
       }
@@ -294,6 +396,40 @@ System.register(['app/plugins/sdk'], function (exports) {
        */
       var isArray = Array.isArray;
 
+      /** Used to match a single whitespace character. */
+      var reWhitespace = /\s/;
+
+      /**
+       * Used by `_.trim` and `_.trimEnd` to get the index of the last non-whitespace
+       * character of `string`.
+       *
+       * @private
+       * @param {string} string The string to inspect.
+       * @returns {number} Returns the index of the last non-whitespace character.
+       */
+      function trimmedEndIndex(string) {
+        var index = string.length;
+
+        while (index-- && reWhitespace.test(string.charAt(index))) {}
+        return index;
+      }
+
+      /** Used to match leading whitespace. */
+      var reTrimStart = /^\s+/;
+
+      /**
+       * The base implementation of `_.trim`.
+       *
+       * @private
+       * @param {string} string The string to trim.
+       * @returns {string} Returns the trimmed string.
+       */
+      function baseTrim(string) {
+        return string
+          ? string.slice(0, trimmedEndIndex(string) + 1).replace(reTrimStart, '')
+          : string;
+      }
+
       /**
        * Checks if `value` is the
        * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
@@ -326,9 +462,6 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       /** Used as references for various `Number` constants. */
       var NAN = 0 / 0;
-
-      /** Used to match leading and trailing whitespace. */
-      var reTrim = /^\s+|\s+$/g;
 
       /** Used to detect bad signed hexadecimal string values. */
       var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
@@ -379,7 +512,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         if (typeof value != 'string') {
           return value === 0 ? value : +value;
         }
-        value = value.replace(reTrim, '');
+        value = baseTrim(value);
         var isBinary = reIsBinary.test(value);
         return (isBinary || reIsOctal.test(value))
           ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
@@ -441,13 +574,13 @@ System.register(['app/plugins/sdk'], function (exports) {
        * console.log(_.identity(object) === object);
        * // => true
        */
-      function identity(value) {
+      function identity$4(value) {
         return value;
       }
 
       /** `Object#toString` result references. */
       var asyncTag = '[object AsyncFunction]',
-          funcTag = '[object Function]',
+          funcTag$1 = '[object Function]',
           genTag = '[object GeneratorFunction]',
           proxyTag = '[object Proxy]';
 
@@ -475,11 +608,11 @@ System.register(['app/plugins/sdk'], function (exports) {
         // The use of `Object#toString` avoids issues with the `typeof` operator
         // in Safari 9 which returns 'object' for typed arrays and other constructors.
         var tag = baseGetTag(value);
-        return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
+        return tag == funcTag$1 || tag == genTag || tag == asyncTag || tag == proxyTag;
       }
 
       /** Used to detect overreaching core-js shims. */
-      var coreJsData = root['__core-js_shared__'];
+      var coreJsData = root$1['__core-js_shared__'];
 
       /** Used to detect methods masquerading as native. */
       var maskSrcKey = (function() {
@@ -499,10 +632,10 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       /** Used for built-in method references. */
-      var funcProto = Function.prototype;
+      var funcProto$1 = Function.prototype;
 
       /** Used to resolve the decompiled source of functions. */
-      var funcToString = funcProto.toString;
+      var funcToString$1 = funcProto$1.toString;
 
       /**
        * Converts `func` to its source code.
@@ -514,7 +647,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       function toSource(func) {
         if (func != null) {
           try {
-            return funcToString.call(func);
+            return funcToString$1.call(func);
           } catch (e) {}
           try {
             return (func + '');
@@ -533,18 +666,18 @@ System.register(['app/plugins/sdk'], function (exports) {
       var reIsHostCtor = /^\[object .+?Constructor\]$/;
 
       /** Used for built-in method references. */
-      var funcProto$1 = Function.prototype,
-          objectProto$2 = Object.prototype;
+      var funcProto = Function.prototype,
+          objectProto$5 = Object.prototype;
 
       /** Used to resolve the decompiled source of functions. */
-      var funcToString$1 = funcProto$1.toString;
+      var funcToString = funcProto.toString;
 
       /** Used to check objects for own properties. */
-      var hasOwnProperty$1 = objectProto$2.hasOwnProperty;
+      var hasOwnProperty$4 = objectProto$5.hasOwnProperty;
 
       /** Used to detect if a method is native. */
       var reIsNative = RegExp('^' +
-        funcToString$1.call(hasOwnProperty$1).replace(reRegExpChar, '\\$&')
+        funcToString.call(hasOwnProperty$4).replace(reRegExpChar, '\\$&')
         .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
       );
 
@@ -664,7 +797,7 @@ System.register(['app/plugins/sdk'], function (exports) {
        * console.log(objects[0] === objects[1]);
        * // => true
        */
-      function constant(value) {
+      function constant$4(value) {
         return function() {
           return value;
         };
@@ -686,11 +819,11 @@ System.register(['app/plugins/sdk'], function (exports) {
        * @param {Function} string The `toString` result.
        * @returns {Function} Returns `func`.
        */
-      var baseSetToString = !defineProperty ? identity : function(func, string) {
+      var baseSetToString = !defineProperty ? identity$4 : function(func, string) {
         return defineProperty(func, 'toString', {
           'configurable': true,
           'enumerable': false,
-          'value': constant(string),
+          'value': constant$4(string),
           'writable': true
         });
       };
@@ -706,7 +839,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       var setToString = shortOut(baseSetToString);
 
       /** Used as references for various `Number` constants. */
-      var MAX_SAFE_INTEGER = 9007199254740991;
+      var MAX_SAFE_INTEGER$1 = 9007199254740991;
 
       /** Used to detect unsigned integer values. */
       var reIsUint = /^(?:0|[1-9]\d*)$/;
@@ -721,7 +854,7 @@ System.register(['app/plugins/sdk'], function (exports) {
        */
       function isIndex(value, length) {
         var type = typeof value;
-        length = length == null ? MAX_SAFE_INTEGER : length;
+        length = length == null ? MAX_SAFE_INTEGER$1 : length;
 
         return !!length &&
           (type == 'number' ||
@@ -766,7 +899,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       /* Built-in method references for those with the same name as other `lodash` methods. */
-      var nativeMax = Math.max;
+      var nativeMax$3 = Math.max;
 
       /**
        * A specialized version of `baseRest` which transforms the rest array.
@@ -778,11 +911,11 @@ System.register(['app/plugins/sdk'], function (exports) {
        * @returns {Function} Returns the new function.
        */
       function overRest(func, start, transform) {
-        start = nativeMax(start === undefined ? (func.length - 1) : start, 0);
+        start = nativeMax$3(start === undefined ? (func.length - 1) : start, 0);
         return function() {
           var args = arguments,
               index = -1,
-              length = nativeMax(args.length - start, 0),
+              length = nativeMax$3(args.length - start, 0),
               array = Array(length);
 
           while (++index < length) {
@@ -807,11 +940,11 @@ System.register(['app/plugins/sdk'], function (exports) {
        * @returns {Function} Returns the new function.
        */
       function baseRest(func, start) {
-        return setToString(overRest(func, start, identity), func + '');
+        return setToString(overRest(func, start, identity$4), func + '');
       }
 
       /** Used as references for various `Number` constants. */
-      var MAX_SAFE_INTEGER$1 = 9007199254740991;
+      var MAX_SAFE_INTEGER = 9007199254740991;
 
       /**
        * Checks if `value` is a valid array-like length.
@@ -841,7 +974,7 @@ System.register(['app/plugins/sdk'], function (exports) {
        */
       function isLength(value) {
         return typeof value == 'number' &&
-          value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER$1;
+          value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
       }
 
       /**
@@ -898,7 +1031,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       /** Used for built-in method references. */
-      var objectProto$3 = Object.prototype;
+      var objectProto$4 = Object.prototype;
 
       /**
        * Checks if `value` is likely a prototype object.
@@ -909,7 +1042,7 @@ System.register(['app/plugins/sdk'], function (exports) {
        */
       function isPrototype(value) {
         var Ctor = value && value.constructor,
-            proto = (typeof Ctor == 'function' && Ctor.prototype) || objectProto$3;
+            proto = (typeof Ctor == 'function' && Ctor.prototype) || objectProto$4;
 
         return value === proto;
       }
@@ -934,7 +1067,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       /** `Object#toString` result references. */
-      var argsTag = '[object Arguments]';
+      var argsTag$1 = '[object Arguments]';
 
       /**
        * The base implementation of `_.isArguments`.
@@ -944,17 +1077,17 @@ System.register(['app/plugins/sdk'], function (exports) {
        * @returns {boolean} Returns `true` if `value` is an `arguments` object,
        */
       function baseIsArguments(value) {
-        return isObjectLike(value) && baseGetTag(value) == argsTag;
+        return isObjectLike(value) && baseGetTag(value) == argsTag$1;
       }
 
       /** Used for built-in method references. */
-      var objectProto$4 = Object.prototype;
+      var objectProto$3 = Object.prototype;
 
       /** Used to check objects for own properties. */
-      var hasOwnProperty$2 = objectProto$4.hasOwnProperty;
+      var hasOwnProperty$3 = objectProto$3.hasOwnProperty;
 
       /** Built-in value references. */
-      var propertyIsEnumerable = objectProto$4.propertyIsEnumerable;
+      var propertyIsEnumerable = objectProto$3.propertyIsEnumerable;
 
       /**
        * Checks if `value` is likely an `arguments` object.
@@ -975,7 +1108,7 @@ System.register(['app/plugins/sdk'], function (exports) {
        * // => false
        */
       var isArguments = baseIsArguments(function() { return arguments; }()) ? baseIsArguments : function(value) {
-        return isObjectLike(value) && hasOwnProperty$2.call(value, 'callee') &&
+        return isObjectLike(value) && hasOwnProperty$3.call(value, 'callee') &&
           !propertyIsEnumerable.call(value, 'callee');
       };
 
@@ -997,16 +1130,16 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       /** Detect free variable `exports`. */
-      var freeExports = typeof exports == 'object' && exports && !exports.nodeType && exports;
+      var freeExports$1 = typeof exports == 'object' && exports && !exports.nodeType && exports;
 
       /** Detect free variable `module`. */
-      var freeModule = freeExports && typeof module == 'object' && module && !module.nodeType && module;
+      var freeModule$1 = freeExports$1 && typeof module == 'object' && module && !module.nodeType && module;
 
       /** Detect the popular CommonJS extension `module.exports`. */
-      var moduleExports = freeModule && freeModule.exports === freeExports;
+      var moduleExports$1 = freeModule$1 && freeModule$1.exports === freeExports$1;
 
       /** Built-in value references. */
-      var Buffer = moduleExports ? root.Buffer : undefined;
+      var Buffer = moduleExports$1 ? root$1.Buffer : undefined;
 
       /* Built-in method references for those with the same name as other `lodash` methods. */
       var nativeIsBuffer = Buffer ? Buffer.isBuffer : undefined;
@@ -1031,12 +1164,12 @@ System.register(['app/plugins/sdk'], function (exports) {
       var isBuffer = nativeIsBuffer || stubFalse;
 
       /** `Object#toString` result references. */
-      var argsTag$1 = '[object Arguments]',
+      var argsTag = '[object Arguments]',
           arrayTag = '[object Array]',
           boolTag = '[object Boolean]',
           dateTag = '[object Date]',
           errorTag = '[object Error]',
-          funcTag$1 = '[object Function]',
+          funcTag = '[object Function]',
           mapTag = '[object Map]',
           numberTag = '[object Number]',
           objectTag = '[object Object]',
@@ -1064,10 +1197,10 @@ System.register(['app/plugins/sdk'], function (exports) {
       typedArrayTags[int32Tag] = typedArrayTags[uint8Tag] =
       typedArrayTags[uint8ClampedTag] = typedArrayTags[uint16Tag] =
       typedArrayTags[uint32Tag] = true;
-      typedArrayTags[argsTag$1] = typedArrayTags[arrayTag] =
+      typedArrayTags[argsTag] = typedArrayTags[arrayTag] =
       typedArrayTags[arrayBufferTag] = typedArrayTags[boolTag] =
       typedArrayTags[dataViewTag] = typedArrayTags[dateTag] =
-      typedArrayTags[errorTag] = typedArrayTags[funcTag$1] =
+      typedArrayTags[errorTag] = typedArrayTags[funcTag] =
       typedArrayTags[mapTag] = typedArrayTags[numberTag] =
       typedArrayTags[objectTag] = typedArrayTags[regexpTag] =
       typedArrayTags[setTag] = typedArrayTags[stringTag] =
@@ -1099,22 +1232,22 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       /** Detect free variable `exports`. */
-      var freeExports$1 = typeof exports == 'object' && exports && !exports.nodeType && exports;
+      var freeExports = typeof exports == 'object' && exports && !exports.nodeType && exports;
 
       /** Detect free variable `module`. */
-      var freeModule$1 = freeExports$1 && typeof module == 'object' && module && !module.nodeType && module;
+      var freeModule = freeExports && typeof module == 'object' && module && !module.nodeType && module;
 
       /** Detect the popular CommonJS extension `module.exports`. */
-      var moduleExports$1 = freeModule$1 && freeModule$1.exports === freeExports$1;
+      var moduleExports = freeModule && freeModule.exports === freeExports;
 
       /** Detect free variable `process` from Node.js. */
-      var freeProcess = moduleExports$1 && freeGlobal.process;
+      var freeProcess = moduleExports && freeGlobal.process;
 
       /** Used to access faster Node.js helpers. */
       var nodeUtil = (function() {
         try {
           // Use `util.types` for Node.js 10+.
-          var types = freeModule$1 && freeModule$1.require && freeModule$1.require('util').types;
+          var types = freeModule && freeModule.require && freeModule.require('util').types;
 
           if (types) {
             return types;
@@ -1148,10 +1281,10 @@ System.register(['app/plugins/sdk'], function (exports) {
       var isTypedArray = nodeIsTypedArray ? baseUnary(nodeIsTypedArray) : baseIsTypedArray;
 
       /** Used for built-in method references. */
-      var objectProto$5 = Object.prototype;
+      var objectProto$2 = Object.prototype;
 
       /** Used to check objects for own properties. */
-      var hasOwnProperty$3 = objectProto$5.hasOwnProperty;
+      var hasOwnProperty$2 = objectProto$2.hasOwnProperty;
 
       /**
        * Creates an array of the enumerable property names of the array-like `value`.
@@ -1171,7 +1304,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             length = result.length;
 
         for (var key in value) {
-          if ((inherited || hasOwnProperty$3.call(value, key)) &&
+          if ((inherited || hasOwnProperty$2.call(value, key)) &&
               !(skipIndexes && (
                  // Safari 9 has enumerable `arguments.length` in strict mode.
                  key == 'length' ||
@@ -1208,10 +1341,10 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       /** Used for built-in method references. */
-      var objectProto$6 = Object.prototype;
+      var objectProto$1 = Object.prototype;
 
       /** Used to check objects for own properties. */
-      var hasOwnProperty$4 = objectProto$6.hasOwnProperty;
+      var hasOwnProperty$1 = objectProto$1.hasOwnProperty;
 
       /**
        * The base implementation of `_.keysIn` which doesn't treat sparse arrays as dense.
@@ -1228,7 +1361,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             result = [];
 
         for (var key in object) {
-          if (!(key == 'constructor' && (isProto || !hasOwnProperty$4.call(object, key)))) {
+          if (!(key == 'constructor' && (isProto || !hasOwnProperty$1.call(object, key)))) {
             result.push(key);
           }
         }
@@ -1315,15 +1448,15 @@ System.register(['app/plugins/sdk'], function (exports) {
        * }, _.now());
        * // => Logs the number of milliseconds it took for the deferred invocation.
        */
-      var now = function() {
-        return root.Date.now();
+      var now$1 = function() {
+        return root$1.Date.now();
       };
 
       /** Error message constants. */
       var FUNC_ERROR_TEXT = 'Expected a function';
 
       /* Built-in method references for those with the same name as other `lodash` methods. */
-      var nativeMax$1 = Math.max,
+      var nativeMax$2 = Math.max,
           nativeMin = Math.min;
 
       /**
@@ -1399,7 +1532,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         if (isObject(options)) {
           leading = !!options.leading;
           maxing = 'maxWait' in options;
-          maxWait = maxing ? nativeMax$1(toNumber(options.maxWait) || 0, wait) : maxWait;
+          maxWait = maxing ? nativeMax$2(toNumber(options.maxWait) || 0, wait) : maxWait;
           trailing = 'trailing' in options ? !!options.trailing : trailing;
         }
 
@@ -1444,7 +1577,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         }
 
         function timerExpired() {
-          var time = now();
+          var time = now$1();
           if (shouldInvoke(time)) {
             return trailingEdge(time);
           }
@@ -1473,11 +1606,11 @@ System.register(['app/plugins/sdk'], function (exports) {
         }
 
         function flush() {
-          return timerId === undefined ? result : trailingEdge(now());
+          return timerId === undefined ? result : trailingEdge(now$1());
         }
 
         function debounced() {
-          var time = now(),
+          var time = now$1(),
               isInvoking = shouldInvoke(time);
 
           lastArgs = arguments;
@@ -1506,10 +1639,10 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       /** Used for built-in method references. */
-      var objectProto$7 = Object.prototype;
+      var objectProto = Object.prototype;
 
       /** Used to check objects for own properties. */
-      var hasOwnProperty$5 = objectProto$7.hasOwnProperty;
+      var hasOwnProperty = objectProto.hasOwnProperty;
 
       /**
        * Assigns own and inherited enumerable string keyed properties of source
@@ -1554,7 +1687,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             var value = object[key];
 
             if (value === undefined ||
-                (eq(value, objectProto$7[key]) && !hasOwnProperty$5.call(object, key))) {
+                (eq(value, objectProto[key]) && !hasOwnProperty.call(object, key))) {
               object[key] = source[key];
             }
           }
@@ -1594,7 +1727,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       /* Built-in method references for those with the same name as other `lodash` methods. */
       var nativeCeil = Math.ceil,
-          nativeMax$2 = Math.max;
+          nativeMax$1 = Math.max;
 
       /**
        * The base implementation of `_.range` and `_.rangeRight` which doesn't
@@ -1609,7 +1742,7 @@ System.register(['app/plugins/sdk'], function (exports) {
        */
       function baseRange(start, end, step, fromRight) {
         var index = -1,
-            length = nativeMax$2(nativeCeil((end - start) / (step || 1)), 0),
+            length = nativeMax$1(nativeCeil((end - start) / (step || 1)), 0),
             result = Array(length);
 
         while (length--) {
@@ -1688,7 +1821,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       var range = createRange();
 
       /* Built-in method references for those with the same name as other `lodash` methods. */
-      var nativeMax$3 = Math.max;
+      var nativeMax = Math.max;
 
       /**
        * This method is like `_.zip` except that it accepts an array of grouped
@@ -1716,7 +1849,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         var length = 0;
         array = arrayFilter(array, function(group) {
           if (isArrayLikeObject(group)) {
-            length = nativeMax$3(group.length, length);
+            length = nativeMax(group.length, length);
             return true;
           }
         });
@@ -1743,7 +1876,7 @@ System.register(['app/plugins/sdk'], function (exports) {
        */
       var zip = baseRest(unzip);
 
-      function ascending(a, b) {
+      function ascending$1(a, b) {
         return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
       }
 
@@ -1775,11 +1908,11 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       function ascendingComparator(f) {
         return function(d, x) {
-          return ascending(f(d), x);
+          return ascending$1(f(d), x);
         };
       }
 
-      var ascendingBisect = bisector(ascending);
+      var ascendingBisect = bisector(ascending$1);
       var bisectRight = ascendingBisect.right;
 
       function sequence(start, stop, step) {
@@ -1848,7 +1981,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         return stop < start ? -step1 : step1;
       }
 
-      function max(values, valueof) {
+      function max$1(values, valueof) {
         var n = values.length,
             i = -1,
             value,
@@ -1904,9 +2037,9 @@ System.register(['app/plugins/sdk'], function (exports) {
         return sum;
       }
 
-      var slice = Array.prototype.slice;
+      var slice$2 = Array.prototype.slice;
 
-      function identity$1(x) {
+      function identity$3(x) {
         return x;
       }
 
@@ -1914,7 +2047,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           right = 2,
           bottom = 3,
           left = 4,
-          epsilon = 1e-6;
+          epsilon$2 = 1e-6;
 
       function translateX(x) {
         return "translate(" + (x + 0.5) + ",0)";
@@ -1924,7 +2057,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         return "translate(0," + (y + 0.5) + ")";
       }
 
-      function number(scale) {
+      function number$1(scale) {
         return function(d) {
           return +scale(d);
         };
@@ -1955,12 +2088,12 @@ System.register(['app/plugins/sdk'], function (exports) {
 
         function axis(context) {
           var values = tickValues == null ? (scale.ticks ? scale.ticks.apply(scale, tickArguments) : scale.domain()) : tickValues,
-              format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : identity$1) : tickFormat,
+              format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : identity$3) : tickFormat,
               spacing = Math.max(tickSizeInner, 0) + tickPadding,
               range = scale.range(),
               range0 = +range[0] + 0.5,
               range1 = +range[range.length - 1] + 0.5,
-              position = (scale.bandwidth ? center : number)(scale.copy()),
+              position = (scale.bandwidth ? center : number$1)(scale.copy()),
               selection = context.selection ? context.selection() : context,
               path = selection.selectAll(".domain").data([null]),
               tick = selection.selectAll(".tick").data(values, scale).order(),
@@ -1991,11 +2124,11 @@ System.register(['app/plugins/sdk'], function (exports) {
             text = text.transition(context);
 
             tickExit = tickExit.transition(context)
-                .attr("opacity", epsilon)
+                .attr("opacity", epsilon$2)
                 .attr("transform", function(d) { return isFinite(d = position(d)) ? transform(d) : this.getAttribute("transform"); });
 
             tickEnter
-                .attr("opacity", epsilon)
+                .attr("opacity", epsilon$2)
                 .attr("transform", function(d) { var p = this.parentNode.__axis; return transform(p && isFinite(p = p(d)) ? p : position(d)); });
           }
 
@@ -2032,15 +2165,15 @@ System.register(['app/plugins/sdk'], function (exports) {
         };
 
         axis.ticks = function() {
-          return tickArguments = slice.call(arguments), axis;
+          return tickArguments = slice$2.call(arguments), axis;
         };
 
         axis.tickArguments = function(_) {
-          return arguments.length ? (tickArguments = _ == null ? [] : slice.call(_), axis) : tickArguments.slice();
+          return arguments.length ? (tickArguments = _ == null ? [] : slice$2.call(_), axis) : tickArguments.slice();
         };
 
         axis.tickValues = function(_) {
-          return arguments.length ? (tickValues = _ == null ? null : slice.call(_), axis) : tickValues && tickValues.slice();
+          return arguments.length ? (tickValues = _ == null ? null : slice$2.call(_), axis) : tickValues && tickValues.slice();
         };
 
         axis.tickFormat = function(_) {
@@ -2084,7 +2217,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         this._ = _;
       }
 
-      function parseTypenames(typenames, types) {
+      function parseTypenames$1(typenames, types) {
         return typenames.trim().split(/^|\s+/).map(function(t) {
           var name = "", i = t.indexOf(".");
           if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
@@ -2097,14 +2230,14 @@ System.register(['app/plugins/sdk'], function (exports) {
         constructor: Dispatch,
         on: function(typename, callback) {
           var _ = this._,
-              T = parseTypenames(typename + "", _),
+              T = parseTypenames$1(typename + "", _),
               t,
               i = -1,
               n = T.length;
 
           // If no callback was specified, return the callback of the given type and name.
           if (arguments.length < 2) {
-            while (++i < n) if ((t = (typename = T[i]).type) && (t = get(_[t], typename.name))) return t;
+            while (++i < n) if ((t = (typename = T[i]).type) && (t = get$1(_[t], typename.name))) return t;
             return;
           }
 
@@ -2112,8 +2245,8 @@ System.register(['app/plugins/sdk'], function (exports) {
           // Otherwise, if a null callback was specified, remove callbacks of the given name.
           if (callback != null && typeof callback !== "function") throw new Error("invalid callback: " + callback);
           while (++i < n) {
-            if (t = (typename = T[i]).type) _[t] = set(_[t], typename.name, callback);
-            else if (callback == null) for (t in _) _[t] = set(_[t], typename.name, null);
+            if (t = (typename = T[i]).type) _[t] = set$1(_[t], typename.name, callback);
+            else if (callback == null) for (t in _) _[t] = set$1(_[t], typename.name, null);
           }
 
           return this;
@@ -2134,7 +2267,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         }
       };
 
-      function get(type, name) {
+      function get$1(type, name) {
         for (var i = 0, n = type.length, c; i < n; ++i) {
           if ((c = type[i]).name === name) {
             return c.value;
@@ -2142,7 +2275,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         }
       }
 
-      function set(type, name, callback) {
+      function set$1(type, name, callback) {
         for (var i = 0, n = type.length; i < n; ++i) {
           if (type[i].name === name) {
             type[i] = noop, type = type.slice(0, i).concat(type.slice(i + 1));
@@ -2192,10 +2325,10 @@ System.register(['app/plugins/sdk'], function (exports) {
             : creatorInherit)(fullname);
       }
 
-      function none() {}
+      function none$2() {}
 
       function selector(selector) {
-        return selector == null ? none : function() {
+        return selector == null ? none$2 : function() {
           return this.querySelector(selector);
         };
       }
@@ -2212,7 +2345,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           }
         }
 
-        return new Selection(subgroups, this._parents);
+        return new Selection$1(subgroups, this._parents);
       }
 
       function empty() {
@@ -2237,7 +2370,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           }
         }
 
-        return new Selection(subgroups, parents);
+        return new Selection$1(subgroups, parents);
       }
 
       function matcher(selector) {
@@ -2257,7 +2390,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           }
         }
 
-        return new Selection(subgroups, this._parents);
+        return new Selection$1(subgroups, this._parents);
       }
 
       function sparse(update) {
@@ -2265,7 +2398,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       function selection_enter() {
-        return new Selection(this._enter || this._groups.map(sparse), this._parents);
+        return new Selection$1(this._enter || this._groups.map(sparse), this._parents);
       }
 
       function EnterNode(parent, datum) {
@@ -2284,7 +2417,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
       };
 
-      function constant$1(x) {
+      function constant$3(x) {
         return function() {
           return x;
         };
@@ -2373,7 +2506,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             parents = this._parents,
             groups = this._groups;
 
-        if (typeof value !== "function") value = constant$1(value);
+        if (typeof value !== "function") value = constant$3(value);
 
         for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
           var parent = parents[j],
@@ -2399,14 +2532,14 @@ System.register(['app/plugins/sdk'], function (exports) {
           }
         }
 
-        update = new Selection(update, parents);
+        update = new Selection$1(update, parents);
         update._enter = enter;
         update._exit = exit;
         return update;
       }
 
       function selection_exit() {
-        return new Selection(this._exit || this._groups.map(sparse), this._parents);
+        return new Selection$1(this._exit || this._groups.map(sparse), this._parents);
       }
 
       function selection_join(onenter, onupdate, onexit) {
@@ -2431,7 +2564,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           merges[j] = groups0[j];
         }
 
-        return new Selection(merges, this._parents);
+        return new Selection$1(merges, this._parents);
       }
 
       function selection_order() {
@@ -2449,7 +2582,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       function selection_sort(compare) {
-        if (!compare) compare = ascending$1;
+        if (!compare) compare = ascending;
 
         function compareNode(a, b) {
           return a && b ? compare(a.__data__, b.__data__) : !a - !b;
@@ -2464,10 +2597,10 @@ System.register(['app/plugins/sdk'], function (exports) {
           sortgroup.sort(compareNode);
         }
 
-        return new Selection(sortgroups, this._parents).order();
+        return new Selection$1(sortgroups, this._parents).order();
       }
 
-      function ascending$1(a, b) {
+      function ascending(a, b) {
         return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
       }
 
@@ -2517,31 +2650,31 @@ System.register(['app/plugins/sdk'], function (exports) {
         return this;
       }
 
-      function attrRemove(name) {
+      function attrRemove$1(name) {
         return function() {
           this.removeAttribute(name);
         };
       }
 
-      function attrRemoveNS(fullname) {
+      function attrRemoveNS$1(fullname) {
         return function() {
           this.removeAttributeNS(fullname.space, fullname.local);
         };
       }
 
-      function attrConstant(name, value) {
+      function attrConstant$1(name, value) {
         return function() {
           this.setAttribute(name, value);
         };
       }
 
-      function attrConstantNS(fullname, value) {
+      function attrConstantNS$1(fullname, value) {
         return function() {
           this.setAttributeNS(fullname.space, fullname.local, value);
         };
       }
 
-      function attrFunction(name, value) {
+      function attrFunction$1(name, value) {
         return function() {
           var v = value.apply(this, arguments);
           if (v == null) this.removeAttribute(name);
@@ -2549,7 +2682,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         };
       }
 
-      function attrFunctionNS(fullname, value) {
+      function attrFunctionNS$1(fullname, value) {
         return function() {
           var v = value.apply(this, arguments);
           if (v == null) this.removeAttributeNS(fullname.space, fullname.local);
@@ -2568,9 +2701,9 @@ System.register(['app/plugins/sdk'], function (exports) {
         }
 
         return this.each((value == null
-            ? (fullname.local ? attrRemoveNS : attrRemove) : (typeof value === "function"
-            ? (fullname.local ? attrFunctionNS : attrFunction)
-            : (fullname.local ? attrConstantNS : attrConstant)))(fullname, value));
+            ? (fullname.local ? attrRemoveNS$1 : attrRemove$1) : (typeof value === "function"
+            ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)
+            : (fullname.local ? attrConstantNS$1 : attrConstant$1)))(fullname, value));
       }
 
       function defaultView(node) {
@@ -2579,19 +2712,19 @@ System.register(['app/plugins/sdk'], function (exports) {
             || node.defaultView; // node is a Document
       }
 
-      function styleRemove(name) {
+      function styleRemove$1(name) {
         return function() {
           this.style.removeProperty(name);
         };
       }
 
-      function styleConstant(name, value, priority) {
+      function styleConstant$1(name, value, priority) {
         return function() {
           this.style.setProperty(name, value, priority);
         };
       }
 
-      function styleFunction(name, value, priority) {
+      function styleFunction$1(name, value, priority) {
         return function() {
           var v = value.apply(this, arguments);
           if (v == null) this.style.removeProperty(name);
@@ -2602,9 +2735,9 @@ System.register(['app/plugins/sdk'], function (exports) {
       function selection_style(name, value, priority) {
         return arguments.length > 1
             ? this.each((value == null
-                  ? styleRemove : typeof value === "function"
-                  ? styleFunction
-                  : styleConstant)(name, value, priority == null ? "" : priority))
+                  ? styleRemove$1 : typeof value === "function"
+                  ? styleFunction$1
+                  : styleConstant$1)(name, value, priority == null ? "" : priority))
             : styleValue(this.node(), name);
       }
 
@@ -2722,13 +2855,13 @@ System.register(['app/plugins/sdk'], function (exports) {
         this.textContent = "";
       }
 
-      function textConstant(value) {
+      function textConstant$1(value) {
         return function() {
           this.textContent = value;
         };
       }
 
-      function textFunction(value) {
+      function textFunction$1(value) {
         return function() {
           var v = value.apply(this, arguments);
           this.textContent = v == null ? "" : v;
@@ -2739,8 +2872,8 @@ System.register(['app/plugins/sdk'], function (exports) {
         return arguments.length
             ? this.each(value == null
                 ? textRemove : (typeof value === "function"
-                ? textFunction
-                : textConstant)(value))
+                ? textFunction$1
+                : textConstant$1)(value))
             : this.node().textContent;
       }
 
@@ -2862,7 +2995,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         };
       }
 
-      function parseTypenames$1(typenames) {
+      function parseTypenames(typenames) {
         return typenames.trim().split(/^|\s+/).map(function(t) {
           var name = "", i = t.indexOf(".");
           if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
@@ -2906,7 +3039,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       function selection_on(typename, value, capture) {
-        var typenames = parseTypenames$1(typename + ""), i, n = typenames.length, t;
+        var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
 
         if (arguments.length < 2) {
           var on = this.node().__on;
@@ -2959,19 +3092,19 @@ System.register(['app/plugins/sdk'], function (exports) {
             : dispatchConstant)(type, params));
       }
 
-      var root$1 = [null];
+      var root = [null];
 
-      function Selection(groups, parents) {
+      function Selection$1(groups, parents) {
         this._groups = groups;
         this._parents = parents;
       }
 
       function selection() {
-        return new Selection([[document.documentElement]], root$1);
+        return new Selection$1([[document.documentElement]], root);
       }
 
-      Selection.prototype = selection.prototype = {
-        constructor: Selection,
+      Selection$1.prototype = selection.prototype = {
+        constructor: Selection$1,
         select: selection_select,
         selectAll: selection_selectAll,
         filter: selection_filter,
@@ -3007,8 +3140,8 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       function select(selector) {
         return typeof selector === "string"
-            ? new Selection([[document.querySelector(selector)]], [document.documentElement])
-            : new Selection([[selector]], root$1);
+            ? new Selection$1([[document.querySelector(selector)]], [document.documentElement])
+            : new Selection$1([[selector]], root);
       }
 
       function define(constructor, factory, prototype) {
@@ -3220,8 +3353,8 @@ System.register(['app/plugins/sdk'], function (exports) {
         format = (format + "").trim().toLowerCase();
         return (m = reHex.exec(format)) ? (l = m[1].length, m = parseInt(m[1], 16), l === 6 ? rgbn(m) // #ff0000
             : l === 3 ? new Rgb((m >> 8 & 0xf) | (m >> 4 & 0xf0), (m >> 4 & 0xf) | (m & 0xf0), ((m & 0xf) << 4) | (m & 0xf), 1) // #f00
-            : l === 8 ? new Rgb(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
-            : l === 4 ? new Rgb((m >> 12 & 0xf) | (m >> 8 & 0xf0), (m >> 8 & 0xf) | (m >> 4 & 0xf0), (m >> 4 & 0xf) | (m & 0xf0), (((m & 0xf) << 4) | (m & 0xf)) / 0xff) // #f000
+            : l === 8 ? rgba(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
+            : l === 4 ? rgba((m >> 12 & 0xf) | (m >> 8 & 0xf0), (m >> 8 & 0xf) | (m >> 4 & 0xf0), (m >> 4 & 0xf) | (m & 0xf0), (((m & 0xf) << 4) | (m & 0xf)) / 0xff) // #f000
             : null) // invalid hex
             : (m = reRgbInteger.exec(format)) ? new Rgb(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
             : (m = reRgbPercent.exec(format)) ? new Rgb(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, 1) // rgb(100%, 0%, 0%)
@@ -3398,7 +3531,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         };
       }
 
-      function linear(a, d) {
+      function linear$1(a, d) {
         return function(t) {
           return a + t * d;
         };
@@ -3418,7 +3551,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       function nogamma(a, b) {
         var d = b - a;
-        return d ? linear(a, d) : constant$2(isNaN(a) ? b : a);
+        return d ? linear$1(a, d) : constant$2(isNaN(a) ? b : a);
       }
 
       var interpolateRgb = (function rgbGamma(y) {
@@ -3704,7 +3837,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       var interpolateTransformSvg = interpolateTransform(parseSvg, ", ", ")", ")");
 
       var frame = 0, // is an animation frame pending?
-          timeout = 0, // is a timeout pending?
+          timeout$1 = 0, // is a timeout pending?
           interval = 0, // are any timers active?
           pokeDelay = 1000, // how frequently we check for clock skew
           taskHead,
@@ -3715,7 +3848,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           clock = typeof performance === "object" && performance.now ? performance : Date,
           setFrame = typeof window === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
 
-      function now$1() {
+      function now() {
         return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);
       }
 
@@ -3733,7 +3866,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         constructor: Timer,
         restart: function(callback, delay, time) {
           if (typeof callback !== "function") throw new TypeError("callback is not a function");
-          time = (time == null ? now$1() : +time) + (delay == null ? 0 : +delay);
+          time = (time == null ? now() : +time) + (delay == null ? 0 : +delay);
           if (!this._next && taskTail !== this) {
             if (taskTail) taskTail._next = this;
             else taskHead = this;
@@ -3759,7 +3892,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       function timerFlush() {
-        now$1(); // Get the current time, if not already set.
+        now(); // Get the current time, if not already set.
         ++frame; // Pretend we’ve set an alarm, if we haven’t already.
         var t = taskHead, e;
         while (t) {
@@ -3771,7 +3904,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       function wake() {
         clockNow = (clockLast = clock.now()) + clockSkew;
-        frame = timeout = 0;
+        frame = timeout$1 = 0;
         try {
           timerFlush();
         } finally {
@@ -3803,10 +3936,10 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       function sleep(time) {
         if (frame) return; // Soonest alarm already set, or will be.
-        if (timeout) timeout = clearTimeout(timeout);
+        if (timeout$1) timeout$1 = clearTimeout(timeout$1);
         var delay = time - clockNow; // Strictly less than if we recomputed clockNow.
         if (delay > 24) {
-          if (time < Infinity) timeout = setTimeout(wake, time - clock.now() - clockSkew);
+          if (time < Infinity) timeout$1 = setTimeout(wake, time - clock.now() - clockSkew);
           if (interval) interval = clearInterval(interval);
         } else {
           if (!interval) clockLast = clock.now(), interval = setInterval(poke, pokeDelay);
@@ -3814,7 +3947,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         }
       }
 
-      function timeout$1(callback, delay, time) {
+      function timeout(callback, delay, time) {
         var t = new Timer;
         delay = delay == null ? 0 : +delay;
         t.restart(function(elapsed) {
@@ -3855,18 +3988,18 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       function init(node, id) {
-        var schedule = get$1(node, id);
+        var schedule = get(node, id);
         if (schedule.state > CREATED) throw new Error("too late; already scheduled");
         return schedule;
       }
 
-      function set$1(node, id) {
-        var schedule = get$1(node, id);
+      function set(node, id) {
+        var schedule = get(node, id);
         if (schedule.state > STARTED) throw new Error("too late; already running");
         return schedule;
       }
 
-      function get$1(node, id) {
+      function get(node, id) {
         var schedule = node.__transition;
         if (!schedule || !(schedule = schedule[id])) throw new Error("transition not found");
         return schedule;
@@ -3902,7 +4035,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             // While this element already has a starting transition during this frame,
             // defer starting an interrupting transition until that transition has a
             // chance to tick (and possibly end); see d3/d3-transition#54!
-            if (o.state === STARTED) return timeout$1(start);
+            if (o.state === STARTED) return timeout(start);
 
             // Interrupt the active transition, if any.
             if (o.state === RUNNING) {
@@ -3925,7 +4058,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           // Note the transition may be canceled after start and before the first tick!
           // Note this must be scheduled before the start event; see d3/d3-transition#16!
           // Assuming this is successful, subsequent callbacks go straight to tick.
-          timeout$1(function() {
+          timeout(function() {
             if (self.state === STARTED) {
               self.state = RUNNING;
               self.timer.restart(tick, self.delay, self.time);
@@ -4007,7 +4140,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       function tweenRemove(id, name) {
         var tween0, tween1;
         return function() {
-          var schedule = set$1(this, id),
+          var schedule = set(this, id),
               tween = schedule.tween;
 
           // If this node shared tween with the previous node,
@@ -4032,7 +4165,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         var tween0, tween1;
         if (typeof value !== "function") throw new Error;
         return function() {
-          var schedule = set$1(this, id),
+          var schedule = set(this, id),
               tween = schedule.tween;
 
           // If this node shared tween with the previous node,
@@ -4059,7 +4192,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         name += "";
 
         if (arguments.length < 2) {
-          var tween = get$1(this.node(), id).tween;
+          var tween = get(this.node(), id).tween;
           for (var i = 0, n = tween.length, t; i < n; ++i) {
             if ((t = tween[i]).name === name) {
               return t.value;
@@ -4075,12 +4208,12 @@ System.register(['app/plugins/sdk'], function (exports) {
         var id = transition._id;
 
         transition.each(function() {
-          var schedule = set$1(this, id);
+          var schedule = set(this, id);
           (schedule.value || (schedule.value = {}))[name] = value.apply(this, arguments);
         });
 
         return function(node) {
-          return get$1(node, id).value[name];
+          return get(node, id).value[name];
         };
       }
 
@@ -4092,19 +4225,19 @@ System.register(['app/plugins/sdk'], function (exports) {
             : interpolateString)(a, b);
       }
 
-      function attrRemove$1(name) {
+      function attrRemove(name) {
         return function() {
           this.removeAttribute(name);
         };
       }
 
-      function attrRemoveNS$1(fullname) {
+      function attrRemoveNS(fullname) {
         return function() {
           this.removeAttributeNS(fullname.space, fullname.local);
         };
       }
 
-      function attrConstant$1(name, interpolate, value1) {
+      function attrConstant(name, interpolate, value1) {
         var string00,
             string1 = value1 + "",
             interpolate0;
@@ -4116,7 +4249,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         };
       }
 
-      function attrConstantNS$1(fullname, interpolate, value1) {
+      function attrConstantNS(fullname, interpolate, value1) {
         var string00,
             string1 = value1 + "",
             interpolate0;
@@ -4128,7 +4261,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         };
       }
 
-      function attrFunction$1(name, interpolate, value) {
+      function attrFunction(name, interpolate, value) {
         var string00,
             string10,
             interpolate0;
@@ -4143,7 +4276,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         };
       }
 
-      function attrFunctionNS$1(fullname, interpolate, value) {
+      function attrFunctionNS(fullname, interpolate, value) {
         var string00,
             string10,
             interpolate0;
@@ -4161,9 +4294,9 @@ System.register(['app/plugins/sdk'], function (exports) {
       function transition_attr(name, value) {
         var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate;
         return this.attrTween(name, typeof value === "function"
-            ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value))
-            : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
-            : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value));
+            ? (fullname.local ? attrFunctionNS : attrFunction)(fullname, i, tweenValue(this, "attr." + name, value))
+            : value == null ? (fullname.local ? attrRemoveNS : attrRemove)(fullname)
+            : (fullname.local ? attrConstantNS : attrConstant)(fullname, i, value));
       }
 
       function attrInterpolate(name, i) {
@@ -4228,18 +4361,18 @@ System.register(['app/plugins/sdk'], function (exports) {
             ? this.each((typeof value === "function"
                 ? delayFunction
                 : delayConstant)(id, value))
-            : get$1(this.node(), id).delay;
+            : get(this.node(), id).delay;
       }
 
       function durationFunction(id, value) {
         return function() {
-          set$1(this, id).duration = +value.apply(this, arguments);
+          set(this, id).duration = +value.apply(this, arguments);
         };
       }
 
       function durationConstant(id, value) {
         return value = +value, function() {
-          set$1(this, id).duration = value;
+          set(this, id).duration = value;
         };
       }
 
@@ -4250,13 +4383,13 @@ System.register(['app/plugins/sdk'], function (exports) {
             ? this.each((typeof value === "function"
                 ? durationFunction
                 : durationConstant)(id, value))
-            : get$1(this.node(), id).duration;
+            : get(this.node(), id).duration;
       }
 
       function easeConstant(id, value) {
         if (typeof value !== "function") throw new Error;
         return function() {
-          set$1(this, id).ease = value;
+          set(this, id).ease = value;
         };
       }
 
@@ -4265,7 +4398,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
         return arguments.length
             ? this.each(easeConstant(id, value))
-            : get$1(this.node(), id).ease;
+            : get(this.node(), id).ease;
       }
 
       function transition_filter(match) {
@@ -4309,7 +4442,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       function onFunction(id, name, listener) {
-        var on0, on1, sit = start(name) ? init : set$1;
+        var on0, on1, sit = start(name) ? init : set;
         return function() {
           var schedule = sit(this, id),
               on = schedule.on;
@@ -4327,7 +4460,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         var id = this._id;
 
         return arguments.length < 2
-            ? get$1(this.node(), id).on.on(name)
+            ? get(this.node(), id).on.on(name)
             : this.each(onFunction(id, name, listener));
       }
 
@@ -4354,7 +4487,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
               if ("__data__" in node) subnode.__data__ = node.__data__;
               subgroup[i] = subnode;
-              schedule(subgroup[i], name, id, i, subgroup, get$1(node, id));
+              schedule(subgroup[i], name, id, i, subgroup, get(node, id));
             }
           }
         }
@@ -4371,7 +4504,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
           for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
             if (node = group[i]) {
-              for (var children = select.call(node, node.__data__, i, group), child, inherit = get$1(node, id), k = 0, l = children.length; k < l; ++k) {
+              for (var children = select.call(node, node.__data__, i, group), child, inherit = get(node, id), k = 0, l = children.length; k < l; ++k) {
                 if (child = children[k]) {
                   schedule(child, name, id, k, children, inherit);
                 }
@@ -4385,10 +4518,10 @@ System.register(['app/plugins/sdk'], function (exports) {
         return new Transition(subgroups, parents, name, id);
       }
 
-      var Selection$1 = selection.prototype.constructor;
+      var Selection = selection.prototype.constructor;
 
       function transition_selection() {
-        return new Selection$1(this._groups, this._parents);
+        return new Selection(this._groups, this._parents);
       }
 
       function styleNull(name, interpolate) {
@@ -4404,13 +4537,13 @@ System.register(['app/plugins/sdk'], function (exports) {
         };
       }
 
-      function styleRemove$1(name) {
+      function styleRemove(name) {
         return function() {
           this.style.removeProperty(name);
         };
       }
 
-      function styleConstant$1(name, interpolate, value1) {
+      function styleConstant(name, interpolate, value1) {
         var string00,
             string1 = value1 + "",
             interpolate0;
@@ -4422,7 +4555,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         };
       }
 
-      function styleFunction$1(name, interpolate, value) {
+      function styleFunction(name, interpolate, value) {
         var string00,
             string10,
             interpolate0;
@@ -4440,9 +4573,9 @@ System.register(['app/plugins/sdk'], function (exports) {
       function styleMaybeRemove(id, name) {
         var on0, on1, listener0, key = "style." + name, event = "end." + key, remove;
         return function() {
-          var schedule = set$1(this, id),
+          var schedule = set(this, id),
               on = schedule.on,
-              listener = schedule.value[key] == null ? remove || (remove = styleRemove$1(name)) : undefined;
+              listener = schedule.value[key] == null ? remove || (remove = styleRemove(name)) : undefined;
 
           // If this node shared a dispatch with the previous node,
           // just assign the updated shared dispatch and we’re done!
@@ -4457,12 +4590,12 @@ System.register(['app/plugins/sdk'], function (exports) {
         var i = (name += "") === "transform" ? interpolateTransformCss : interpolate;
         return value == null ? this
             .styleTween(name, styleNull(name, i))
-            .on("end.style." + name, styleRemove$1(name))
+            .on("end.style." + name, styleRemove(name))
           : typeof value === "function" ? this
-            .styleTween(name, styleFunction$1(name, i, tweenValue(this, "style." + name, value)))
+            .styleTween(name, styleFunction(name, i, tweenValue(this, "style." + name, value)))
             .each(styleMaybeRemove(this._id, name))
           : this
-            .styleTween(name, styleConstant$1(name, i, value), priority)
+            .styleTween(name, styleConstant(name, i, value), priority)
             .on("end.style." + name, null);
       }
 
@@ -4491,13 +4624,13 @@ System.register(['app/plugins/sdk'], function (exports) {
         return this.tween(key, styleTween(name, value, priority == null ? "" : priority));
       }
 
-      function textConstant$1(value) {
+      function textConstant(value) {
         return function() {
           this.textContent = value;
         };
       }
 
-      function textFunction$1(value) {
+      function textFunction(value) {
         return function() {
           var value1 = value(this);
           this.textContent = value1 == null ? "" : value1;
@@ -4506,8 +4639,8 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       function transition_text(value) {
         return this.tween("text", typeof value === "function"
-            ? textFunction$1(tweenValue(this, "text", value))
-            : textConstant$1(value == null ? "" : value + ""));
+            ? textFunction(tweenValue(this, "text", value))
+            : textConstant(value == null ? "" : value + ""));
       }
 
       function textInterpolate(i) {
@@ -4543,7 +4676,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         for (var groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
           for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
             if (node = group[i]) {
-              var inherit = get$1(node, id0);
+              var inherit = get(node, id0);
               schedule(node, name, id1, i, group, {
                 time: inherit.time + inherit.delay + inherit.duration,
                 delay: 0,
@@ -4564,7 +4697,7 @@ System.register(['app/plugins/sdk'], function (exports) {
               end = {value: function() { if (--size === 0) resolve(); }};
 
           that.each(function() {
-            var schedule = set$1(this, id),
+            var schedule = set(this, id),
                 on = schedule.on;
 
             // If this node shared a dispatch with the previous node,
@@ -4591,17 +4724,13 @@ System.register(['app/plugins/sdk'], function (exports) {
         this._id = id;
       }
 
-      function transition(name) {
-        return selection().transition(name);
-      }
-
       function newId() {
         return ++id;
       }
 
       var selection_prototype = selection.prototype;
 
-      Transition.prototype = transition.prototype = {
+      Transition.prototype = {
         constructor: Transition,
         select: transition_select,
         selectAll: transition_selectAll,
@@ -4645,7 +4774,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         var timing;
         while (!(timing = node.__transition) || !(timing = timing[id])) {
           if (!(node = node.parentNode)) {
-            return defaultTiming.time = now$1(), defaultTiming;
+            return defaultTiming.time = now(), defaultTiming;
           }
         }
         return timing;
@@ -4658,7 +4787,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         if (name instanceof Transition) {
           id = name._id, name = name._name;
         } else {
-          id = newId(), (timing = defaultTiming).time = now$1(), name = name == null ? null : name + "";
+          id = newId(), (timing = defaultTiming).time = now(), name = name == null ? null : name + "";
         }
 
         for (var groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
@@ -4675,10 +4804,10 @@ System.register(['app/plugins/sdk'], function (exports) {
       selection.prototype.interrupt = selection_interrupt;
       selection.prototype.transition = selection_transition;
 
-      var pi = Math.PI,
-          tau = 2 * pi,
+      var pi$1 = Math.PI,
+          tau$1 = 2 * pi$1,
           epsilon$1 = 1e-6,
-          tauEpsilon = tau - epsilon$1;
+          tauEpsilon = tau$1 - epsilon$1;
 
       function Path() {
         this._x0 = this._y0 = // start of current subpath
@@ -4746,7 +4875,7 @@ System.register(['app/plugins/sdk'], function (exports) {
                 l20_2 = x20 * x20 + y20 * y20,
                 l21 = Math.sqrt(l21_2),
                 l01 = Math.sqrt(l01_2),
-                l = r * Math.tan((pi - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
+                l = r * Math.tan((pi$1 - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
                 t01 = l / l01,
                 t21 = l / l21;
 
@@ -4784,7 +4913,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           if (!r) return;
 
           // Does the angle go the wrong way? Flip the direction.
-          if (da < 0) da = da % tau + tau;
+          if (da < 0) da = da % tau$1 + tau$1;
 
           // Is this a complete circle? Draw two arcs to complete the circle.
           if (da > tauEpsilon) {
@@ -4793,7 +4922,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
           // Is this arc non-empty? Draw an arc!
           else if (da > epsilon$1) {
-            this._ += "A" + r + "," + r + ",0," + (+(da >= pi)) + "," + cw + "," + (this._x1 = x + r * Math.cos(a1)) + "," + (this._y1 = y + r * Math.sin(a1));
+            this._ += "A" + r + "," + r + ",0," + (+(da >= pi$1)) + "," + cw + "," + (this._x1 = x + r * Math.cos(a1)) + "," + (this._y1 = y + r * Math.sin(a1));
           }
         },
         rect: function(x, y, w, h) {
@@ -4808,7 +4937,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       function Map() {}
 
-      Map.prototype = map.prototype = {
+      Map.prototype = map$2.prototype = {
         constructor: Map,
         has: function(key) {
           return (prefix + key) in this;
@@ -4856,7 +4985,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         }
       };
 
-      function map(object, f) {
+      function map$2(object, f) {
         var map = new Map;
 
         // Copy constructor.
@@ -4880,9 +5009,9 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       function Set() {}
 
-      var proto = map.prototype;
+      var proto = map$2.prototype;
 
-      Set.prototype = set$2.prototype = {
+      Set.prototype = {
         constructor: Set,
         has: proto.has,
         add: function(value) {
@@ -4898,26 +5027,16 @@ System.register(['app/plugins/sdk'], function (exports) {
         each: proto.each
       };
 
-      function set$2(object, f) {
-        var set = new Set;
-
-        // Copy constructor.
-        if (object instanceof Set) object.each(function(value) { set.add(value); });
-
-        // Otherwise, assume it’s an array.
-        else if (object) {
-          var i = -1, n = object.length;
-          if (f == null) while (++i < n) set.add(object[i]);
-          else while (++i < n) set.add(f(object[i], i, object));
-        }
-
-        return set;
+      function formatDecimal(x) {
+        return Math.abs(x = Math.round(x)) >= 1e21
+            ? x.toLocaleString("en").replace(/,/g, "")
+            : x.toString(10);
       }
 
       // Computes the decimal coefficient and exponent of the specified number x with
       // significant digits p, where x is positive and p is in [1, 21] or undefined.
-      // For example, formatDecimal(1.23) returns ["123", 0].
-      function formatDecimal(x, p) {
+      // For example, formatDecimalParts(1.23) returns ["123", 0].
+      function formatDecimalParts(x, p) {
         if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
         var i, coefficient = x.slice(0, i);
 
@@ -4930,7 +5049,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       function exponent(x) {
-        return x = formatDecimal(Math.abs(x)), x ? x[1] : NaN;
+        return x = formatDecimalParts(Math.abs(x)), x ? x[1] : NaN;
       }
 
       function formatGroup(grouping, thousands) {
@@ -5023,7 +5142,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       var prefixExponent;
 
       function formatPrefixAuto(x, p) {
-        var d = formatDecimal(x, p);
+        var d = formatDecimalParts(x, p);
         if (!d) return x + "";
         var coefficient = d[0],
             exponent = d[1],
@@ -5032,11 +5151,11 @@ System.register(['app/plugins/sdk'], function (exports) {
         return i === n ? coefficient
             : i > n ? coefficient + new Array(i - n + 1).join("0")
             : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
-            : "0." + new Array(1 - i).join("0") + formatDecimal(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+            : "0." + new Array(1 - i).join("0") + formatDecimalParts(x, Math.max(0, p + i - 1))[0]; // less than 1y!
       }
 
       function formatRounded(x, p) {
-        var d = formatDecimal(x, p);
+        var d = formatDecimalParts(x, p);
         if (!d) return x + "";
         var coefficient = d[0],
             exponent = d[1];
@@ -5049,7 +5168,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         "%": function(x, p) { return (x * 100).toFixed(p); },
         "b": function(x) { return Math.round(x).toString(2); },
         "c": function(x) { return x + ""; },
-        "d": function(x) { return Math.round(x).toString(10); },
+        "d": formatDecimal,
         "e": function(x, p) { return x.toExponential(p); },
         "f": function(x, p) { return x.toFixed(p); },
         "g": function(x, p) { return x.toPrecision(p); },
@@ -5061,7 +5180,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         "x": function(x) { return Math.round(x).toString(16); }
       };
 
-      function identity$3(x) {
+      function identity$1(x) {
         return x;
       }
 
@@ -5069,11 +5188,11 @@ System.register(['app/plugins/sdk'], function (exports) {
           prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
       function formatLocale(locale) {
-        var group = locale.grouping === undefined || locale.thousands === undefined ? identity$3 : formatGroup(map$1.call(locale.grouping, Number), locale.thousands + ""),
+        var group = locale.grouping === undefined || locale.thousands === undefined ? identity$1 : formatGroup(map$1.call(locale.grouping, Number), locale.thousands + ""),
             currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
             currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
             decimal = locale.decimal === undefined ? "." : locale.decimal + "",
-            numerals = locale.numerals === undefined ? identity$3 : formatNumerals(map$1.call(locale.numerals, String)),
+            numerals = locale.numerals === undefined ? identity$1 : formatNumerals(map$1.call(locale.numerals, String)),
             percent = locale.percent === undefined ? "%" : locale.percent + "",
             minus = locale.minus === undefined ? "-" : locale.minus + "",
             nan = locale.nan === undefined ? "NaN" : locale.nan + "";
@@ -5131,19 +5250,20 @@ System.register(['app/plugins/sdk'], function (exports) {
             } else {
               value = +value;
 
+              // Determine the sign. -0 is not less than 0, but 1 / -0 is!
+              var valueNegative = value < 0 || 1 / value < 0;
+
               // Perform the initial formatting.
-              var valueNegative = value < 0;
               value = isNaN(value) ? nan : formatType(Math.abs(value), precision);
 
               // Trim insignificant zeros.
               if (trim) value = formatTrim(value);
 
-              // If a negative value rounds to zero during formatting, treat as positive.
-              if (valueNegative && +value === 0) valueNegative = false;
+              // If a negative value rounds to zero after formatting, and no explicit positive sign is requested, hide the sign.
+              if (valueNegative && +value === 0 && sign !== "+") valueNegative = false;
 
               // Compute the prefix and suffix.
               valuePrefix = (valueNegative ? (sign === "(" ? sign : minus) : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-
               valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
 
               // Break the formatted value into the integer “value” part that can be
@@ -5247,13 +5367,13 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       var array = Array.prototype;
 
-      var map$2 = array.map;
+      var map = array.map;
       var slice$1 = array.slice;
 
       var implicit = {name: "implicit"};
 
       function ordinal() {
-        var index = map(),
+        var index = map$2(),
             domain = [],
             range = [],
             unknown = implicit;
@@ -5269,7 +5389,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
         scale.domain = function(_) {
           if (!arguments.length) return domain.slice();
-          domain = [], index = map();
+          domain = [], index = map$2();
           var i = -1, n = _.length, d, key;
           while (++i < n) if (!index.has(key = (d = _[i]) + "")) index.set(key, domain.push(d));
           return scale;
@@ -5371,26 +5491,26 @@ System.register(['app/plugins/sdk'], function (exports) {
         return initRange.apply(rescale(), arguments);
       }
 
-      function constant$3(x) {
+      function constant$1(x) {
         return function() {
           return x;
         };
       }
 
-      function number$1(x) {
+      function number(x) {
         return +x;
       }
 
       var unit = [0, 1];
 
-      function identity$4(x) {
+      function identity(x) {
         return x;
       }
 
       function normalize(a, b) {
         return (b -= (a = +a))
             ? function(x) { return (x - a) / b; }
-            : constant$3(isNaN(b) ? NaN : 0.5);
+            : constant$1(isNaN(b) ? NaN : 0.5);
       }
 
       function clamper(domain) {
@@ -5447,7 +5567,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             transform,
             untransform,
             unknown,
-            clamp = identity$4,
+            clamp = identity,
             piecewise,
             output,
             input;
@@ -5467,7 +5587,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         };
 
         scale.domain = function(_) {
-          return arguments.length ? (domain = map$2.call(_, number$1), clamp === identity$4 || (clamp = clamper(domain)), rescale()) : domain.slice();
+          return arguments.length ? (domain = map.call(_, number), clamp === identity || (clamp = clamper(domain)), rescale()) : domain.slice();
         };
 
         scale.range = function(_) {
@@ -5479,7 +5599,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         };
 
         scale.clamp = function(_) {
-          return arguments.length ? (clamp = _ ? clamper(domain) : identity$4, scale) : clamp !== identity$4;
+          return arguments.length ? (clamp = _ ? clamper(domain) : identity, scale) : clamp !== identity;
         };
 
         scale.interpolate = function(_) {
@@ -5583,11 +5703,11 @@ System.register(['app/plugins/sdk'], function (exports) {
         return scale;
       }
 
-      function linear$1() {
-        var scale = continuous(identity$4, identity$4);
+      function linear() {
+        var scale = continuous(identity, identity);
 
         scale.copy = function() {
-          return copy(scale, linear$1());
+          return copy(scale, linear());
         };
 
         initRange.apply(scale, arguments);
@@ -5595,7 +5715,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         return linearish(scale);
       }
 
-      function constant$4(x) {
+      function constant(x) {
         return function constant() {
           return x;
         };
@@ -5604,18 +5724,18 @@ System.register(['app/plugins/sdk'], function (exports) {
       var abs = Math.abs;
       var atan2 = Math.atan2;
       var cos = Math.cos;
-      var max$1 = Math.max;
+      var max = Math.max;
       var min = Math.min;
       var sin = Math.sin;
       var sqrt = Math.sqrt;
 
-      var epsilon$2 = 1e-12;
-      var pi$1 = Math.PI;
-      var halfPi = pi$1 / 2;
-      var tau$1 = 2 * pi$1;
+      var epsilon = 1e-12;
+      var pi = Math.PI;
+      var halfPi = pi / 2;
+      var tau = 2 * pi;
 
       function acos(x) {
-        return x > 1 ? 0 : x < -1 ? pi$1 : Math.acos(x);
+        return x > 1 ? 0 : x < -1 ? pi : Math.acos(x);
       }
 
       function asin(x) {
@@ -5646,7 +5766,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         var x10 = x1 - x0, y10 = y1 - y0,
             x32 = x3 - x2, y32 = y3 - y2,
             t = y32 * x10 - x32 * y10;
-        if (t * t < epsilon$2) return;
+        if (t * t < epsilon) return;
         t = (x32 * (y0 - y2) - y32 * (x0 - x2)) / t;
         return [x0 + t * x10, y0 + t * y10];
       }
@@ -5670,7 +5790,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             d2 = dx * dx + dy * dy,
             r = r1 - rc,
             D = x11 * y10 - x10 * y11,
-            d = (dy < 0 ? -1 : 1) * sqrt(max$1(0, r * r * d2 - D * D)),
+            d = (dy < 0 ? -1 : 1) * sqrt(max(0, r * r * d2 - D * D)),
             cx0 = (D * dy - dx * d) / d2,
             cy0 = (-D * dx - dy * d) / d2,
             cx1 = (D * dy + dx * d) / d2,
@@ -5697,7 +5817,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       function arc() {
         var innerRadius = arcInnerRadius,
             outerRadius = arcOuterRadius,
-            cornerRadius = constant$4(0),
+            cornerRadius = constant(0),
             padRadius = null,
             startAngle = arcStartAngle,
             endAngle = arcEndAngle,
@@ -5720,13 +5840,13 @@ System.register(['app/plugins/sdk'], function (exports) {
           if (r1 < r0) r = r1, r1 = r0, r0 = r;
 
           // Is it a point?
-          if (!(r1 > epsilon$2)) context.moveTo(0, 0);
+          if (!(r1 > epsilon)) context.moveTo(0, 0);
 
           // Or is it a circle or annulus?
-          else if (da > tau$1 - epsilon$2) {
+          else if (da > tau - epsilon) {
             context.moveTo(r1 * cos(a0), r1 * sin(a0));
             context.arc(0, 0, r1, a0, a1, !cw);
-            if (r0 > epsilon$2) {
+            if (r0 > epsilon) {
               context.moveTo(r0 * cos(a1), r0 * sin(a1));
               context.arc(0, 0, r0, a1, a0, cw);
             }
@@ -5741,7 +5861,7 @@ System.register(['app/plugins/sdk'], function (exports) {
                 da0 = da,
                 da1 = da,
                 ap = padAngle.apply(this, arguments) / 2,
-                rp = (ap > epsilon$2) && (padRadius ? +padRadius.apply(this, arguments) : sqrt(r0 * r0 + r1 * r1)),
+                rp = (ap > epsilon) && (padRadius ? +padRadius.apply(this, arguments) : sqrt(r0 * r0 + r1 * r1)),
                 rc = min(abs(r1 - r0) / 2, +cornerRadius.apply(this, arguments)),
                 rc0 = rc,
                 rc1 = rc,
@@ -5749,12 +5869,12 @@ System.register(['app/plugins/sdk'], function (exports) {
                 t1;
 
             // Apply padding? Note that since r1 ≥ r0, da1 ≥ da0.
-            if (rp > epsilon$2) {
+            if (rp > epsilon) {
               var p0 = asin(rp / r0 * sin(ap)),
                   p1 = asin(rp / r1 * sin(ap));
-              if ((da0 -= p0 * 2) > epsilon$2) p0 *= (cw ? 1 : -1), a00 += p0, a10 -= p0;
+              if ((da0 -= p0 * 2) > epsilon) p0 *= (cw ? 1 : -1), a00 += p0, a10 -= p0;
               else da0 = 0, a00 = a10 = (a0 + a1) / 2;
-              if ((da1 -= p1 * 2) > epsilon$2) p1 *= (cw ? 1 : -1), a01 += p1, a11 -= p1;
+              if ((da1 -= p1 * 2) > epsilon) p1 *= (cw ? 1 : -1), a01 += p1, a11 -= p1;
               else da1 = 0, a01 = a11 = (a0 + a1) / 2;
             }
 
@@ -5764,7 +5884,7 @@ System.register(['app/plugins/sdk'], function (exports) {
                 y10 = r0 * sin(a10);
 
             // Apply rounded corners?
-            if (rc > epsilon$2) {
+            if (rc > epsilon) {
               var x11 = r1 * cos(a11),
                   y11 = r1 * sin(a11),
                   x00 = r0 * cos(a00),
@@ -5772,7 +5892,7 @@ System.register(['app/plugins/sdk'], function (exports) {
                   oc;
 
               // Restrict the corner radius according to the sector angle.
-              if (da < pi$1 && (oc = intersect(x01, y01, x00, y00, x11, y11, x10, y10))) {
+              if (da < pi && (oc = intersect(x01, y01, x00, y00, x11, y11, x10, y10))) {
                 var ax = x01 - oc[0],
                     ay = y01 - oc[1],
                     bx = x11 - oc[0],
@@ -5785,10 +5905,10 @@ System.register(['app/plugins/sdk'], function (exports) {
             }
 
             // Is the sector collapsed to a line?
-            if (!(da1 > epsilon$2)) context.moveTo(x01, y01);
+            if (!(da1 > epsilon)) context.moveTo(x01, y01);
 
             // Does the sector’s outer ring have rounded corners?
-            else if (rc1 > epsilon$2) {
+            else if (rc1 > epsilon) {
               t0 = cornerTangents(x00, y00, x01, y01, r1, rc1, cw);
               t1 = cornerTangents(x11, y11, x10, y10, r1, rc1, cw);
 
@@ -5810,10 +5930,10 @@ System.register(['app/plugins/sdk'], function (exports) {
 
             // Is there no inner ring, and it’s a circular sector?
             // Or perhaps it’s an annular sector collapsed due to padding?
-            if (!(r0 > epsilon$2) || !(da0 > epsilon$2)) context.lineTo(x10, y10);
+            if (!(r0 > epsilon) || !(da0 > epsilon)) context.lineTo(x10, y10);
 
             // Does the sector’s inner ring (or point) have rounded corners?
-            else if (rc0 > epsilon$2) {
+            else if (rc0 > epsilon) {
               t0 = cornerTangents(x10, y10, x11, y11, r0, -rc0, cw);
               t1 = cornerTangents(x01, y01, x00, y00, r0, -rc0, cw);
 
@@ -5841,36 +5961,36 @@ System.register(['app/plugins/sdk'], function (exports) {
 
         arc.centroid = function() {
           var r = (+innerRadius.apply(this, arguments) + +outerRadius.apply(this, arguments)) / 2,
-              a = (+startAngle.apply(this, arguments) + +endAngle.apply(this, arguments)) / 2 - pi$1 / 2;
+              a = (+startAngle.apply(this, arguments) + +endAngle.apply(this, arguments)) / 2 - pi / 2;
           return [cos(a) * r, sin(a) * r];
         };
 
         arc.innerRadius = function(_) {
-          return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$4(+_), arc) : innerRadius;
+          return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant(+_), arc) : innerRadius;
         };
 
         arc.outerRadius = function(_) {
-          return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$4(+_), arc) : outerRadius;
+          return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant(+_), arc) : outerRadius;
         };
 
         arc.cornerRadius = function(_) {
-          return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$4(+_), arc) : cornerRadius;
+          return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant(+_), arc) : cornerRadius;
         };
 
         arc.padRadius = function(_) {
-          return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$4(+_), arc) : padRadius;
+          return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant(+_), arc) : padRadius;
         };
 
         arc.startAngle = function(_) {
-          return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$4(+_), arc) : startAngle;
+          return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant(+_), arc) : startAngle;
         };
 
         arc.endAngle = function(_) {
-          return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$4(+_), arc) : endAngle;
+          return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant(+_), arc) : endAngle;
         };
 
         arc.padAngle = function(_) {
-          return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$4(+_), arc) : padAngle;
+          return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant(+_), arc) : padAngle;
         };
 
         arc.context = function(_) {
@@ -5880,7 +6000,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         return arc;
       }
 
-      var slice$2 = Array.prototype.slice;
+      var slice = Array.prototype.slice;
 
       function none$1(series, order) {
         if (!((n = series.length) > 1)) return;
@@ -5892,7 +6012,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         }
       }
 
-      function none$2(series) {
+      function none(series) {
         var n = series.length, o = new Array(n);
         while (--n >= 0) o[n] = n;
         return o;
@@ -5903,8 +6023,8 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       function stack() {
-        var keys = constant$4([]),
-            order = none$2,
+        var keys = constant([]),
+            order = none,
             offset = none$1,
             value = stackValue;
 
@@ -5933,15 +6053,15 @@ System.register(['app/plugins/sdk'], function (exports) {
         }
 
         stack.keys = function(_) {
-          return arguments.length ? (keys = typeof _ === "function" ? _ : constant$4(slice$2.call(_)), stack) : keys;
+          return arguments.length ? (keys = typeof _ === "function" ? _ : constant(slice.call(_)), stack) : keys;
         };
 
         stack.value = function(_) {
-          return arguments.length ? (value = typeof _ === "function" ? _ : constant$4(+_), stack) : value;
+          return arguments.length ? (value = typeof _ === "function" ? _ : constant(+_), stack) : value;
         };
 
         stack.order = function(_) {
-          return arguments.length ? (order = _ == null ? none$2 : typeof _ === "function" ? _ : constant$4(slice$2.call(_)), stack) : order;
+          return arguments.length ? (order = _ == null ? none : typeof _ === "function" ? _ : constant(slice.call(_)), stack) : order;
         };
 
         stack.offset = function(_) {
@@ -5969,12 +6089,14 @@ System.register(['app/plugins/sdk'], function (exports) {
       var WindroseCtrl = exports('PanelCtrl', /*#__PURE__*/function (_MetricsPanelCtrl) {
         _inherits(WindroseCtrl, _MetricsPanelCtrl);
 
+        var _super = _createSuper(WindroseCtrl);
+
         function WindroseCtrl($scope, $injector) {
           var _this;
 
           _classCallCheck(this, WindroseCtrl);
 
-          _this = _possibleConstructorReturn(this, _getPrototypeOf(WindroseCtrl).call(this, $scope, $injector));
+          _this = _super.call(this, $scope, $injector);
           defaults(_this.panel, panelDefaults);
 
           _this.events.on('data-error', _this.onDataError.bind(_assertThisInitialized(_this)));
@@ -6087,38 +6209,50 @@ System.register(['app/plugins/sdk'], function (exports) {
           value: function onDataReceived(data) {
             var speeds = [];
             var angles = [];
-            var _iteratorNormalCompletion = true;
-            var _didIteratorError = false;
-            var _iteratorError = undefined;
 
-            try {
-              for (var _iterator = data[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                var serie = _step.value;
-                var datapoints = serie.datapoints.map(function (x) {
-                  return x[0];
-                });
+            if (data[0].type == 'table') {
+              // e.g. PostgreSQL
+              var _iterator = _createForOfIteratorHelper(data[0].rows),
+                  _step;
 
-                if (serie.target === 'speed') {
-                  speeds = datapoints;
-                } else if (serie.target === 'direction') {
-                  angles = datapoints;
-                } else {
-                  console.warn('unexpected target ' + serie.target);
-                }
-              }
-            } catch (err) {
-              _didIteratorError = true;
-              _iteratorError = err;
-            } finally {
               try {
-                if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-                  _iterator["return"]();
+                for (_iterator.s(); !(_step = _iterator.n()).done;) {
+                  var row = _step.value;
+                  speeds.push(row[1]);
+                  angles.push(row[2]);
                 }
+              } catch (err) {
+                _iterator.e(err);
               } finally {
-                if (_didIteratorError) {
-                  throw _iteratorError;
-                }
+                _iterator.f();
               }
+            } else if (data[0].datapoints) {
+              // e.g. ClickHouse
+              var _iterator2 = _createForOfIteratorHelper(data),
+                  _step2;
+
+              try {
+                for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+                  var serie = _step2.value;
+                  var datapoints = serie.datapoints.map(function (x) {
+                    return x[0];
+                  });
+
+                  if (serie.target === 'speed') {
+                    speeds = datapoints;
+                  } else if (serie.target === 'direction') {
+                    angles = datapoints;
+                  } else {
+                    console.warn('unexpected target ' + serie.target);
+                  }
+                }
+              } catch (err) {
+                _iterator2.e(err);
+              } finally {
+                _iterator2.f();
+              }
+            } else {
+              console.warn('unexpected data format', data);
             }
 
             this.speedMax = speeds.length > 0 ? Math.max.apply(Math, _toConsumableArray(speeds)) : 0;
@@ -6202,10 +6336,10 @@ System.register(['app/plugins/sdk'], function (exports) {
 
 
             if (panel.scale == 'percent') {
-              var max$1 = sum(data, function (d) {
+              var max = sum(data, function (d) {
                 return d.total;
               });
-              var tmpScale = linear$1([0, max$1], [0, 1]);
+              var tmpScale = linear([0, max], [0, 1]);
 
               for (var _i2 = 0; _i2 < data.length; _i2++) {
                 for (var key in data[_i2]) {
@@ -6244,12 +6378,12 @@ System.register(['app/plugins/sdk'], function (exports) {
             var yRange = [innerRadius, outerRadius]; // X-Axis
 
             var radiansRange = [0, 2 * Math.PI];
-            var getRadiansFromDegrees = linear$1([0, 360], radiansRange); // Y-axis
+            var getRadiansFromDegrees = linear([0, 360], radiansRange); // Y-axis
 
-            var yMax = max(data, function (d) {
+            var yMax = max$1(data, function (d) {
               return d.total;
             });
-            var getRadius = linear$1([0, yMax], yRange); // Z-axis: map speed interval labels to colors
+            var getRadius = linear([0, yMax], yRange); // Z-axis: map speed interval labels to colors
 
             var getColor = ordinal(zLabels, ["#4242f4", "#42c5f4", "#42f4ce", "#42f456", "#adf442", "#f4e242", "#f4a142", "#f44242"]); // Draw 1 arc for every speed interval in every direction
 
@@ -6274,7 +6408,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
             var gridN = 8;
             var gridX = range(0, 360, 360 / gridN);
-            var xScale = linear$1([0, gridN], radiansRange); // Extend the domain slightly to match the range [0, 2π]
+            var xScale = linear([0, gridN], radiansRange); // Extend the domain slightly to match the range [0, 2π]
             // Draw the text label (degrees)
 
             var xGridWidth = band(gridX, radiansRange).align(0).bandwidth();
@@ -6289,7 +6423,7 @@ System.register(['app/plugins/sdk'], function (exports) {
               270: 'W',
               315: 'NW'
             };
-            var label = g.append("g") // One <g> element per x-grid line
+            g.append("g") // One <g> element per x-grid line
             .selectAll("g").data(gridX).enter().append("g").attr("text-anchor", "middle").attr("transform", function (d) {
               var rotate = (getRadiansFromDegrees(d) + xGridWidth / 2) * 180 / Math.PI - (90 - angleOffset);
               return "rotate(" + rotate + ")translate(" + (outerRadius + 30) + ",0)";
@@ -6299,7 +6433,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             }).attr('fill', 'white').text(function (d) {
               return panel.x_grid == 'compass' ? degrees2compass[d] || d : d;
             }).style("font-size", '14px');
-            var radius = linear$1([0, max(gridX, function (d) {
+            var radius = linear([0, max$1(gridX, function (d) {
               return d.y0 + d.y;
             })], yRange);
             g.selectAll(".axis").data(sequence(xScale.domain()[1])).enter().append("g").attr("class", "axis").attr("transform", function (d) {
