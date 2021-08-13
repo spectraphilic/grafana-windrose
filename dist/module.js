@@ -85,6 +85,8 @@ System.register(['app/plugins/sdk'], function (exports) {
       function _possibleConstructorReturn(self, call) {
         if (call && (typeof call === "object" || typeof call === "function")) {
           return call;
+        } else if (call !== void 0) {
+          throw new TypeError("Derived constructors may only return object or undefined");
         }
 
         return _assertThisInitialized(self);
@@ -202,14 +204,20 @@ System.register(['app/plugins/sdk'], function (exports) {
       /** Detect free variable `global` from Node.js. */
       var freeGlobal = typeof global == 'object' && global && global.Object === Object && global;
 
+      var freeGlobal$1 = freeGlobal;
+
       /** Detect free variable `self`. */
       var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
 
       /** Used as a reference to the global object. */
-      var root$1 = freeGlobal || freeSelf || Function('return this')();
+      var root$1 = freeGlobal$1 || freeSelf || Function('return this')();
+
+      var root$2 = root$1;
 
       /** Built-in value references. */
-      var Symbol$1 = root$1.Symbol;
+      var Symbol$1 = root$2.Symbol;
+
+      var Symbol$2 = Symbol$1;
 
       /** Used for built-in method references. */
       var objectProto$7 = Object.prototype;
@@ -225,7 +233,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       var nativeObjectToString$1 = objectProto$7.toString;
 
       /** Built-in value references. */
-      var symToStringTag$1 = Symbol$1 ? Symbol$1.toStringTag : undefined;
+      var symToStringTag$1 = Symbol$2 ? Symbol$2.toStringTag : undefined;
 
       /**
        * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
@@ -280,7 +288,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           undefinedTag = '[object Undefined]';
 
       /** Built-in value references. */
-      var symToStringTag = Symbol$1 ? Symbol$1.toStringTag : undefined;
+      var symToStringTag = Symbol$2 ? Symbol$2.toStringTag : undefined;
 
       /**
        * The base implementation of `getTag` without fallbacks for buggy environments.
@@ -395,6 +403,8 @@ System.register(['app/plugins/sdk'], function (exports) {
        * // => false
        */
       var isArray = Array.isArray;
+
+      var isArray$1 = isArray;
 
       /** Used to match a single whitespace character. */
       var reWhitespace = /\s/;
@@ -612,11 +622,13 @@ System.register(['app/plugins/sdk'], function (exports) {
       }
 
       /** Used to detect overreaching core-js shims. */
-      var coreJsData = root$1['__core-js_shared__'];
+      var coreJsData = root$2['__core-js_shared__'];
+
+      var coreJsData$1 = coreJsData;
 
       /** Used to detect methods masquerading as native. */
       var maskSrcKey = (function() {
-        var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
+        var uid = /[^.]+$/.exec(coreJsData$1 && coreJsData$1.keys && coreJsData$1.keys.IE_PROTO || '');
         return uid ? ('Symbol(src)_1.' + uid) : '';
       }());
 
@@ -811,6 +823,8 @@ System.register(['app/plugins/sdk'], function (exports) {
         } catch (e) {}
       }());
 
+      var defineProperty$1 = defineProperty;
+
       /**
        * The base implementation of `setToString` without support for hot loop shorting.
        *
@@ -819,14 +833,16 @@ System.register(['app/plugins/sdk'], function (exports) {
        * @param {Function} string The `toString` result.
        * @returns {Function} Returns `func`.
        */
-      var baseSetToString = !defineProperty ? identity$4 : function(func, string) {
-        return defineProperty(func, 'toString', {
+      var baseSetToString = !defineProperty$1 ? identity$4 : function(func, string) {
+        return defineProperty$1(func, 'toString', {
           'configurable': true,
           'enumerable': false,
           'value': constant$4(string),
           'writable': true
         });
       };
+
+      var baseSetToString$1 = baseSetToString;
 
       /**
        * Sets the `toString` method of `func` to return `string`.
@@ -836,7 +852,9 @@ System.register(['app/plugins/sdk'], function (exports) {
        * @param {Function} string The `toString` result.
        * @returns {Function} Returns `func`.
        */
-      var setToString = shortOut(baseSetToString);
+      var setToString = shortOut(baseSetToString$1);
+
+      var setToString$1 = setToString;
 
       /** Used as references for various `Number` constants. */
       var MAX_SAFE_INTEGER$1 = 9007199254740991;
@@ -940,7 +958,7 @@ System.register(['app/plugins/sdk'], function (exports) {
        * @returns {Function} Returns the new function.
        */
       function baseRest(func, start) {
-        return setToString(overRest(func, start, identity$4), func + '');
+        return setToString$1(overRest(func, start, identity$4), func + '');
       }
 
       /** Used as references for various `Number` constants. */
@@ -1112,6 +1130,8 @@ System.register(['app/plugins/sdk'], function (exports) {
           !propertyIsEnumerable.call(value, 'callee');
       };
 
+      var isArguments$1 = isArguments;
+
       /**
        * This method returns `false`.
        *
@@ -1139,7 +1159,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       var moduleExports$1 = freeModule$1 && freeModule$1.exports === freeExports$1;
 
       /** Built-in value references. */
-      var Buffer = moduleExports$1 ? root$1.Buffer : undefined;
+      var Buffer = moduleExports$1 ? root$2.Buffer : undefined;
 
       /* Built-in method references for those with the same name as other `lodash` methods. */
       var nativeIsBuffer = Buffer ? Buffer.isBuffer : undefined;
@@ -1162,6 +1182,8 @@ System.register(['app/plugins/sdk'], function (exports) {
        * // => false
        */
       var isBuffer = nativeIsBuffer || stubFalse;
+
+      var isBuffer$1 = isBuffer;
 
       /** `Object#toString` result references. */
       var argsTag = '[object Arguments]',
@@ -1241,7 +1263,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       var moduleExports = freeModule && freeModule.exports === freeExports;
 
       /** Detect free variable `process` from Node.js. */
-      var freeProcess = moduleExports && freeGlobal.process;
+      var freeProcess = moduleExports && freeGlobal$1.process;
 
       /** Used to access faster Node.js helpers. */
       var nodeUtil = (function() {
@@ -1258,8 +1280,10 @@ System.register(['app/plugins/sdk'], function (exports) {
         } catch (e) {}
       }());
 
+      var nodeUtil$1 = nodeUtil;
+
       /* Node.js helper references. */
-      var nodeIsTypedArray = nodeUtil && nodeUtil.isTypedArray;
+      var nodeIsTypedArray = nodeUtil$1 && nodeUtil$1.isTypedArray;
 
       /**
        * Checks if `value` is classified as a typed array.
@@ -1280,6 +1304,8 @@ System.register(['app/plugins/sdk'], function (exports) {
        */
       var isTypedArray = nodeIsTypedArray ? baseUnary(nodeIsTypedArray) : baseIsTypedArray;
 
+      var isTypedArray$1 = isTypedArray;
+
       /** Used for built-in method references. */
       var objectProto$2 = Object.prototype;
 
@@ -1295,10 +1321,10 @@ System.register(['app/plugins/sdk'], function (exports) {
        * @returns {Array} Returns the array of property names.
        */
       function arrayLikeKeys(value, inherited) {
-        var isArr = isArray(value),
-            isArg = !isArr && isArguments(value),
-            isBuff = !isArr && !isArg && isBuffer(value),
-            isType = !isArr && !isArg && !isBuff && isTypedArray(value),
+        var isArr = isArray$1(value),
+            isArg = !isArr && isArguments$1(value),
+            isBuff = !isArr && !isArg && isBuffer$1(value),
+            isType = !isArr && !isArg && !isBuff && isTypedArray$1(value),
             skipIndexes = isArr || isArg || isBuff || isType,
             result = skipIndexes ? baseTimes(value.length, String) : [],
             length = result.length;
@@ -1449,8 +1475,10 @@ System.register(['app/plugins/sdk'], function (exports) {
        * // => Logs the number of milliseconds it took for the deferred invocation.
        */
       var now$1 = function() {
-        return root$1.Date.now();
+        return root$2.Date.now();
       };
+
+      var now$2 = now$1;
 
       /** Error message constants. */
       var FUNC_ERROR_TEXT = 'Expected a function';
@@ -1577,7 +1605,7 @@ System.register(['app/plugins/sdk'], function (exports) {
         }
 
         function timerExpired() {
-          var time = now$1();
+          var time = now$2();
           if (shouldInvoke(time)) {
             return trailingEdge(time);
           }
@@ -1606,11 +1634,11 @@ System.register(['app/plugins/sdk'], function (exports) {
         }
 
         function flush() {
-          return timerId === undefined ? result : trailingEdge(now$1());
+          return timerId === undefined ? result : trailingEdge(now$2());
         }
 
         function debounced() {
-          var time = now$1(),
+          var time = now$2(),
               isInvoking = shouldInvoke(time);
 
           lastArgs = arguments;
@@ -1695,6 +1723,8 @@ System.register(['app/plugins/sdk'], function (exports) {
 
         return object;
       });
+
+      var defaults$1 = defaults;
 
       /**
        * This method is like `_.isArrayLike` except that it also checks if `value`
@@ -1820,6 +1850,8 @@ System.register(['app/plugins/sdk'], function (exports) {
        */
       var range = createRange();
 
+      var range$1 = range;
+
       /* Built-in method references for those with the same name as other `lodash` methods. */
       var nativeMax = Math.max;
 
@@ -1875,6 +1907,8 @@ System.register(['app/plugins/sdk'], function (exports) {
        * // => [['a', 1, true], ['b', 2, false]]
        */
       var zip = baseRest(unzip);
+
+      var zip$1 = zip;
 
       function ascending$1(a, b) {
         return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
@@ -6097,7 +6131,7 @@ System.register(['app/plugins/sdk'], function (exports) {
           _classCallCheck(this, WindroseCtrl);
 
           _this = _super.call(this, $scope, $injector);
-          defaults(_this.panel, panelDefaults);
+          defaults$1(_this.panel, panelDefaults);
 
           _this.events.on('data-error', _this.onDataError.bind(_assertThisInitialized(_this)));
 
@@ -6256,7 +6290,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             }
 
             this.speedMax = speeds.length > 0 ? Math.max.apply(Math, _toConsumableArray(speeds)) : 0;
-            this.data = zip(angles, speeds).filter(function (x) {
+            this.data = zip$1(angles, speeds).filter(function (x) {
               return x[1] != null;
             });
             this.render();
@@ -6407,7 +6441,7 @@ System.register(['app/plugins/sdk'], function (exports) {
             }).padAngle(0.01).padRadius(innerRadius)); // X axis (angle)
 
             var gridN = 8;
-            var gridX = range(0, 360, 360 / gridN);
+            var gridX = range$1(0, 360, 360 / gridN);
             var xScale = linear([0, gridN], radiansRange); // Extend the domain slightly to match the range [0, 2π]
             // Draw the text label (degrees)
 
