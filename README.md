@@ -28,6 +28,8 @@ allow_loading_unsigned_plugins = spectraphilic-windrose-panel
 
 Restart Grafana service.
 
+## PostgreSQL
+
 Example query for PostgreSQL:
 
 ```sql
@@ -40,6 +42,8 @@ WHERE $__unixEpochFilter("time")
 ORDER BY time
 ```
 
+## ClickHouse
+
 Example for ClickHouse:
 
 ```sql
@@ -51,6 +55,25 @@ FROM table
 WHERE $timeFilter
 ORDER BY time
 ```
+
+## Prometheus
+
+This is valid as well for prometheus-compatible data sources such as
+VictoriaMetrics.
+
+Set a query for speed:
+
+- Metrics browser: ``meteo_ws_mean{location="$location"}``
+- Legend: ``speed``
+
+Set another query for direction:
+
+- Metrics browser: ``meteo_wd_mean{location="$location"}``
+- Legend: ``direction``
+
+This information was provided by @newrushbolt ; for further details see
+https://github.com/spectraphilic/grafana-windrose/issues/18#issuecomment-1007648330
+
 
 # Development
 
