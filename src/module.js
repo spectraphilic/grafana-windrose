@@ -122,10 +122,31 @@ class WindroseCtrl extends MetricsPanelCtrl {
         let angles = [];
 
         if (data[0].type == 'table') {
-            // e.g. PostgreSQL
+            // e.g. PostgreSQL and InfluxDB
+
+            let speedCol = null
+            let dirCol = null
+            for (let i in data[0].columns) {
+              if (data[0].columns[i].text == "speed") {
+                speedCol = i
+              }
+              if (data[0].columns[i].text == "direction") {
+                dirCol = i
+              }
+            }
+
+            if (speedCol === null) {
+              console.warn("no `speed` column in data")
+	      speedCol = 1
+            }
+            if (dirCol === null) {
+              console.warn("no `direction` column in data")
+              dirCol = 2
+            }
+
             for (let row of data[0].rows) {
-                speeds.push(row[1]);
-                angles.push(row[2]);
+                speeds.push(row[speedCol]);
+                angles.push(row[dirCol]);
             }
         } else if (data[0].datapoints) {
             // e.g. ClickHouse
