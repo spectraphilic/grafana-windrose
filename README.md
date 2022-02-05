@@ -28,6 +28,11 @@ allow_loading_unsigned_plugins = spectraphilic-windrose-panel
 
 Restart Grafana service.
 
+Add a panel to your dashboard with the *Windrose* visualization type. Set up the
+query to provide data with `speed` and `direction` fields. The speed can be in
+the unit of your choice (can be set in the settings), while the direction is
+always in degrees.
+
 ## PostgreSQL
 
 Example query for PostgreSQL:
@@ -74,6 +79,21 @@ Set another query for direction:
 This information was provided by @newrushbolt ; for further details see
 https://github.com/spectraphilic/grafana-windrose/issues/18#issuecomment-1007648330
 
+## Flux
+
+Example for InfluxDB v2 filled from SignalK.
+
+```
+from(bucket: "bucket")
+  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
+  |> filter(fn: (r) => r["_measurement"] == "environment.wind.speedTrue" or r["_measurement"] == "environment.wind.directionTrue")
+  |> filter(fn: (r) => r["_field"] == "value")
+  |> pivot(rowKey:["_time"], columnKey: ["_measurement"], valueColumn: "_value")
+  |> filter(fn: (r) => exists r["environment.wind.directionTrue"] and exists r["environment.wind.speedTrue"] )
+  |> rename(columns: {"environment.wind.directionTrue": "directionRad", "environment.wind.speedTrue": "speedMps"})
+  |> map(fn: (r) => ({ r with  direction: r.directionRad / 3.14 * 180.0 }))
+  |> map(fn: (r) => ({ r with  speed: r.speedMps / 0.514 }))
+```
 
 # Development
 
