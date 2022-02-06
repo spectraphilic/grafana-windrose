@@ -88,11 +88,12 @@ from(bucket: "bucket")
   |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
   |> filter(fn: (r) => r["_measurement"] == "environment.wind.speedTrue" or r["_measurement"] == "environment.wind.directionTrue")
   |> filter(fn: (r) => r["_field"] == "value")
-  |> pivot(rowKey:["_time"], columnKey: ["_measurement"], valueColumn: "_value")
-  |> filter(fn: (r) => exists r["environment.wind.directionTrue"] and exists r["environment.wind.speedTrue"] )
+  |> pivot(rowKey:["_time"], columnKey: ["_measurement"], valueColumn: "_value") // put dir and speed values into the same row based on timestamps 
+  |> filter(fn: (r) => exists r["environment.wind.directionTrue"] and exists r["environment.wind.speedTrue"]) // drop rows that don't have both values
   |> rename(columns: {"environment.wind.directionTrue": "directionRad", "environment.wind.speedTrue": "speedMps"})
-  |> map(fn: (r) => ({ r with  direction: r.directionRad / 3.14 * 180.0 }))
-  |> map(fn: (r) => ({ r with  speed: r.speedMps / 0.514 }))
+  |> map(fn: (r) => ({ r with  direction: r.directionRad / 3.14 * 180.0 })) // convert to degrees from radians
+  |> map(fn: (r) => ({ r with  speed: r.speedMps / 0.514 })) // convert to knots from m/s
+  |> aggregateWindow(every: v.windowPeriod, fn: first, column: "direction", createEmpty: false) // sample the first row for each window (real aggregation would show fake values in gusty winds)
 ```
 
 # Development
