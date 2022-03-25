@@ -88,7 +88,7 @@ from(bucket: "bucket")
   |> range(start: v.timeRangeStart, stop: v.timeRangeStop)
   |> filter(fn: (r) => r["_measurement"] == "environment.wind.speedTrue" or r["_measurement"] == "environment.wind.directionTrue")
   |> filter(fn: (r) => r["_field"] == "value")
-  |> pivot(rowKey:["_time"], columnKey: ["_measurement"], valueColumn: "_value") // put dir and speed values into the same row based on timestamps 
+  |> pivot(rowKey:["_time"], columnKey: ["_measurement"], valueColumn: "_value") // put dir and speed values into the same row based on timestamps
   |> filter(fn: (r) => exists r["environment.wind.directionTrue"] and exists r["environment.wind.speedTrue"]) // drop rows that don't have both values
   |> rename(columns: {"environment.wind.directionTrue": "directionRad", "environment.wind.speedTrue": "speedMps"})
   |> map(fn: (r) => ({ r with  direction: r.directionRad / 3.14 * 180.0 })) // convert to degrees from radians

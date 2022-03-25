@@ -1,4 +1,4 @@
-System.register(['app/plugins/sdk'], function (exports) {
+System.register(['app/plugins/sdk'], (function (exports) {
   'use strict';
   var loadPluginCss, MetricsPanelCtrl;
   return {
@@ -6,7 +6,7 @@ System.register(['app/plugins/sdk'], function (exports) {
       loadPluginCss = module.loadPluginCss;
       MetricsPanelCtrl = module.MetricsPanelCtrl;
     }],
-    execute: function () {
+    execute: (function () {
 
       function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -27,6 +27,9 @@ System.register(['app/plugins/sdk'], function (exports) {
       function _createClass(Constructor, protoProps, staticProps) {
         if (protoProps) _defineProperties(Constructor.prototype, protoProps);
         if (staticProps) _defineProperties(Constructor, staticProps);
+        Object.defineProperty(Constructor, "prototype", {
+          writable: false
+        });
         return Constructor;
       }
 
@@ -41,6 +44,9 @@ System.register(['app/plugins/sdk'], function (exports) {
             writable: true,
             configurable: true
           }
+        });
+        Object.defineProperty(subClass, "prototype", {
+          writable: false
         });
         if (superClass) _setPrototypeOf(subClass, superClass);
       }
@@ -6245,15 +6251,38 @@ System.register(['app/plugins/sdk'], function (exports) {
             var angles = [];
 
             if (data[0].type == 'table') {
-              // e.g. PostgreSQL
+              // e.g. PostgreSQL and InfluxDB
+              var speedCol = null;
+              var dirCol = null;
+
+              for (var i in data[0].columns) {
+                if (data[0].columns[i].text == "speed") {
+                  speedCol = i;
+                }
+
+                if (data[0].columns[i].text == "direction") {
+                  dirCol = i;
+                }
+              }
+
+              if (speedCol === null) {
+                console.warn("no `speed` column in data");
+                speedCol = 1;
+              }
+
+              if (dirCol === null) {
+                console.warn("no `direction` column in data");
+                dirCol = 2;
+              }
+
               var _iterator = _createForOfIteratorHelper(data[0].rows),
                   _step;
 
               try {
                 for (_iterator.s(); !(_step = _iterator.n()).done;) {
                   var row = _step.value;
-                  speeds.push(row[1]);
-                  angles.push(row[2]);
+                  speeds.push(row[speedCol]);
+                  angles.push(row[dirCol]);
                 }
               } catch (err) {
                 _iterator.e(err);
@@ -6502,7 +6531,7 @@ System.register(['app/plugins/sdk'], function (exports) {
 
       WindroseCtrl.templateUrl = 'module.html';
 
-    }
+    })
   };
-});
+}));
 //# sourceMappingURL=module.js.map
