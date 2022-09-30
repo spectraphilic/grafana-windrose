@@ -1853,9 +1853,9 @@ System.register(['app/plugins/sdk'], (function (exports) {
        * _.range(0);
        * // => []
        */
-      var range = createRange();
+      var range$1 = createRange();
 
-      var range$1 = range;
+      var range$2 = range$1;
 
       /* Built-in method references for those with the same name as other `lodash` methods. */
       var nativeMax = Math.max;
@@ -1916,43 +1916,60 @@ System.register(['app/plugins/sdk'], (function (exports) {
       var zip$1 = zip;
 
       function ascending$1(a, b) {
-        return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+        return a == null || b == null ? NaN : a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+      }
+
+      function descending(a, b) {
+        return a == null || b == null ? NaN
+          : b < a ? -1
+          : b > a ? 1
+          : b >= a ? 0
+          : NaN;
       }
 
       function bisector(f) {
-        let delta = f;
-        let compare = f;
+        let compare1, compare2, delta;
 
-        if (f.length === 1) {
+        // If an accessor is specified, promote it to a comparator. In this case we
+        // can test whether the search value is (self-) comparable. We can’t do this
+        // for a comparator (except for specific, known comparators) because we can’t
+        // tell if the comparator is symmetric, and an asymmetric comparator can’t be
+        // used to test whether a single value is comparable.
+        if (f.length !== 2) {
+          compare1 = ascending$1;
+          compare2 = (d, x) => ascending$1(f(d), x);
           delta = (d, x) => f(d) - x;
-          compare = ascendingComparator(f);
+        } else {
+          compare1 = f === ascending$1 || f === descending ? f : zero$1;
+          compare2 = f;
+          delta = f;
         }
 
-        function left(a, x, lo, hi) {
-          if (lo == null) lo = 0;
-          if (hi == null) hi = a.length;
-          while (lo < hi) {
-            const mid = (lo + hi) >>> 1;
-            if (compare(a[mid], x) < 0) lo = mid + 1;
-            else hi = mid;
+        function left(a, x, lo = 0, hi = a.length) {
+          if (lo < hi) {
+            if (compare1(x, x) !== 0) return hi;
+            do {
+              const mid = (lo + hi) >>> 1;
+              if (compare2(a[mid], x) < 0) lo = mid + 1;
+              else hi = mid;
+            } while (lo < hi);
           }
           return lo;
         }
 
-        function right(a, x, lo, hi) {
-          if (lo == null) lo = 0;
-          if (hi == null) hi = a.length;
-          while (lo < hi) {
-            const mid = (lo + hi) >>> 1;
-            if (compare(a[mid], x) > 0) hi = mid;
-            else lo = mid + 1;
+        function right(a, x, lo = 0, hi = a.length) {
+          if (lo < hi) {
+            if (compare1(x, x) !== 0) return hi;
+            do {
+              const mid = (lo + hi) >>> 1;
+              if (compare2(a[mid], x) <= 0) lo = mid + 1;
+              else hi = mid;
+            } while (lo < hi);
           }
           return lo;
         }
 
-        function center(a, x, lo, hi) {
-          if (lo == null) lo = 0;
-          if (hi == null) hi = a.length;
+        function center(a, x, lo = 0, hi = a.length) {
           const i = left(a, x, lo, hi - 1);
           return i > lo && delta(a[i - 1], x) > -delta(a[i], x) ? i - 1 : i;
         }
@@ -1960,8 +1977,8 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return {left, center, right};
       }
 
-      function ascendingComparator(f) {
-        return (d, x) => ascending$1(f(d), x);
+      function zero$1() {
+        return 0;
       }
 
       function number$2(x) {
@@ -1972,6 +1989,51 @@ System.register(['app/plugins/sdk'], (function (exports) {
       const bisectRight = ascendingBisect.right;
       bisector(number$2).center;
       var bisect = bisectRight;
+
+      class InternMap extends Map {
+        constructor(entries, key = keyof) {
+          super();
+          Object.defineProperties(this, {_intern: {value: new Map()}, _key: {value: key}});
+          if (entries != null) for (const [key, value] of entries) this.set(key, value);
+        }
+        get(key) {
+          return super.get(intern_get(this, key));
+        }
+        has(key) {
+          return super.has(intern_get(this, key));
+        }
+        set(key, value) {
+          return super.set(intern_set(this, key), value);
+        }
+        delete(key) {
+          return super.delete(intern_delete(this, key));
+        }
+      }
+
+      function intern_get({_intern, _key}, value) {
+        const key = _key(value);
+        return _intern.has(key) ? _intern.get(key) : value;
+      }
+
+      function intern_set({_intern, _key}, value) {
+        const key = _key(value);
+        if (_intern.has(key)) return _intern.get(key);
+        _intern.set(key, value);
+        return value;
+      }
+
+      function intern_delete({_intern, _key}, value) {
+        const key = _key(value);
+        if (_intern.has(key)) {
+          value = _intern.get(key);
+          _intern.delete(key);
+        }
+        return value;
+      }
+
+      function keyof(value) {
+        return value !== null && typeof value === "object" ? value.valueOf() : value;
+      }
 
       var e10 = Math.sqrt(50),
           e5 = Math.sqrt(10),
@@ -2049,7 +2111,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return max;
       }
 
-      function sequence(start, stop, step) {
+      function range(start, stop, step) {
         start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
 
         var i = -1,
@@ -2081,8 +2143,6 @@ System.register(['app/plugins/sdk'], (function (exports) {
         }
         return sum;
       }
-
-      var slice = Array.prototype.slice;
 
       function identity$3(x) {
         return x;
@@ -2207,15 +2267,15 @@ System.register(['app/plugins/sdk'], (function (exports) {
         };
 
         axis.ticks = function() {
-          return tickArguments = slice.call(arguments), axis;
+          return tickArguments = Array.from(arguments), axis;
         };
 
         axis.tickArguments = function(_) {
-          return arguments.length ? (tickArguments = _ == null ? [] : slice.call(_), axis) : tickArguments.slice();
+          return arguments.length ? (tickArguments = _ == null ? [] : Array.from(_), axis) : tickArguments.slice();
         };
 
         axis.tickValues = function(_) {
-          return arguments.length ? (tickValues = _ == null ? null : slice.call(_), axis) : tickValues && tickValues.slice();
+          return arguments.length ? (tickValues = _ == null ? null : Array.from(_), axis) : tickValues && tickValues.slice();
         };
 
         axis.tickFormat = function(_) {
@@ -2394,10 +2454,14 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return new Selection$1(subgroups, this._parents);
       }
 
+      // Given something array like (or null), returns something that is strictly an
+      // array. This is used to ensure that array-like objects passed to d3.selectAll
+      // or selection.selectAll are converted into proper arrays when creating a
+      // selection; we don’t ever want to create a selection backed by a live
+      // HTMLCollection or NodeList. However, note that selection.selectAll will use a
+      // static NodeList as a group, since it safely derived from querySelectorAll.
       function array$1(x) {
-        return typeof x === "object" && "length" in x
-          ? x // Array, TypedArray, NodeList, array-like
-          : Array.from(x); // Map, Set, iterable, string, or anything else
+        return x == null ? [] : Array.isArray(x) ? x : Array.from(x);
       }
 
       function empty() {
@@ -2412,8 +2476,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
 
       function arrayAll(select) {
         return function() {
-          var group = select.apply(this, arguments);
-          return group == null ? [] : array$1(group);
+          return array$1(select.apply(this, arguments));
         };
       }
 
@@ -2465,7 +2528,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
       var filter = Array.prototype.filter;
 
       function children() {
-        return this.children;
+        return Array.from(this.children);
       }
 
       function childrenFilter(match) {
@@ -2610,7 +2673,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
           var parent = parents[j],
               group = groups[j],
               groupLength = group.length,
-              data = array$1(value.call(parent, parent && parent.__data__, j, parents)),
+              data = arraylike(value.call(parent, parent && parent.__data__, j, parents)),
               dataLength = data.length,
               enterGroup = enter[j] = new Array(dataLength),
               updateGroup = update[j] = new Array(dataLength),
@@ -2636,20 +2699,40 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return update;
       }
 
+      // Given some data, this returns an array-like view of it: an object that
+      // exposes a length property and allows numeric indexing. Note that unlike
+      // selectAll, this isn’t worried about “live” collections because the resulting
+      // array will only be used briefly while data is being bound. (It is possible to
+      // cause the data to change while iterating by using a key function, but please
+      // don’t; we’d rather avoid a gratuitous copy.)
+      function arraylike(data) {
+        return typeof data === "object" && "length" in data
+          ? data // Array, TypedArray, NodeList, array-like
+          : Array.from(data); // Map, Set, iterable, string, or anything else
+      }
+
       function selection_exit() {
         return new Selection$1(this._exit || this._groups.map(sparse), this._parents);
       }
 
       function selection_join(onenter, onupdate, onexit) {
         var enter = this.enter(), update = this, exit = this.exit();
-        enter = typeof onenter === "function" ? onenter(enter) : enter.append(onenter + "");
-        if (onupdate != null) update = onupdate(update);
+        if (typeof onenter === "function") {
+          enter = onenter(enter);
+          if (enter) enter = enter.selection();
+        } else {
+          enter = enter.append(onenter + "");
+        }
+        if (onupdate != null) {
+          update = onupdate(update);
+          if (update) update = update.selection();
+        }
         if (onexit == null) exit.remove(); else onexit(exit);
         return enter && update ? enter.merge(update).order() : update;
       }
 
-      function selection_merge(selection) {
-        if (!(selection instanceof Selection$1)) throw new Error("invalid merge");
+      function selection_merge(context) {
+        var selection = context.selection ? context.selection() : context;
 
         for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
           for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
@@ -3250,15 +3333,15 @@ System.register(['app/plugins/sdk'], (function (exports) {
       var brighter = 1 / darker;
 
       var reI = "\\s*([+-]?\\d+)\\s*",
-          reN = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*",
-          reP = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
+          reN = "\\s*([+-]?(?:\\d*\\.)?\\d+(?:[eE][+-]?\\d+)?)\\s*",
+          reP = "\\s*([+-]?(?:\\d*\\.)?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
           reHex = /^#([0-9a-f]{3,8})$/,
-          reRgbInteger = new RegExp("^rgb\\(" + [reI, reI, reI] + "\\)$"),
-          reRgbPercent = new RegExp("^rgb\\(" + [reP, reP, reP] + "\\)$"),
-          reRgbaInteger = new RegExp("^rgba\\(" + [reI, reI, reI, reN] + "\\)$"),
-          reRgbaPercent = new RegExp("^rgba\\(" + [reP, reP, reP, reN] + "\\)$"),
-          reHslPercent = new RegExp("^hsl\\(" + [reN, reP, reP] + "\\)$"),
-          reHslaPercent = new RegExp("^hsla\\(" + [reN, reP, reP, reN] + "\\)$");
+          reRgbInteger = new RegExp(`^rgb\\(${reI},${reI},${reI}\\)$`),
+          reRgbPercent = new RegExp(`^rgb\\(${reP},${reP},${reP}\\)$`),
+          reRgbaInteger = new RegExp(`^rgba\\(${reI},${reI},${reI},${reN}\\)$`),
+          reRgbaPercent = new RegExp(`^rgba\\(${reP},${reP},${reP},${reN}\\)$`),
+          reHslPercent = new RegExp(`^hsl\\(${reN},${reP},${reP}\\)$`),
+          reHslaPercent = new RegExp(`^hsla\\(${reN},${reP},${reP},${reN}\\)$`);
 
       var named = {
         aliceblue: 0xf0f8ff,
@@ -3412,14 +3495,15 @@ System.register(['app/plugins/sdk'], (function (exports) {
       };
 
       define(Color, color, {
-        copy: function(channels) {
+        copy(channels) {
           return Object.assign(new this.constructor, this, channels);
         },
-        displayable: function() {
+        displayable() {
           return this.rgb().displayable();
         },
         hex: color_formatHex, // Deprecated! Use color.formatHex.
         formatHex: color_formatHex,
+        formatHex8: color_formatHex8,
         formatHsl: color_formatHsl,
         formatRgb: color_formatRgb,
         toString: color_formatRgb
@@ -3427,6 +3511,10 @@ System.register(['app/plugins/sdk'], (function (exports) {
 
       function color_formatHex() {
         return this.rgb().formatHex();
+      }
+
+      function color_formatHex8() {
+        return this.rgb().formatHex8();
       }
 
       function color_formatHsl() {
@@ -3484,18 +3572,21 @@ System.register(['app/plugins/sdk'], (function (exports) {
       }
 
       define(Rgb, rgb, extend(Color, {
-        brighter: function(k) {
+        brighter(k) {
           k = k == null ? brighter : Math.pow(brighter, k);
           return new Rgb(this.r * k, this.g * k, this.b * k, this.opacity);
         },
-        darker: function(k) {
+        darker(k) {
           k = k == null ? darker : Math.pow(darker, k);
           return new Rgb(this.r * k, this.g * k, this.b * k, this.opacity);
         },
-        rgb: function() {
+        rgb() {
           return this;
         },
-        displayable: function() {
+        clamp() {
+          return new Rgb(clampi(this.r), clampi(this.g), clampi(this.b), clampa(this.opacity));
+        },
+        displayable() {
           return (-0.5 <= this.r && this.r < 255.5)
               && (-0.5 <= this.g && this.g < 255.5)
               && (-0.5 <= this.b && this.b < 255.5)
@@ -3503,25 +3594,34 @@ System.register(['app/plugins/sdk'], (function (exports) {
         },
         hex: rgb_formatHex, // Deprecated! Use color.formatHex.
         formatHex: rgb_formatHex,
+        formatHex8: rgb_formatHex8,
         formatRgb: rgb_formatRgb,
         toString: rgb_formatRgb
       }));
 
       function rgb_formatHex() {
-        return "#" + hex(this.r) + hex(this.g) + hex(this.b);
+        return `#${hex(this.r)}${hex(this.g)}${hex(this.b)}`;
+      }
+
+      function rgb_formatHex8() {
+        return `#${hex(this.r)}${hex(this.g)}${hex(this.b)}${hex((isNaN(this.opacity) ? 1 : this.opacity) * 255)}`;
       }
 
       function rgb_formatRgb() {
-        var a = this.opacity; a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
-        return (a === 1 ? "rgb(" : "rgba(")
-            + Math.max(0, Math.min(255, Math.round(this.r) || 0)) + ", "
-            + Math.max(0, Math.min(255, Math.round(this.g) || 0)) + ", "
-            + Math.max(0, Math.min(255, Math.round(this.b) || 0))
-            + (a === 1 ? ")" : ", " + a + ")");
+        const a = clampa(this.opacity);
+        return `${a === 1 ? "rgb(" : "rgba("}${clampi(this.r)}, ${clampi(this.g)}, ${clampi(this.b)}${a === 1 ? ")" : `, ${a})`}`;
+      }
+
+      function clampa(opacity) {
+        return isNaN(opacity) ? 1 : Math.max(0, Math.min(1, opacity));
+      }
+
+      function clampi(value) {
+        return Math.max(0, Math.min(255, Math.round(value) || 0));
       }
 
       function hex(value) {
-        value = Math.max(0, Math.min(255, Math.round(value) || 0));
+        value = clampi(value);
         return (value < 16 ? "0" : "") + value.toString(16);
       }
 
@@ -3570,15 +3670,15 @@ System.register(['app/plugins/sdk'], (function (exports) {
       }
 
       define(Hsl, hsl, extend(Color, {
-        brighter: function(k) {
+        brighter(k) {
           k = k == null ? brighter : Math.pow(brighter, k);
           return new Hsl(this.h, this.s, this.l * k, this.opacity);
         },
-        darker: function(k) {
+        darker(k) {
           k = k == null ? darker : Math.pow(darker, k);
           return new Hsl(this.h, this.s, this.l * k, this.opacity);
         },
-        rgb: function() {
+        rgb() {
           var h = this.h % 360 + (this.h < 0) * 360,
               s = isNaN(h) || isNaN(this.s) ? 0 : this.s,
               l = this.l,
@@ -3591,20 +3691,28 @@ System.register(['app/plugins/sdk'], (function (exports) {
             this.opacity
           );
         },
-        displayable: function() {
+        clamp() {
+          return new Hsl(clamph(this.h), clampt(this.s), clampt(this.l), clampa(this.opacity));
+        },
+        displayable() {
           return (0 <= this.s && this.s <= 1 || isNaN(this.s))
               && (0 <= this.l && this.l <= 1)
               && (0 <= this.opacity && this.opacity <= 1);
         },
-        formatHsl: function() {
-          var a = this.opacity; a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
-          return (a === 1 ? "hsl(" : "hsla(")
-              + (this.h || 0) + ", "
-              + (this.s || 0) * 100 + "%, "
-              + (this.l || 0) * 100 + "%"
-              + (a === 1 ? ")" : ", " + a + ")");
+        formatHsl() {
+          const a = clampa(this.opacity);
+          return `${a === 1 ? "hsl(" : "hsla("}${clamph(this.h)}, ${clampt(this.s) * 100}%, ${clampt(this.l) * 100}%${a === 1 ? ")" : `, ${a})`}`;
         }
       }));
+
+      function clamph(value) {
+        value = (value || 0) % 360;
+        return value < 0 ? value + 360 : value;
+      }
+
+      function clampt(value) {
+        return Math.max(0, Math.min(1, value || 0));
+      }
 
       /* From FvD 13.37, CSS Color Module Level 3 */
       function hsl2rgb(h, m1, m2) {
@@ -3974,7 +4082,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
         ++frame; // Pretend we’ve set an alarm, if we haven’t already.
         var t = taskHead, e;
         while (t) {
-          if ((e = clockNow - t._time) >= 0) t._call.call(null, e);
+          if ((e = clockNow - t._time) >= 0) t._call.call(undefined, e);
           t = t._next;
         }
         --frame;
@@ -4828,6 +4936,8 @@ System.register(['app/plugins/sdk'], (function (exports) {
         constructor: Transition,
         select: transition_select,
         selectAll: transition_selectAll,
+        selectChild: selection_prototype.selectChild,
+        selectChildren: selection_prototype.selectChildren,
         filter: transition_filter,
         merge: transition_merge,
         selection: transition_selection,
@@ -5368,27 +5478,26 @@ System.register(['app/plugins/sdk'], (function (exports) {
       const implicit = Symbol("implicit");
 
       function ordinal() {
-        var index = new Map(),
+        var index = new InternMap(),
             domain = [],
             range = [],
             unknown = implicit;
 
         function scale(d) {
-          var key = d + "", i = index.get(key);
-          if (!i) {
+          let i = index.get(d);
+          if (i === undefined) {
             if (unknown !== implicit) return unknown;
-            index.set(key, i = domain.push(d));
+            index.set(d, i = domain.push(d) - 1);
           }
-          return range[(i - 1) % range.length];
+          return range[i % range.length];
         }
 
         scale.domain = function(_) {
           if (!arguments.length) return domain.slice();
-          domain = [], index = new Map();
+          domain = [], index = new InternMap();
           for (const value of _) {
-            const key = value + "";
-            if (index.has(key)) continue;
-            index.set(key, domain.push(value));
+            if (index.has(value)) continue;
+            index.set(value, domain.push(value) - 1);
           }
           return scale;
         };
@@ -5435,7 +5544,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
           start += (stop - start - step * (n - paddingInner)) * align;
           bandwidth = step * (1 - paddingInner);
           if (round) start = Math.round(start), bandwidth = Math.round(bandwidth);
-          var values = sequence(n).map(function(i) { return start + step * i; });
+          var values = range(n).map(function(i) { return start + step * i; });
           return ordinalRange(reverse ? values.reverse() : values);
         }
 
@@ -5720,18 +5829,18 @@ System.register(['app/plugins/sdk'], (function (exports) {
         };
       }
 
-      var abs = Math.abs;
-      var atan2 = Math.atan2;
-      var cos = Math.cos;
-      var max = Math.max;
-      var min = Math.min;
-      var sin = Math.sin;
-      var sqrt = Math.sqrt;
+      const abs = Math.abs;
+      const atan2 = Math.atan2;
+      const cos = Math.cos;
+      const max = Math.max;
+      const min = Math.min;
+      const sin = Math.sin;
+      const sqrt = Math.sqrt;
 
-      var epsilon = 1e-12;
-      var pi = Math.PI;
-      var halfPi = pi / 2;
-      var tau = 2 * pi;
+      const epsilon = 1e-12;
+      const pi = Math.PI;
+      const halfPi = pi / 2;
+      const tau = 2 * pi;
 
       function acos(x) {
         return x > 1 ? 0 : x < -1 ? pi : Math.acos(x);
@@ -6481,7 +6590,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
             }).padAngle(0.01).padRadius(innerRadius)); // X axis (angle)
 
             var gridN = 8;
-            var gridX = range$1(0, 360, 360 / gridN);
+            var gridX = range$2(0, 360, 360 / gridN);
             var xScale = linear([0, gridN], radiansRange); // Extend the domain slightly to match the range [0, 2π]
             // Draw the text label (degrees)
 
@@ -6510,7 +6619,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
             var radius = linear([0, max$1(gridX, function (d) {
               return d.y0 + d.y;
             })], yRange);
-            g.selectAll(".axis").data(sequence(xScale.domain()[1])).enter().append("g").attr("class", "axis").attr("transform", function (d) {
+            g.selectAll(".axis").data(range(xScale.domain()[1])).enter().append("g").attr("class", "axis").attr("transform", function (d) {
               return "rotate(" + xScale(d) * 180 / Math.PI + ")";
             }).call(axisLeft().scale(radius.copy().range([-innerRadius, -(outerRadius + 10)]))); // Y axis
 
