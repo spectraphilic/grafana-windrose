@@ -52,18 +52,17 @@ System.register(['app/plugins/sdk'], (function (exports) {
       }
 
       function _getPrototypeOf(o) {
-        _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+        _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) {
           return o.__proto__ || Object.getPrototypeOf(o);
         };
         return _getPrototypeOf(o);
       }
 
       function _setPrototypeOf(o, p) {
-        _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+        _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) {
           o.__proto__ = p;
           return o;
         };
-
         return _setPrototypeOf(o, p);
       }
 
@@ -815,7 +814,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
        * console.log(objects[0] === objects[1]);
        * // => true
        */
-      function constant$4(value) {
+      function constant$3(value) {
         return function() {
           return value;
         };
@@ -843,7 +842,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return defineProperty$1(func, 'toString', {
           'configurable': true,
           'enumerable': false,
-          'value': constant$4(string),
+          'value': constant$3(string),
           'writable': true
         });
       };
@@ -1920,54 +1919,59 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
       }
 
-      function bisector(compare) {
-        if (compare.length === 1) compare = ascendingComparator(compare);
-        return {
-          left: function(a, x, lo, hi) {
-            if (lo == null) lo = 0;
-            if (hi == null) hi = a.length;
-            while (lo < hi) {
-              var mid = lo + hi >>> 1;
-              if (compare(a[mid], x) < 0) lo = mid + 1;
-              else hi = mid;
-            }
-            return lo;
-          },
-          right: function(a, x, lo, hi) {
-            if (lo == null) lo = 0;
-            if (hi == null) hi = a.length;
-            while (lo < hi) {
-              var mid = lo + hi >>> 1;
-              if (compare(a[mid], x) > 0) hi = mid;
-              else lo = mid + 1;
-            }
-            return lo;
+      function bisector(f) {
+        let delta = f;
+        let compare = f;
+
+        if (f.length === 1) {
+          delta = (d, x) => f(d) - x;
+          compare = ascendingComparator(f);
+        }
+
+        function left(a, x, lo, hi) {
+          if (lo == null) lo = 0;
+          if (hi == null) hi = a.length;
+          while (lo < hi) {
+            const mid = (lo + hi) >>> 1;
+            if (compare(a[mid], x) < 0) lo = mid + 1;
+            else hi = mid;
           }
-        };
+          return lo;
+        }
+
+        function right(a, x, lo, hi) {
+          if (lo == null) lo = 0;
+          if (hi == null) hi = a.length;
+          while (lo < hi) {
+            const mid = (lo + hi) >>> 1;
+            if (compare(a[mid], x) > 0) hi = mid;
+            else lo = mid + 1;
+          }
+          return lo;
+        }
+
+        function center(a, x, lo, hi) {
+          if (lo == null) lo = 0;
+          if (hi == null) hi = a.length;
+          const i = left(a, x, lo, hi - 1);
+          return i > lo && delta(a[i - 1], x) > -delta(a[i], x) ? i - 1 : i;
+        }
+
+        return {left, center, right};
       }
 
       function ascendingComparator(f) {
-        return function(d, x) {
-          return ascending$1(f(d), x);
-        };
+        return (d, x) => ascending$1(f(d), x);
       }
 
-      var ascendingBisect = bisector(ascending$1);
-      var bisectRight = ascendingBisect.right;
-
-      function sequence(start, stop, step) {
-        start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
-
-        var i = -1,
-            n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
-            range = new Array(n);
-
-        while (++i < n) {
-          range[i] = start + i * step;
-        }
-
-        return range;
+      function number$2(x) {
+        return x === null ? NaN : +x;
       }
+
+      const ascendingBisect = bisector(ascending$1);
+      const bisectRight = ascendingBisect.right;
+      bisector(number$2).center;
+      var bisect = bisectRight;
 
       var e10 = Math.sqrt(50),
           e5 = Math.sqrt(10),
@@ -1986,15 +1990,18 @@ System.register(['app/plugins/sdk'], (function (exports) {
         if ((step = tickIncrement(start, stop, count)) === 0 || !isFinite(step)) return [];
 
         if (step > 0) {
-          start = Math.ceil(start / step);
-          stop = Math.floor(stop / step);
-          ticks = new Array(n = Math.ceil(stop - start + 1));
-          while (++i < n) ticks[i] = (start + i) * step;
+          let r0 = Math.round(start / step), r1 = Math.round(stop / step);
+          if (r0 * step < start) ++r0;
+          if (r1 * step > stop) --r1;
+          ticks = new Array(n = r1 - r0 + 1);
+          while (++i < n) ticks[i] = (r0 + i) * step;
         } else {
-          start = Math.floor(start * step);
-          stop = Math.ceil(stop * step);
-          ticks = new Array(n = Math.ceil(start - stop + 1));
-          while (++i < n) ticks[i] = (start - i) / step;
+          step = -step;
+          let r0 = Math.round(start * step), r1 = Math.round(stop * step);
+          if (r0 / step < start) ++r0;
+          if (r1 / step > stop) --r1;
+          ticks = new Array(n = r1 - r0 + 1);
+          while (++i < n) ticks[i] = (r0 + i) / step;
         }
 
         if (reverse) ticks.reverse();
@@ -2022,62 +2029,60 @@ System.register(['app/plugins/sdk'], (function (exports) {
       }
 
       function max$1(values, valueof) {
-        var n = values.length,
-            i = -1,
-            value,
-            max;
-
-        if (valueof == null) {
-          while (++i < n) { // Find the first comparable value.
-            if ((value = values[i]) != null && value >= value) {
+        let max;
+        if (valueof === undefined) {
+          for (const value of values) {
+            if (value != null
+                && (max < value || (max === undefined && value >= value))) {
               max = value;
-              while (++i < n) { // Compare the remaining values.
-                if ((value = values[i]) != null && value > max) {
-                  max = value;
-                }
-              }
+            }
+          }
+        } else {
+          let index = -1;
+          for (let value of values) {
+            if ((value = valueof(value, ++index, values)) != null
+                && (max < value || (max === undefined && value >= value))) {
+              max = value;
             }
           }
         }
-
-        else {
-          while (++i < n) { // Find the first comparable value.
-            if ((value = valueof(values[i], i, values)) != null && value >= value) {
-              max = value;
-              while (++i < n) { // Compare the remaining values.
-                if ((value = valueof(values[i], i, values)) != null && value > max) {
-                  max = value;
-                }
-              }
-            }
-          }
-        }
-
         return max;
       }
 
+      function sequence(start, stop, step) {
+        start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
+
+        var i = -1,
+            n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
+            range = new Array(n);
+
+        while (++i < n) {
+          range[i] = start + i * step;
+        }
+
+        return range;
+      }
+
       function sum(values, valueof) {
-        var n = values.length,
-            i = -1,
-            value,
-            sum = 0;
-
-        if (valueof == null) {
-          while (++i < n) {
-            if (value = +values[i]) sum += value; // Note: zero and null are equivalent.
+        let sum = 0;
+        if (valueof === undefined) {
+          for (let value of values) {
+            if (value = +value) {
+              sum += value;
+            }
+          }
+        } else {
+          let index = -1;
+          for (let value of values) {
+            if (value = +valueof(value, ++index, values)) {
+              sum += value;
+            }
           }
         }
-
-        else {
-          while (++i < n) {
-            if (value = +valueof(values[i], i, values)) sum += value;
-          }
-        }
-
         return sum;
       }
 
-      var slice$2 = Array.prototype.slice;
+      var slice = Array.prototype.slice;
 
       function identity$3(x) {
         return x;
@@ -2090,25 +2095,21 @@ System.register(['app/plugins/sdk'], (function (exports) {
           epsilon$2 = 1e-6;
 
       function translateX(x) {
-        return "translate(" + (x + 0.5) + ",0)";
+        return "translate(" + x + ",0)";
       }
 
       function translateY(y) {
-        return "translate(0," + (y + 0.5) + ")";
+        return "translate(0," + y + ")";
       }
 
       function number$1(scale) {
-        return function(d) {
-          return +scale(d);
-        };
+        return d => +scale(d);
       }
 
-      function center(scale) {
-        var offset = Math.max(0, scale.bandwidth() - 1) / 2; // Adjust for 0.5px offset.
+      function center(scale, offset) {
+        offset = Math.max(0, scale.bandwidth() - offset * 2) / 2;
         if (scale.round()) offset = Math.round(offset);
-        return function(d) {
-          return +scale(d) + offset;
-        };
+        return d => +scale(d) + offset;
       }
 
       function entering() {
@@ -2122,6 +2123,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
             tickSizeInner = 6,
             tickSizeOuter = 6,
             tickPadding = 3,
+            offset = typeof window !== "undefined" && window.devicePixelRatio > 1 ? 0 : 0.5,
             k = orient === top || orient === left ? -1 : 1,
             x = orient === left || orient === right ? "x" : "y",
             transform = orient === top || orient === bottom ? translateX : translateY;
@@ -2131,9 +2133,9 @@ System.register(['app/plugins/sdk'], (function (exports) {
               format = tickFormat == null ? (scale.tickFormat ? scale.tickFormat.apply(scale, tickArguments) : identity$3) : tickFormat,
               spacing = Math.max(tickSizeInner, 0) + tickPadding,
               range = scale.range(),
-              range0 = +range[0] + 0.5,
-              range1 = +range[range.length - 1] + 0.5,
-              position = (scale.bandwidth ? center : number$1)(scale.copy()),
+              range0 = +range[0] + offset,
+              range1 = +range[range.length - 1] + offset,
+              position = (scale.bandwidth ? center : number$1)(scale.copy(), offset),
               selection = context.selection ? context.selection() : context,
               path = selection.selectAll(".domain").data([null]),
               tick = selection.selectAll(".tick").data(values, scale).order(),
@@ -2165,23 +2167,23 @@ System.register(['app/plugins/sdk'], (function (exports) {
 
             tickExit = tickExit.transition(context)
                 .attr("opacity", epsilon$2)
-                .attr("transform", function(d) { return isFinite(d = position(d)) ? transform(d) : this.getAttribute("transform"); });
+                .attr("transform", function(d) { return isFinite(d = position(d)) ? transform(d + offset) : this.getAttribute("transform"); });
 
             tickEnter
                 .attr("opacity", epsilon$2)
-                .attr("transform", function(d) { var p = this.parentNode.__axis; return transform(p && isFinite(p = p(d)) ? p : position(d)); });
+                .attr("transform", function(d) { var p = this.parentNode.__axis; return transform((p && isFinite(p = p(d)) ? p : position(d)) + offset); });
           }
 
           tickExit.remove();
 
           path
-              .attr("d", orient === left || orient == right
-                  ? (tickSizeOuter ? "M" + k * tickSizeOuter + "," + range0 + "H0.5V" + range1 + "H" + k * tickSizeOuter : "M0.5," + range0 + "V" + range1)
-                  : (tickSizeOuter ? "M" + range0 + "," + k * tickSizeOuter + "V0.5H" + range1 + "V" + k * tickSizeOuter : "M" + range0 + ",0.5H" + range1));
+              .attr("d", orient === left || orient === right
+                  ? (tickSizeOuter ? "M" + k * tickSizeOuter + "," + range0 + "H" + offset + "V" + range1 + "H" + k * tickSizeOuter : "M" + offset + "," + range0 + "V" + range1)
+                  : (tickSizeOuter ? "M" + range0 + "," + k * tickSizeOuter + "V" + offset + "H" + range1 + "V" + k * tickSizeOuter : "M" + range0 + "," + offset + "H" + range1));
 
           tick
               .attr("opacity", 1)
-              .attr("transform", function(d) { return transform(position(d)); });
+              .attr("transform", function(d) { return transform(position(d) + offset); });
 
           line
               .attr(x + "2", k * tickSizeInner);
@@ -2205,15 +2207,15 @@ System.register(['app/plugins/sdk'], (function (exports) {
         };
 
         axis.ticks = function() {
-          return tickArguments = slice$2.call(arguments), axis;
+          return tickArguments = slice.call(arguments), axis;
         };
 
         axis.tickArguments = function(_) {
-          return arguments.length ? (tickArguments = _ == null ? [] : slice$2.call(_), axis) : tickArguments.slice();
+          return arguments.length ? (tickArguments = _ == null ? [] : slice.call(_), axis) : tickArguments.slice();
         };
 
         axis.tickValues = function(_) {
-          return arguments.length ? (tickValues = _ == null ? null : slice$2.call(_), axis) : tickValues && tickValues.slice();
+          return arguments.length ? (tickValues = _ == null ? null : slice.call(_), axis) : tickValues && tickValues.slice();
         };
 
         axis.tickFormat = function(_) {
@@ -2236,6 +2238,10 @@ System.register(['app/plugins/sdk'], (function (exports) {
           return arguments.length ? (tickPadding = +_, axis) : tickPadding;
         };
 
+        axis.offset = function(_) {
+          return arguments.length ? (offset = +_, axis) : offset;
+        };
+
         return axis;
       }
 
@@ -2243,7 +2249,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return axis(left, scale);
       }
 
-      var noop = {value: function() {}};
+      var noop = {value: () => {}};
 
       function dispatch() {
         for (var i = 0, n = arguments.length, _ = {}, t; i < n; ++i) {
@@ -2339,7 +2345,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
       function namespace(name) {
         var prefix = name += "", i = prefix.indexOf(":");
         if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") name = name.slice(i + 1);
-        return namespaces.hasOwnProperty(prefix) ? {space: namespaces[prefix], local: name} : name;
+        return namespaces.hasOwnProperty(prefix) ? {space: namespaces[prefix], local: name} : name; // eslint-disable-line no-prototype-builtins
       }
 
       function creatorInherit(name) {
@@ -2388,6 +2394,12 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return new Selection$1(subgroups, this._parents);
       }
 
+      function array$1(x) {
+        return typeof x === "object" && "length" in x
+          ? x // Array, TypedArray, NodeList, array-like
+          : Array.from(x); // Map, Set, iterable, string, or anything else
+      }
+
       function empty() {
         return [];
       }
@@ -2398,8 +2410,16 @@ System.register(['app/plugins/sdk'], (function (exports) {
         };
       }
 
+      function arrayAll(select) {
+        return function() {
+          var group = select.apply(this, arguments);
+          return group == null ? [] : array$1(group);
+        };
+      }
+
       function selection_selectAll(select) {
-        if (typeof select !== "function") select = selectorAll(select);
+        if (typeof select === "function") select = arrayAll(select);
+        else select = selectorAll(select);
 
         for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
           for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
@@ -2417,6 +2437,46 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return function() {
           return this.matches(selector);
         };
+      }
+
+      function childMatcher(selector) {
+        return function(node) {
+          return node.matches(selector);
+        };
+      }
+
+      var find = Array.prototype.find;
+
+      function childFind(match) {
+        return function() {
+          return find.call(this.children, match);
+        };
+      }
+
+      function childFirst() {
+        return this.firstElementChild;
+      }
+
+      function selection_selectChild(match) {
+        return this.select(match == null ? childFirst
+            : childFind(typeof match === "function" ? match : childMatcher(match)));
+      }
+
+      var filter = Array.prototype.filter;
+
+      function children() {
+        return this.children;
+      }
+
+      function childrenFilter(match) {
+        return function() {
+          return filter.call(this.children, match);
+        };
+      }
+
+      function selection_selectChildren(match) {
+        return this.selectAll(match == null ? children
+            : childrenFilter(typeof match === "function" ? match : childMatcher(match)));
       }
 
       function selection_filter(match) {
@@ -2457,13 +2517,11 @@ System.register(['app/plugins/sdk'], (function (exports) {
         querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
       };
 
-      function constant$3(x) {
+      function constant$2(x) {
         return function() {
           return x;
         };
       }
-
-      var keyPrefix = "$"; // Protect against keys like “__proto__”.
 
       function bindIndex(parent, group, enter, update, exit, data) {
         var i = 0,
@@ -2494,7 +2552,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
       function bindKey(parent, group, enter, update, exit, data, key) {
         var i,
             node,
-            nodeByKeyValue = {},
+            nodeByKeyValue = new Map,
             groupLength = group.length,
             dataLength = data.length,
             keyValues = new Array(groupLength),
@@ -2504,11 +2562,11 @@ System.register(['app/plugins/sdk'], (function (exports) {
         // If multiple nodes have the same key, the duplicates are added to exit.
         for (i = 0; i < groupLength; ++i) {
           if (node = group[i]) {
-            keyValues[i] = keyValue = keyPrefix + key.call(node, node.__data__, i, group);
-            if (keyValue in nodeByKeyValue) {
+            keyValues[i] = keyValue = key.call(node, node.__data__, i, group) + "";
+            if (nodeByKeyValue.has(keyValue)) {
               exit[i] = node;
             } else {
-              nodeByKeyValue[keyValue] = node;
+              nodeByKeyValue.set(keyValue, node);
             }
           }
         }
@@ -2517,11 +2575,11 @@ System.register(['app/plugins/sdk'], (function (exports) {
         // If there a node associated with this key, join and add it to update.
         // If there is not (or the key is a duplicate), add it to enter.
         for (i = 0; i < dataLength; ++i) {
-          keyValue = keyPrefix + key.call(parent, data[i], i, data);
-          if (node = nodeByKeyValue[keyValue]) {
+          keyValue = key.call(parent, data[i], i, data) + "";
+          if (node = nodeByKeyValue.get(keyValue)) {
             update[i] = node;
             node.__data__ = data[i];
-            nodeByKeyValue[keyValue] = null;
+            nodeByKeyValue.delete(keyValue);
           } else {
             enter[i] = new EnterNode(parent, data[i]);
           }
@@ -2529,30 +2587,30 @@ System.register(['app/plugins/sdk'], (function (exports) {
 
         // Add any remaining nodes that were not bound to data to exit.
         for (i = 0; i < groupLength; ++i) {
-          if ((node = group[i]) && (nodeByKeyValue[keyValues[i]] === node)) {
+          if ((node = group[i]) && (nodeByKeyValue.get(keyValues[i]) === node)) {
             exit[i] = node;
           }
         }
       }
 
+      function datum(node) {
+        return node.__data__;
+      }
+
       function selection_data(value, key) {
-        if (!value) {
-          data = new Array(this.size()), j = -1;
-          this.each(function(d) { data[++j] = d; });
-          return data;
-        }
+        if (!arguments.length) return Array.from(this, datum);
 
         var bind = key ? bindKey : bindIndex,
             parents = this._parents,
             groups = this._groups;
 
-        if (typeof value !== "function") value = constant$3(value);
+        if (typeof value !== "function") value = constant$2(value);
 
         for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
           var parent = parents[j],
               group = groups[j],
               groupLength = group.length,
-              data = value.call(parent, parent && parent.__data__, j, parents),
+              data = array$1(value.call(parent, parent && parent.__data__, j, parents)),
               dataLength = data.length,
               enterGroup = enter[j] = new Array(dataLength),
               updateGroup = update[j] = new Array(dataLength),
@@ -2591,6 +2649,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
       }
 
       function selection_merge(selection) {
+        if (!(selection instanceof Selection$1)) throw new Error("invalid merge");
 
         for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
           for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
@@ -2652,9 +2711,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
       }
 
       function selection_nodes() {
-        var nodes = new Array(this.size()), i = -1;
-        this.each(function() { nodes[++i] = this; });
-        return nodes;
+        return Array.from(this);
       }
 
       function selection_node() {
@@ -2670,8 +2727,8 @@ System.register(['app/plugins/sdk'], (function (exports) {
       }
 
       function selection_size() {
-        var size = 0;
-        this.each(function() { ++size; });
+        let size = 0;
+        for (const node of this) ++size; // eslint-disable-line no-unused-vars
         return size;
       }
 
@@ -3007,31 +3064,9 @@ System.register(['app/plugins/sdk'], (function (exports) {
             : this.node().__data__;
       }
 
-      var filterEvents = {};
-
-      if (typeof document !== "undefined") {
-        var element = document.documentElement;
-        if (!("onmouseenter" in element)) {
-          filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
-        }
-      }
-
-      function filterContextListener(listener, index, group) {
-        listener = contextListener(listener, index, group);
+      function contextListener(listener) {
         return function(event) {
-          var related = event.relatedTarget;
-          if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
-            listener.call(this, event);
-          }
-        };
-      }
-
-      function contextListener(listener, index, group) {
-        return function(event1) {
-          try {
-            listener.call(this, this.__data__, index, group);
-          } finally {
-          }
+          listener.call(this, event, this.__data__);
         };
       }
 
@@ -3049,7 +3084,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
           if (!on) return;
           for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
             if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
-              this.removeEventListener(o.type, o.listener, o.capture);
+              this.removeEventListener(o.type, o.listener, o.options);
             } else {
               on[++i] = o;
             }
@@ -3059,26 +3094,25 @@ System.register(['app/plugins/sdk'], (function (exports) {
         };
       }
 
-      function onAdd(typename, value, capture) {
-        var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
-        return function(d, i, group) {
-          var on = this.__on, o, listener = wrap(value, i, group);
+      function onAdd(typename, value, options) {
+        return function() {
+          var on = this.__on, o, listener = contextListener(value);
           if (on) for (var j = 0, m = on.length; j < m; ++j) {
             if ((o = on[j]).type === typename.type && o.name === typename.name) {
-              this.removeEventListener(o.type, o.listener, o.capture);
-              this.addEventListener(o.type, o.listener = listener, o.capture = capture);
+              this.removeEventListener(o.type, o.listener, o.options);
+              this.addEventListener(o.type, o.listener = listener, o.options = options);
               o.value = value;
               return;
             }
           }
-          this.addEventListener(typename.type, listener, capture);
-          o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
+          this.addEventListener(typename.type, listener, options);
+          o = {type: typename.type, name: typename.name, value: value, listener: listener, options: options};
           if (!on) this.__on = [o];
           else on.push(o);
         };
       }
 
-      function selection_on(typename, value, capture) {
+      function selection_on(typename, value, options) {
         var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
 
         if (arguments.length < 2) {
@@ -3094,8 +3128,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
         }
 
         on = value ? onAdd : onRemove;
-        if (capture == null) capture = false;
-        for (i = 0; i < n; ++i) this.each(on(typenames[i], value, capture));
+        for (i = 0; i < n; ++i) this.each(on(typenames[i], value, options));
         return this;
       }
 
@@ -3132,6 +3165,14 @@ System.register(['app/plugins/sdk'], (function (exports) {
             : dispatchConstant)(type, params));
       }
 
+      function* selection_iterator() {
+        for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
+          for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
+            if (node = group[i]) yield node;
+          }
+        }
+      }
+
       var root = [null];
 
       function Selection$1(groups, parents) {
@@ -3143,16 +3184,23 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return new Selection$1([[document.documentElement]], root);
       }
 
+      function selection_selection() {
+        return this;
+      }
+
       Selection$1.prototype = selection.prototype = {
         constructor: Selection$1,
         select: selection_select,
         selectAll: selection_selectAll,
+        selectChild: selection_selectChild,
+        selectChildren: selection_selectChildren,
         filter: selection_filter,
         data: selection_data,
         enter: selection_enter,
         exit: selection_exit,
         join: selection_join,
         merge: selection_merge,
+        selection: selection_selection,
         order: selection_order,
         sort: selection_sort,
         call: selection_call,
@@ -3175,7 +3223,8 @@ System.register(['app/plugins/sdk'], (function (exports) {
         clone: selection_clone,
         datum: selection_datum,
         on: selection_on,
-        dispatch: selection_dispatch
+        dispatch: selection_dispatch,
+        [Symbol.iterator]: selection_iterator
       };
 
       function select(selector) {
@@ -3565,11 +3614,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
             : m1) * 255;
       }
 
-      function constant$2(x) {
-        return function() {
-          return x;
-        };
-      }
+      var constant$1 = x => () => x;
 
       function linear$1(a, d) {
         return function(t) {
@@ -3585,13 +3630,13 @@ System.register(['app/plugins/sdk'], (function (exports) {
 
       function gamma(y) {
         return (y = +y) === 1 ? nogamma : function(a, b) {
-          return b - a ? exponential(a, b, y) : constant$2(isNaN(a) ? b : a);
+          return b - a ? exponential(a, b, y) : constant$1(isNaN(a) ? b : a);
         };
       }
 
       function nogamma(a, b) {
         var d = b - a;
-        return d ? linear$1(a, d) : constant$2(isNaN(a) ? b : a);
+        return d ? linear$1(a, d) : constant$1(isNaN(a) ? b : a);
       }
 
       var interpolateRgb = (function rgbGamma(y) {
@@ -3638,7 +3683,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
             c = new Array(nb),
             i;
 
-        for (i = 0; i < na; ++i) x[i] = interpolateValue(a[i], b[i]);
+        for (i = 0; i < na; ++i) x[i] = interpolate$1(a[i], b[i]);
         for (; i < nb; ++i) c[i] = b[i];
 
         return function(t) {
@@ -3670,7 +3715,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
 
         for (k in b) {
           if (k in a) {
-            i[k] = interpolateValue(a[k], b[k]);
+            i[k] = interpolate$1(a[k], b[k]);
           } else {
             c[k] = b[k];
           }
@@ -3745,9 +3790,9 @@ System.register(['app/plugins/sdk'], (function (exports) {
               });
       }
 
-      function interpolateValue(a, b) {
+      function interpolate$1(a, b) {
         var t = typeof b, c;
-        return b == null || t === "boolean" ? constant$2(b)
+        return b == null || t === "boolean" ? constant$1(b)
             : (t === "number" ? interpolateNumber
             : t === "string" ? ((c = color(b)) ? (b = c, interpolateRgb) : interpolateString)
             : b instanceof color ? interpolateRgb
@@ -3791,19 +3836,12 @@ System.register(['app/plugins/sdk'], (function (exports) {
         };
       }
 
-      var cssNode,
-          cssRoot,
-          cssView,
-          svgNode;
+      var svgNode;
 
+      /* eslint-disable no-undef */
       function parseCss(value) {
-        if (value === "none") return identity$2;
-        if (!cssNode) cssNode = document.createElement("DIV"), cssRoot = document.documentElement, cssView = document.defaultView;
-        cssNode.style.transform = value;
-        value = cssView.getComputedStyle(cssRoot.appendChild(cssNode), null).getPropertyValue("transform");
-        cssRoot.removeChild(cssNode);
-        value = value.slice(7, -1).split(",");
-        return decompose(+value[0], +value[1], +value[2], +value[3], +value[4], +value[5]);
+        const m = new (typeof DOMMatrix === "function" ? DOMMatrix : WebKitCSSMatrix)(value + "");
+        return m.isIdentity ? identity$2 : decompose(m.a, m.b, m.c, m.d, m.e, m.f);
       }
 
       function parseSvg(value) {
@@ -3990,7 +4028,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
       function timeout(callback, delay, time) {
         var t = new Timer;
         delay = delay == null ? 0 : +delay;
-        t.restart(function(elapsed) {
+        t.restart(elapsed => {
           t.stop();
           callback(elapsed + delay);
         }, delay, time);
@@ -4441,6 +4479,19 @@ System.register(['app/plugins/sdk'], (function (exports) {
             : get(this.node(), id).ease;
       }
 
+      function easeVarying(id, value) {
+        return function() {
+          var v = value.apply(this, arguments);
+          if (typeof v !== "function") throw new Error;
+          set(this, id).ease = v;
+        };
+      }
+
+      function transition_easeVarying(value) {
+        if (typeof value !== "function") throw new Error;
+        return this.each(easeVarying(this._id, value));
+      }
+
       function transition_filter(match) {
         if (typeof match !== "function") match = matcher(match);
 
@@ -4752,6 +4803,9 @@ System.register(['app/plugins/sdk'], (function (exports) {
 
             schedule.on = on1;
           });
+
+          // The selection was empty, resolve end immediately
+          if (size === 0) resolve();
         });
       }
 
@@ -4796,7 +4850,9 @@ System.register(['app/plugins/sdk'], (function (exports) {
         delay: transition_delay,
         duration: transition_duration,
         ease: transition_ease,
-        end: transition_end
+        easeVarying: transition_easeVarying,
+        end: transition_end,
+        [Symbol.iterator]: selection_prototype[Symbol.iterator]
       };
 
       function cubicInOut(t) {
@@ -4814,7 +4870,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
         var timing;
         while (!(timing = node.__transition) || !(timing = timing[id])) {
           if (!(node = node.parentNode)) {
-            return defaultTiming.time = now(), defaultTiming;
+            throw new Error(`transition ${id} not found`);
           }
         }
         return timing;
@@ -4844,7 +4900,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
       selection.prototype.interrupt = selection_interrupt;
       selection.prototype.transition = selection_transition;
 
-      var pi$1 = Math.PI,
+      const pi$1 = Math.PI,
           tau$1 = 2 * pi$1,
           epsilon$1 = 1e-6,
           tauEpsilon = tau$1 - epsilon$1;
@@ -4971,100 +5027,6 @@ System.register(['app/plugins/sdk'], (function (exports) {
         toString: function() {
           return this._;
         }
-      };
-
-      var prefix = "$";
-
-      function Map() {}
-
-      Map.prototype = map$2.prototype = {
-        constructor: Map,
-        has: function(key) {
-          return (prefix + key) in this;
-        },
-        get: function(key) {
-          return this[prefix + key];
-        },
-        set: function(key, value) {
-          this[prefix + key] = value;
-          return this;
-        },
-        remove: function(key) {
-          var property = prefix + key;
-          return property in this && delete this[property];
-        },
-        clear: function() {
-          for (var property in this) if (property[0] === prefix) delete this[property];
-        },
-        keys: function() {
-          var keys = [];
-          for (var property in this) if (property[0] === prefix) keys.push(property.slice(1));
-          return keys;
-        },
-        values: function() {
-          var values = [];
-          for (var property in this) if (property[0] === prefix) values.push(this[property]);
-          return values;
-        },
-        entries: function() {
-          var entries = [];
-          for (var property in this) if (property[0] === prefix) entries.push({key: property.slice(1), value: this[property]});
-          return entries;
-        },
-        size: function() {
-          var size = 0;
-          for (var property in this) if (property[0] === prefix) ++size;
-          return size;
-        },
-        empty: function() {
-          for (var property in this) if (property[0] === prefix) return false;
-          return true;
-        },
-        each: function(f) {
-          for (var property in this) if (property[0] === prefix) f(this[property], property.slice(1), this);
-        }
-      };
-
-      function map$2(object, f) {
-        var map = new Map;
-
-        // Copy constructor.
-        if (object instanceof Map) object.each(function(value, key) { map.set(key, value); });
-
-        // Index array by numeric index or specified key function.
-        else if (Array.isArray(object)) {
-          var i = -1,
-              n = object.length,
-              o;
-
-          if (f == null) while (++i < n) map.set(i, object[i]);
-          else while (++i < n) map.set(f(o = object[i], i, object), o);
-        }
-
-        // Convert object to map.
-        else if (object) for (var key in object) map.set(key, object[key]);
-
-        return map;
-      }
-
-      function Set() {}
-
-      var proto = map$2.prototype;
-
-      Set.prototype = {
-        constructor: Set,
-        has: proto.has,
-        add: function(value) {
-          value += "";
-          this[prefix + value] = value;
-          return this;
-        },
-        remove: proto.remove,
-        clear: proto.clear,
-        values: proto.keys,
-        size: proto.size,
-        empty: proto.empty,
-        each: proto.each
       };
 
       function formatDecimal(x) {
@@ -5205,36 +5167,36 @@ System.register(['app/plugins/sdk'], (function (exports) {
       }
 
       var formatTypes = {
-        "%": function(x, p) { return (x * 100).toFixed(p); },
-        "b": function(x) { return Math.round(x).toString(2); },
-        "c": function(x) { return x + ""; },
+        "%": (x, p) => (x * 100).toFixed(p),
+        "b": (x) => Math.round(x).toString(2),
+        "c": (x) => x + "",
         "d": formatDecimal,
-        "e": function(x, p) { return x.toExponential(p); },
-        "f": function(x, p) { return x.toFixed(p); },
-        "g": function(x, p) { return x.toPrecision(p); },
-        "o": function(x) { return Math.round(x).toString(8); },
-        "p": function(x, p) { return formatRounded(x * 100, p); },
+        "e": (x, p) => x.toExponential(p),
+        "f": (x, p) => x.toFixed(p),
+        "g": (x, p) => x.toPrecision(p),
+        "o": (x) => Math.round(x).toString(8),
+        "p": (x, p) => formatRounded(x * 100, p),
         "r": formatRounded,
         "s": formatPrefixAuto,
-        "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
-        "x": function(x) { return Math.round(x).toString(16); }
+        "X": (x) => Math.round(x).toString(16).toUpperCase(),
+        "x": (x) => Math.round(x).toString(16)
       };
 
       function identity$1(x) {
         return x;
       }
 
-      var map$1 = Array.prototype.map,
+      var map = Array.prototype.map,
           prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
       function formatLocale(locale) {
-        var group = locale.grouping === undefined || locale.thousands === undefined ? identity$1 : formatGroup(map$1.call(locale.grouping, Number), locale.thousands + ""),
+        var group = locale.grouping === undefined || locale.thousands === undefined ? identity$1 : formatGroup(map.call(locale.grouping, Number), locale.thousands + ""),
             currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
             currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
             decimal = locale.decimal === undefined ? "." : locale.decimal + "",
-            numerals = locale.numerals === undefined ? identity$1 : formatNumerals(map$1.call(locale.numerals, String)),
+            numerals = locale.numerals === undefined ? identity$1 : formatNumerals(map.call(locale.numerals, String)),
             percent = locale.percent === undefined ? "%" : locale.percent + "",
-            minus = locale.minus === undefined ? "-" : locale.minus + "",
+            minus = locale.minus === undefined ? "−" : locale.minus + "",
             nan = locale.nan === undefined ? "NaN" : locale.nan + "";
 
         function newFormat(specifier) {
@@ -5369,11 +5331,9 @@ System.register(['app/plugins/sdk'], (function (exports) {
       var formatPrefix;
 
       defaultLocale({
-        decimal: ".",
         thousands: ",",
         grouping: [3],
-        currency: ["$", ""],
-        minus: "-"
+        currency: ["$", ""]
       });
 
       function defaultLocale(definition) {
@@ -5405,15 +5365,10 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return this;
       }
 
-      var array = Array.prototype;
-
-      var map = array.map;
-      var slice$1 = array.slice;
-
-      var implicit = {name: "implicit"};
+      const implicit = Symbol("implicit");
 
       function ordinal() {
-        var index = map$2(),
+        var index = new Map(),
             domain = [],
             range = [],
             unknown = implicit;
@@ -5429,14 +5384,17 @@ System.register(['app/plugins/sdk'], (function (exports) {
 
         scale.domain = function(_) {
           if (!arguments.length) return domain.slice();
-          domain = [], index = map$2();
-          var i = -1, n = _.length, d, key;
-          while (++i < n) if (!index.has(key = (d = _[i]) + "")) index.set(key, domain.push(d));
+          domain = [], index = new Map();
+          for (const value of _) {
+            const key = value + "";
+            if (index.has(key)) continue;
+            index.set(key, domain.push(value));
+          }
           return scale;
         };
 
         scale.range = function(_) {
-          return arguments.length ? (range = slice$1.call(_), scale) : range.slice();
+          return arguments.length ? (range = Array.from(_), scale) : range.slice();
         };
 
         scale.unknown = function(_) {
@@ -5456,7 +5414,8 @@ System.register(['app/plugins/sdk'], (function (exports) {
         var scale = ordinal().unknown(undefined),
             domain = scale.domain,
             ordinalRange = scale.range,
-            range = [0, 1],
+            r0 = 0,
+            r1 = 1,
             step,
             bandwidth,
             round = false,
@@ -5468,9 +5427,9 @@ System.register(['app/plugins/sdk'], (function (exports) {
 
         function rescale() {
           var n = domain().length,
-              reverse = range[1] < range[0],
-              start = range[reverse - 0],
-              stop = range[1 - reverse];
+              reverse = r1 < r0,
+              start = reverse ? r1 : r0,
+              stop = reverse ? r0 : r1;
           step = (stop - start) / Math.max(1, n - paddingInner + paddingOuter * 2);
           if (round) step = Math.floor(step);
           start += (stop - start - step * (n - paddingInner)) * align;
@@ -5485,11 +5444,11 @@ System.register(['app/plugins/sdk'], (function (exports) {
         };
 
         scale.range = function(_) {
-          return arguments.length ? (range = [+_[0], +_[1]], rescale()) : range.slice();
+          return arguments.length ? ([r0, r1] = _, r0 = +r0, r1 = +r1, rescale()) : [r0, r1];
         };
 
         scale.rangeRound = function(_) {
-          return range = [+_[0], +_[1]], round = true, rescale();
+          return [r0, r1] = _, r0 = +r0, r1 = +r1, round = true, rescale();
         };
 
         scale.bandwidth = function() {
@@ -5521,7 +5480,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
         };
 
         scale.copy = function() {
-          return band(domain(), range)
+          return band(domain(), [r0, r1])
               .round(round)
               .paddingInner(paddingInner)
               .paddingOuter(paddingOuter)
@@ -5531,7 +5490,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return initRange.apply(rescale(), arguments);
       }
 
-      function constant$1(x) {
+      function constants(x) {
         return function() {
           return x;
         };
@@ -5550,11 +5509,11 @@ System.register(['app/plugins/sdk'], (function (exports) {
       function normalize(a, b) {
         return (b -= (a = +a))
             ? function(x) { return (x - a) / b; }
-            : constant$1(isNaN(b) ? NaN : 0.5);
+            : constants(isNaN(b) ? NaN : 0.5);
       }
 
-      function clamper(domain) {
-        var a = domain[0], b = domain[domain.length - 1], t;
+      function clamper(a, b) {
+        var t;
         if (a > b) t = a, a = b, b = t;
         return function(x) { return Math.max(a, Math.min(b, x)); };
       }
@@ -5586,7 +5545,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
         }
 
         return function(x) {
-          var i = bisectRight(domain, x, 1, j) - 1;
+          var i = bisect(domain, x, 1, j) - 1;
           return r[i](d[i](x));
         };
       }
@@ -5603,7 +5562,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
       function transformer() {
         var domain = unit,
             range = unit,
-            interpolate = interpolateValue,
+            interpolate = interpolate$1,
             transform,
             untransform,
             unknown,
@@ -5613,13 +5572,15 @@ System.register(['app/plugins/sdk'], (function (exports) {
             input;
 
         function rescale() {
-          piecewise = Math.min(domain.length, range.length) > 2 ? polymap : bimap;
+          var n = Math.min(domain.length, range.length);
+          if (clamp !== identity) clamp = clamper(domain[0], domain[n - 1]);
+          piecewise = n > 2 ? polymap : bimap;
           output = input = null;
           return scale;
         }
 
         function scale(x) {
-          return isNaN(x = +x) ? unknown : (output || (output = piecewise(domain.map(transform), range, interpolate)))(transform(clamp(x)));
+          return x == null || isNaN(x = +x) ? unknown : (output || (output = piecewise(domain.map(transform), range, interpolate)))(transform(clamp(x)));
         }
 
         scale.invert = function(y) {
@@ -5627,19 +5588,19 @@ System.register(['app/plugins/sdk'], (function (exports) {
         };
 
         scale.domain = function(_) {
-          return arguments.length ? (domain = map.call(_, number), clamp === identity || (clamp = clamper(domain)), rescale()) : domain.slice();
+          return arguments.length ? (domain = Array.from(_, number), rescale()) : domain.slice();
         };
 
         scale.range = function(_) {
-          return arguments.length ? (range = slice$1.call(_), rescale()) : range.slice();
+          return arguments.length ? (range = Array.from(_), rescale()) : range.slice();
         };
 
         scale.rangeRound = function(_) {
-          return range = slice$1.call(_), interpolate = interpolateRound, rescale();
+          return range = Array.from(_), interpolate = interpolateRound, rescale();
         };
 
         scale.clamp = function(_) {
-          return arguments.length ? (clamp = _ ? clamper(domain) : identity, scale) : clamp !== identity;
+          return arguments.length ? (clamp = _ ? true : identity, rescale()) : clamp !== identity;
         };
 
         scale.interpolate = function(_) {
@@ -5656,8 +5617,8 @@ System.register(['app/plugins/sdk'], (function (exports) {
         };
       }
 
-      function continuous(transform, untransform) {
-        return transformer()(transform, untransform);
+      function continuous() {
+        return transformer()(identity, identity);
       }
 
       function tickFormat(start, stop, count, specifier) {
@@ -5703,38 +5664,36 @@ System.register(['app/plugins/sdk'], (function (exports) {
         scale.nice = function(count) {
           if (count == null) count = 10;
 
-          var d = domain(),
-              i0 = 0,
-              i1 = d.length - 1,
-              start = d[i0],
-              stop = d[i1],
-              step;
+          var d = domain();
+          var i0 = 0;
+          var i1 = d.length - 1;
+          var start = d[i0];
+          var stop = d[i1];
+          var prestep;
+          var step;
+          var maxIter = 10;
 
           if (stop < start) {
             step = start, start = stop, stop = step;
             step = i0, i0 = i1, i1 = step;
           }
-
-          step = tickIncrement(start, stop, count);
-
-          if (step > 0) {
-            start = Math.floor(start / step) * step;
-            stop = Math.ceil(stop / step) * step;
+          
+          while (maxIter-- > 0) {
             step = tickIncrement(start, stop, count);
-          } else if (step < 0) {
-            start = Math.ceil(start * step) / step;
-            stop = Math.floor(stop * step) / step;
-            step = tickIncrement(start, stop, count);
-          }
-
-          if (step > 0) {
-            d[i0] = Math.floor(start / step) * step;
-            d[i1] = Math.ceil(stop / step) * step;
-            domain(d);
-          } else if (step < 0) {
-            d[i0] = Math.ceil(start * step) / step;
-            d[i1] = Math.floor(stop * step) / step;
-            domain(d);
+            if (step === prestep) {
+              d[i0] = start;
+              d[i1] = stop;
+              return domain(d);
+            } else if (step > 0) {
+              start = Math.floor(start / step) * step;
+              stop = Math.ceil(stop / step) * step;
+            } else if (step < 0) {
+              start = Math.ceil(start * step) / step;
+              stop = Math.floor(stop * step) / step;
+            } else {
+              break;
+            }
+            prestep = step;
           }
 
           return scale;
@@ -5744,7 +5703,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
       }
 
       function linear() {
-        var scale = continuous(identity, identity);
+        var scale = continuous();
 
         scale.copy = function() {
           return copy(scale, linear());
@@ -6040,7 +5999,11 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return arc;
       }
 
-      var slice = Array.prototype.slice;
+      function array(x) {
+        return typeof x === "object" && "length" in x
+          ? x // Array, TypedArray, NodeList, array-like
+          : Array.from(x); // Map, Set, iterable, string, or anything else
+      }
 
       function none$1(series, order) {
         if (!((n = series.length) > 1)) return;
@@ -6062,6 +6025,12 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return d[key];
       }
 
+      function stackSeries(key) {
+        const series = [];
+        series.key = key;
+        return series;
+      }
+
       function stack() {
         var keys = constant([]),
             order = none,
@@ -6069,22 +6038,17 @@ System.register(['app/plugins/sdk'], (function (exports) {
             value = stackValue;
 
         function stack(data) {
-          var kz = keys.apply(this, arguments),
-              i,
-              m = data.length,
-              n = kz.length,
-              sz = new Array(n),
+          var sz = Array.from(keys.apply(this, arguments), stackSeries),
+              i, n = sz.length, j = -1,
               oz;
 
-          for (i = 0; i < n; ++i) {
-            for (var ki = kz[i], si = sz[i] = new Array(m), j = 0, sij; j < m; ++j) {
-              si[j] = sij = [0, +value(data[j], ki, j, data)];
-              sij.data = data[j];
+          for (const d of data) {
+            for (i = 0, ++j; i < n; ++i) {
+              (sz[i][j] = [0, +value(d, sz[i].key, j, data)]).data = d;
             }
-            si.key = ki;
           }
 
-          for (i = 0, oz = order(sz); i < n; ++i) {
+          for (i = 0, oz = array(order(sz)); i < n; ++i) {
             sz[oz[i]].index = i;
           }
 
@@ -6093,7 +6057,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
         }
 
         stack.keys = function(_) {
-          return arguments.length ? (keys = typeof _ === "function" ? _ : constant(slice.call(_)), stack) : keys;
+          return arguments.length ? (keys = typeof _ === "function" ? _ : constant(Array.from(_)), stack) : keys;
         };
 
         stack.value = function(_) {
@@ -6101,7 +6065,7 @@ System.register(['app/plugins/sdk'], (function (exports) {
         };
 
         stack.order = function(_) {
-          return arguments.length ? (order = _ == null ? none : typeof _ === "function" ? _ : constant(slice.call(_)), stack) : order;
+          return arguments.length ? (order = _ == null ? none : typeof _ === "function" ? _ : constant(Array.from(_)), stack) : order;
         };
 
         stack.offset = function(_) {
@@ -6110,6 +6074,53 @@ System.register(['app/plugins/sdk'], (function (exports) {
 
         return stack;
       }
+
+      function Transform(k, x, y) {
+        this.k = k;
+        this.x = x;
+        this.y = y;
+      }
+
+      Transform.prototype = {
+        constructor: Transform,
+        scale: function(k) {
+          return k === 1 ? this : new Transform(this.k * k, this.x, this.y);
+        },
+        translate: function(x, y) {
+          return x === 0 & y === 0 ? this : new Transform(this.k, this.x + this.k * x, this.y + this.k * y);
+        },
+        apply: function(point) {
+          return [point[0] * this.k + this.x, point[1] * this.k + this.y];
+        },
+        applyX: function(x) {
+          return x * this.k + this.x;
+        },
+        applyY: function(y) {
+          return y * this.k + this.y;
+        },
+        invert: function(location) {
+          return [(location[0] - this.x) / this.k, (location[1] - this.y) / this.k];
+        },
+        invertX: function(x) {
+          return (x - this.x) / this.k;
+        },
+        invertY: function(y) {
+          return (y - this.y) / this.k;
+        },
+        rescaleX: function(x) {
+          return x.copy().domain(x.range().map(this.invertX, this).map(x.invert, x));
+        },
+        rescaleY: function(y) {
+          return y.copy().domain(y.range().map(this.invertY, this).map(y.invert, y));
+        },
+        toString: function() {
+          return "translate(" + this.x + "," + this.y + ") scale(" + this.k + ")";
+        }
+      };
+
+      new Transform(1, 0, 0);
+
+      Transform.prototype;
 
       loadPluginCss({
         dark: 'plugins/spectraphilic-windrose-panel/css/dark.css',
