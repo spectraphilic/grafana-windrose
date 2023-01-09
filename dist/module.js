@@ -13,17 +13,15 @@ System.register(['app/plugins/sdk'], (function (exports) {
           throw new TypeError("Cannot call a class as a function");
         }
       }
-
       function _defineProperties(target, props) {
         for (var i = 0; i < props.length; i++) {
           var descriptor = props[i];
           descriptor.enumerable = descriptor.enumerable || false;
           descriptor.configurable = true;
           if ("value" in descriptor) descriptor.writable = true;
-          Object.defineProperty(target, descriptor.key, descriptor);
+          Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor);
         }
       }
-
       function _createClass(Constructor, protoProps, staticProps) {
         if (protoProps) _defineProperties(Constructor.prototype, protoProps);
         if (staticProps) _defineProperties(Constructor, staticProps);
@@ -32,12 +30,10 @@ System.register(['app/plugins/sdk'], (function (exports) {
         });
         return Constructor;
       }
-
       function _inherits(subClass, superClass) {
         if (typeof superClass !== "function" && superClass !== null) {
           throw new TypeError("Super expression must either be null or a function");
         }
-
         subClass.prototype = Object.create(superClass && superClass.prototype, {
           constructor: {
             value: subClass,
@@ -50,14 +46,12 @@ System.register(['app/plugins/sdk'], (function (exports) {
         });
         if (superClass) _setPrototypeOf(subClass, superClass);
       }
-
       function _getPrototypeOf(o) {
         _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) {
           return o.__proto__ || Object.getPrototypeOf(o);
         };
         return _getPrototypeOf(o);
       }
-
       function _setPrototypeOf(o, p) {
         _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) {
           o.__proto__ = p;
@@ -65,12 +59,10 @@ System.register(['app/plugins/sdk'], (function (exports) {
         };
         return _setPrototypeOf(o, p);
       }
-
       function _isNativeReflectConstruct() {
         if (typeof Reflect === "undefined" || !Reflect.construct) return false;
         if (Reflect.construct.sham) return false;
         if (typeof Proxy === "function") return true;
-
         try {
           Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
           return true;
@@ -78,56 +70,43 @@ System.register(['app/plugins/sdk'], (function (exports) {
           return false;
         }
       }
-
       function _assertThisInitialized(self) {
         if (self === void 0) {
           throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
         }
-
         return self;
       }
-
       function _possibleConstructorReturn(self, call) {
         if (call && (typeof call === "object" || typeof call === "function")) {
           return call;
         } else if (call !== void 0) {
           throw new TypeError("Derived constructors may only return object or undefined");
         }
-
         return _assertThisInitialized(self);
       }
-
       function _createSuper(Derived) {
         var hasNativeReflectConstruct = _isNativeReflectConstruct();
-
         return function _createSuperInternal() {
           var Super = _getPrototypeOf(Derived),
-              result;
-
+            result;
           if (hasNativeReflectConstruct) {
             var NewTarget = _getPrototypeOf(this).constructor;
-
             result = Reflect.construct(Super, arguments, NewTarget);
           } else {
             result = Super.apply(this, arguments);
           }
-
           return _possibleConstructorReturn(this, result);
         };
       }
-
       function _toConsumableArray(arr) {
         return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
       }
-
       function _arrayWithoutHoles(arr) {
         if (Array.isArray(arr)) return _arrayLikeToArray(arr);
       }
-
       function _iterableToArray(iter) {
         if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
       }
-
       function _unsupportedIterableToArray(o, minLen) {
         if (!o) return;
         if (typeof o === "string") return _arrayLikeToArray(o, minLen);
@@ -136,29 +115,21 @@ System.register(['app/plugins/sdk'], (function (exports) {
         if (n === "Map" || n === "Set") return Array.from(o);
         if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
       }
-
       function _arrayLikeToArray(arr, len) {
         if (len == null || len > arr.length) len = arr.length;
-
         for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-
         return arr2;
       }
-
       function _nonIterableSpread() {
         throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
       }
-
       function _createForOfIteratorHelper(o, allowArrayLike) {
         var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
-
         if (!it) {
           if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
             if (it) o = it;
             var i = 0;
-
             var F = function () {};
-
             return {
               s: F,
               n: function () {
@@ -176,13 +147,11 @@ System.register(['app/plugins/sdk'], (function (exports) {
               f: F
             };
           }
-
           throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
         }
-
         var normalCompletion = true,
-            didErr = false,
-            err;
+          didErr = false,
+          err;
         return {
           s: function () {
             it = it.call(o);
@@ -204,6 +173,20 @@ System.register(['app/plugins/sdk'], (function (exports) {
             }
           }
         };
+      }
+      function _toPrimitive(input, hint) {
+        if (typeof input !== "object" || input === null) return input;
+        var prim = input[Symbol.toPrimitive];
+        if (prim !== undefined) {
+          var res = prim.call(input, hint || "default");
+          if (typeof res !== "object") return res;
+          throw new TypeError("@@toPrimitive must return a primitive value.");
+        }
+        return (hint === "string" ? String : Number)(input);
+      }
+      function _toPropertyKey(arg) {
+        var key = _toPrimitive(arg, "string");
+        return typeof key === "symbol" ? key : String(key);
       }
 
       /** Detect free variable `global` from Node.js. */
@@ -5015,39 +4998,58 @@ System.register(['app/plugins/sdk'], (function (exports) {
           epsilon$1 = 1e-6,
           tauEpsilon = tau$1 - epsilon$1;
 
-      function Path() {
-        this._x0 = this._y0 = // start of current subpath
-        this._x1 = this._y1 = null; // end of current subpath
-        this._ = "";
+      function append(strings) {
+        this._ += strings[0];
+        for (let i = 1, n = strings.length; i < n; ++i) {
+          this._ += arguments[i] + strings[i];
+        }
       }
 
-      function path() {
-        return new Path;
+      function appendRound(digits) {
+        let d = Math.floor(digits);
+        if (!(d >= 0)) throw new Error(`invalid digits: ${digits}`);
+        if (d > 15) return append;
+        const k = 10 ** d;
+        return function(strings) {
+          this._ += strings[0];
+          for (let i = 1, n = strings.length; i < n; ++i) {
+            this._ += Math.round(arguments[i] * k) / k + strings[i];
+          }
+        };
       }
 
-      Path.prototype = path.prototype = {
-        constructor: Path,
-        moveTo: function(x, y) {
-          this._ += "M" + (this._x0 = this._x1 = +x) + "," + (this._y0 = this._y1 = +y);
-        },
-        closePath: function() {
+      class Path {
+        constructor(digits) {
+          this._x0 = this._y0 = // start of current subpath
+          this._x1 = this._y1 = null; // end of current subpath
+          this._ = "";
+          this._append = digits == null ? append : appendRound(digits);
+        }
+        moveTo(x, y) {
+          this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}`;
+        }
+        closePath() {
           if (this._x1 !== null) {
             this._x1 = this._x0, this._y1 = this._y0;
-            this._ += "Z";
+            this._append`Z`;
           }
-        },
-        lineTo: function(x, y) {
-          this._ += "L" + (this._x1 = +x) + "," + (this._y1 = +y);
-        },
-        quadraticCurveTo: function(x1, y1, x, y) {
-          this._ += "Q" + (+x1) + "," + (+y1) + "," + (this._x1 = +x) + "," + (this._y1 = +y);
-        },
-        bezierCurveTo: function(x1, y1, x2, y2, x, y) {
-          this._ += "C" + (+x1) + "," + (+y1) + "," + (+x2) + "," + (+y2) + "," + (this._x1 = +x) + "," + (this._y1 = +y);
-        },
-        arcTo: function(x1, y1, x2, y2, r) {
+        }
+        lineTo(x, y) {
+          this._append`L${this._x1 = +x},${this._y1 = +y}`;
+        }
+        quadraticCurveTo(x1, y1, x, y) {
+          this._append`Q${+x1},${+y1},${this._x1 = +x},${this._y1 = +y}`;
+        }
+        bezierCurveTo(x1, y1, x2, y2, x, y) {
+          this._append`C${+x1},${+y1},${+x2},${+y2},${this._x1 = +x},${this._y1 = +y}`;
+        }
+        arcTo(x1, y1, x2, y2, r) {
           x1 = +x1, y1 = +y1, x2 = +x2, y2 = +y2, r = +r;
-          var x0 = this._x1,
+
+          // Is the radius negative? Error.
+          if (r < 0) throw new Error(`negative radius: ${r}`);
+
+          let x0 = this._x1,
               y0 = this._y1,
               x21 = x2 - x1,
               y21 = y2 - y1,
@@ -5055,12 +5057,9 @@ System.register(['app/plugins/sdk'], (function (exports) {
               y01 = y0 - y1,
               l01_2 = x01 * x01 + y01 * y01;
 
-          // Is the radius negative? Error.
-          if (r < 0) throw new Error("negative radius: " + r);
-
           // Is this path empty? Move to (x1,y1).
           if (this._x1 === null) {
-            this._ += "M" + (this._x1 = x1) + "," + (this._y1 = y1);
+            this._append`M${this._x1 = x1},${this._y1 = y1}`;
           }
 
           // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
@@ -5070,12 +5069,12 @@ System.register(['app/plugins/sdk'], (function (exports) {
           // Equivalently, is (x1,y1) coincident with (x2,y2)?
           // Or, is the radius zero? Line to (x1,y1).
           else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon$1) || !r) {
-            this._ += "L" + (this._x1 = x1) + "," + (this._y1 = y1);
+            this._append`L${this._x1 = x1},${this._y1 = y1}`;
           }
 
           // Otherwise, draw an arc!
           else {
-            var x20 = x2 - x0,
+            let x20 = x2 - x0,
                 y20 = y2 - y0,
                 l21_2 = x21 * x21 + y21 * y21,
                 l20_2 = x20 * x20 + y20 * y20,
@@ -5087,32 +5086,33 @@ System.register(['app/plugins/sdk'], (function (exports) {
 
             // If the start tangent is not coincident with (x0,y0), line to.
             if (Math.abs(t01 - 1) > epsilon$1) {
-              this._ += "L" + (x1 + t01 * x01) + "," + (y1 + t01 * y01);
+              this._append`L${x1 + t01 * x01},${y1 + t01 * y01}`;
             }
 
-            this._ += "A" + r + "," + r + ",0,0," + (+(y01 * x20 > x01 * y20)) + "," + (this._x1 = x1 + t21 * x21) + "," + (this._y1 = y1 + t21 * y21);
+            this._append`A${r},${r},0,0,${+(y01 * x20 > x01 * y20)},${this._x1 = x1 + t21 * x21},${this._y1 = y1 + t21 * y21}`;
           }
-        },
-        arc: function(x, y, r, a0, a1, ccw) {
+        }
+        arc(x, y, r, a0, a1, ccw) {
           x = +x, y = +y, r = +r, ccw = !!ccw;
-          var dx = r * Math.cos(a0),
+
+          // Is the radius negative? Error.
+          if (r < 0) throw new Error(`negative radius: ${r}`);
+
+          let dx = r * Math.cos(a0),
               dy = r * Math.sin(a0),
               x0 = x + dx,
               y0 = y + dy,
               cw = 1 ^ ccw,
               da = ccw ? a0 - a1 : a1 - a0;
 
-          // Is the radius negative? Error.
-          if (r < 0) throw new Error("negative radius: " + r);
-
           // Is this path empty? Move to (x0,y0).
           if (this._x1 === null) {
-            this._ += "M" + x0 + "," + y0;
+            this._append`M${x0},${y0}`;
           }
 
           // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
           else if (Math.abs(this._x1 - x0) > epsilon$1 || Math.abs(this._y1 - y0) > epsilon$1) {
-            this._ += "L" + x0 + "," + y0;
+            this._append`L${x0},${y0}`;
           }
 
           // Is this arc empty? We’re done.
@@ -5123,21 +5123,21 @@ System.register(['app/plugins/sdk'], (function (exports) {
 
           // Is this a complete circle? Draw two arcs to complete the circle.
           if (da > tauEpsilon) {
-            this._ += "A" + r + "," + r + ",0,1," + cw + "," + (x - dx) + "," + (y - dy) + "A" + r + "," + r + ",0,1," + cw + "," + (this._x1 = x0) + "," + (this._y1 = y0);
+            this._append`A${r},${r},0,1,${cw},${x - dx},${y - dy}A${r},${r},0,1,${cw},${this._x1 = x0},${this._y1 = y0}`;
           }
 
           // Is this arc non-empty? Draw an arc!
           else if (da > epsilon$1) {
-            this._ += "A" + r + "," + r + ",0," + (+(da >= pi$1)) + "," + cw + "," + (this._x1 = x + r * Math.cos(a1)) + "," + (this._y1 = y + r * Math.sin(a1));
+            this._append`A${r},${r},0,${+(da >= pi$1)},${cw},${this._x1 = x + r * Math.cos(a1)},${this._y1 = y + r * Math.sin(a1)}`;
           }
-        },
-        rect: function(x, y, w, h) {
-          this._ += "M" + (this._x0 = this._x1 = +x) + "," + (this._y0 = this._y1 = +y) + "h" + (+w) + "v" + (+h) + "h" + (-w) + "Z";
-        },
-        toString: function() {
+        }
+        rect(x, y, w, h) {
+          this._append`M${this._x0 = this._x1 = +x},${this._y0 = this._y1 = +y}h${w = +w}v${+h}h${-w}Z`;
+        }
+        toString() {
           return this._;
         }
-      };
+      }
 
       function formatDecimal(x) {
         return Math.abs(x = Math.round(x)) >= 1e21
@@ -5850,6 +5850,24 @@ System.register(['app/plugins/sdk'], (function (exports) {
         return x >= 1 ? halfPi : x <= -1 ? -halfPi : Math.asin(x);
       }
 
+      function withPath(shape) {
+        let digits = 3;
+
+        shape.digits = function(_) {
+          if (!arguments.length) return digits;
+          if (_ == null) {
+            digits = null;
+          } else {
+            const d = Math.floor(_);
+            if (!(d >= 0)) throw new RangeError(`invalid digits: ${_}`);
+            digits = d;
+          }
+          return shape;
+        };
+
+        return () => new Path(digits);
+      }
+
       function arcInnerRadius(d) {
         return d.innerRadius;
       }
@@ -5930,7 +5948,8 @@ System.register(['app/plugins/sdk'], (function (exports) {
             startAngle = arcStartAngle,
             endAngle = arcEndAngle,
             padAngle = arcPadAngle,
-            context = null;
+            context = null,
+            path = withPath(arc);
 
         function arc() {
           var buffer,
@@ -5999,16 +6018,22 @@ System.register(['app/plugins/sdk'], (function (exports) {
                   y00 = r0 * sin(a00),
                   oc;
 
-              // Restrict the corner radius according to the sector angle.
-              if (da < pi && (oc = intersect(x01, y01, x00, y00, x11, y11, x10, y10))) {
-                var ax = x01 - oc[0],
-                    ay = y01 - oc[1],
-                    bx = x11 - oc[0],
-                    by = y11 - oc[1],
-                    kc = 1 / sin(acos((ax * bx + ay * by) / (sqrt(ax * ax + ay * ay) * sqrt(bx * bx + by * by))) / 2),
-                    lc = sqrt(oc[0] * oc[0] + oc[1] * oc[1]);
-                rc0 = min(rc, (r0 - lc) / (kc - 1));
-                rc1 = min(rc, (r1 - lc) / (kc + 1));
+              // Restrict the corner radius according to the sector angle. If this
+              // intersection fails, it’s probably because the arc is too small, so
+              // disable the corner radius entirely.
+              if (da < pi) {
+                if (oc = intersect(x01, y01, x00, y00, x11, y11, x10, y10)) {
+                  var ax = x01 - oc[0],
+                      ay = y01 - oc[1],
+                      bx = x11 - oc[0],
+                      by = y11 - oc[1],
+                      kc = 1 / sin(acos((ax * bx + ay * by) / (sqrt(ax * ax + ay * ay) * sqrt(bx * bx + by * by))) / 2),
+                      lc = sqrt(oc[0] * oc[0] + oc[1] * oc[1]);
+                  rc0 = min(rc, (r0 - lc) / (kc - 1));
+                  rc1 = min(rc, (r1 - lc) / (kc + 1));
+                } else {
+                  rc0 = rc1 = 0;
+                }
               }
             }
 
@@ -6231,6 +6256,8 @@ System.register(['app/plugins/sdk'], (function (exports) {
 
       Transform.prototype;
 
+      //import "./css/base.css"
+
       loadPluginCss({
         dark: 'plugins/spectraphilic-windrose-panel/css/dark.css',
         light: 'plugins/spectraphilic-windrose-panel/css/light.css'
@@ -6245,40 +6272,30 @@ System.register(['app/plugins/sdk'], (function (exports) {
         unit: 'm/s',
         scale: 'absolute'
       };
-
       var WindroseCtrl = exports('PanelCtrl', /*#__PURE__*/function (_MetricsPanelCtrl) {
         _inherits(WindroseCtrl, _MetricsPanelCtrl);
-
         var _super = _createSuper(WindroseCtrl);
-
         function WindroseCtrl($scope, $injector) {
           var _this;
-
           _classCallCheck(this, WindroseCtrl);
-
           _this = _super.call(this, $scope, $injector);
           defaults$1(_this.panel, panelDefaults);
-
           _this.events.on('data-error', _this.onDataError.bind(_assertThisInitialized(_this)));
-
           _this.events.on('data-received', _this.onDataReceived.bind(_assertThisInitialized(_this)));
-
           _this.events.on('init-edit-mode', _this.onInitEditMode.bind(_assertThisInitialized(_this)));
-
           var render = _this.onRender.bind(_assertThisInitialized(_this));
+          _this.events.on('render', render);
 
-          _this.events.on('render', render); // When viewing a single panel resizing the window does not emit
+          // When viewing a single panel resizing the window does not emit
           // panel-size-changed (but it does when looking a dashboard).
+          window.addEventListener('resize', debounce(render, 200));
 
-
-          window.addEventListener('resize', debounce(render, 200)); //this.events.on('data-snapshot-load', () => { console.log('data-snapshot-load'); });
+          //this.events.on('data-snapshot-load', () => { console.log('data-snapshot-load'); });
           //this.events.on('panel-size-changed', () => { console.log('panel-size-changed'); });
           //this.events.on('panel-teardown', () => { console.log('panel-teardown'); });
           //this.events.on('refresh', () => { console.log('refresh'); });
-
           return _this;
         }
-
         _createClass(WindroseCtrl, [{
           key: "onInitEditMode",
           value: function onInitEditMode() {
@@ -6290,12 +6307,13 @@ System.register(['app/plugins/sdk'], (function (exports) {
           key: "onDataError",
           value: function onDataError(err) {
             console.error('data-error', err);
-          } // Helper function. Returns an array with the intervals from 'start' to 'end'
+          }
+
+          // Helper function. Returns an array with the intervals from 'start' to 'end'
           // defined either by the number of intervals (n) or by the size of the
           // intervals (step). Examples:
           // getIntervals(0, 360, {n: 3})     => [[0, 120], [120, 240], [240, 360]]
           // getIntervals(0, 100, {step: 30}) => [[0, 30], [30, 60], [60, 90], [90, 120]]
-
         }, {
           key: "getIntervals",
           value: function getIntervals(start, end, step) {
@@ -6304,7 +6322,9 @@ System.register(['app/plugins/sdk'], (function (exports) {
             return Array(n).fill().map(function (_, i) {
               return [start + i * step, start + (i + 1) * step];
             });
-          } // Helper function. Given a value and an array of sorted intervals, returns
+          }
+
+          // Helper function. Given a value and an array of sorted intervals, returns
           // the index of the interval the value belongs to, left-closed and
           // right-open. Returns null if out of bounds. Example:
           //
@@ -6320,47 +6340,43 @@ System.register(['app/plugins/sdk'], (function (exports) {
           //
           //   getIntervalIndex(15, [[0, 5], [5, 10], [10, 15]]) => 2
           //
-
         }, {
           key: "getIntervalIndex",
           value: function getIntervalIndex(value, array) {
             var max = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
-
             // Check value
             if (value === null) {
               console.debug('Unexpected value is null');
               return null;
-            } // Below lower limit
+            }
 
-
+            // Below lower limit
             if (value < array[0][0]) {
               return null;
-            } // For circular intervals, the 1st interval starts at a negative value
+            }
 
-
+            // For circular intervals, the 1st interval starts at a negative value
             var len = array.length;
             var last = len - 1;
-
             if (value >= array[last][1]) {
               value = value - max;
-            } // Within range
+            }
 
-
+            // Within range
             for (var i = 0; i < len; i++) {
               var low = array[i][0];
               var high = array[i][1];
-
               if (value >= low && value < high) {
                 return i;
               }
-            } // Last interval is right-closed (except in circular intervals)
+            }
 
-
+            // Last interval is right-closed (except in circular intervals)
             if (value == array[last][1]) {
               return last;
-            } // Above upper limit
+            }
 
-
+            // Above upper limit
             console.warn("getIntervalIndex ".concat(value, " too big"));
             return null;
           }
@@ -6369,35 +6385,29 @@ System.register(['app/plugins/sdk'], (function (exports) {
           value: function onDataReceived(data) {
             var speeds = [];
             var angles = [];
-
             if (data[0].type == 'table') {
               // e.g. PostgreSQL and InfluxDB
+
               var speedCol = null;
               var dirCol = null;
-
               for (var i in data[0].columns) {
                 if (data[0].columns[i].text == "speed") {
                   speedCol = i;
                 }
-
                 if (data[0].columns[i].text == "direction") {
                   dirCol = i;
                 }
               }
-
               if (speedCol === null) {
                 console.warn("no `speed` column in data");
                 speedCol = 1;
               }
-
               if (dirCol === null) {
                 console.warn("no `direction` column in data");
                 dirCol = 2;
               }
-
               var _iterator = _createForOfIteratorHelper(data[0].rows),
-                  _step;
-
+                _step;
               try {
                 for (_iterator.s(); !(_step = _iterator.n()).done;) {
                   var row = _step.value;
@@ -6412,15 +6422,13 @@ System.register(['app/plugins/sdk'], (function (exports) {
             } else if (data[0].datapoints) {
               // e.g. ClickHouse
               var _iterator2 = _createForOfIteratorHelper(data),
-                  _step2;
-
+                _step2;
               try {
                 for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
                   var serie = _step2.value;
                   var datapoints = serie.datapoints.map(function (x) {
                     return x[0];
                   });
-
                   if (serie.target === 'speed') {
                     speeds = datapoints;
                   } else if (serie.target === 'direction') {
@@ -6437,7 +6445,6 @@ System.register(['app/plugins/sdk'], (function (exports) {
             } else {
               console.warn('unexpected data format', data);
             }
-
             this.speedMax = speeds.length > 0 ? Math.max.apply(Math, _toConsumableArray(speeds)) : 0;
             this.data = zip$1(angles, speeds).filter(function (x) {
               return x[1] != null;
@@ -6448,20 +6455,25 @@ System.register(['app/plugins/sdk'], (function (exports) {
           key: "onRender",
           value: function onRender() {
             //console.debug(this);
-            // Data
-            var raw = this.data; // Configuration
 
+            // Data
+            var raw = this.data;
+
+            // Configuration
             var panel = this.panel;
             var slices = +panel.slices;
             var start = +panel.start;
             var step = panel.step == '' ? Math.ceil(this.speedMax / 8) : +panel.step;
-            var unit = panel.unit; // Intervals
+            var unit = panel.unit;
 
+            // Intervals
             var angleStep = 360 / slices;
             var angleIntervals = this.getIntervals(-angleStep / 2, 360 - angleStep / 2, angleStep);
-            var speedIntervals = this.getIntervals(start, this.speedMax, step); //console.debug(this.speedMax);
+            var speedIntervals = this.getIntervals(start, this.speedMax, step);
+            //console.debug(this.speedMax);
             //console.debug('angleIntervals=', angleIntervals);
             //console.debug('speedIntervals=', speedIntervals);
+
             //  console.debug('**',
             //    this.getIntervalIndex(-1, [[0, 5], [5, 10], [10, 15]]), // null
             //    this.getIntervalIndex(0, [[0, 5], [5, 10], [10, 15]]), // 0
@@ -6473,110 +6485,109 @@ System.register(['app/plugins/sdk'], (function (exports) {
             //    this.getIntervalIndex(354, [[-45, 45], [45, 135], [135, 225], [225, 315]], 360), // 0
             //    this.getIntervalIndex(360, [[0, 90], [90, 180], [180, 270], [270, 360]], 360), // 0
             //  );
-            // [angle-index][speed-index] = 0
 
+            // [angle-index][speed-index] = 0
             var matrix = _toConsumableArray(Array(angleIntervals.length)).map(function (x) {
               return Array(speedIntervals.length).fill(0);
-            }); // [angle-index][speed-index] = n
-
-
+            });
+            // [angle-index][speed-index] = n
             for (var i = 0; i < raw.length; i++) {
               var j = this.getIntervalIndex(raw[i][0], angleIntervals, 360);
               var k = this.getIntervalIndex(raw[i][1], speedIntervals);
-
               if (j != null && k != null) {
                 matrix[j][k]++;
               }
-            } //console.debug('matrix=', matrix);
+            }
+            //console.debug('matrix=', matrix);
+
             // x = direction - angle
             // y = count     - radius
             // z = speed     - color
+
             // Columns
-
-
             var zLabels = speedIntervals.map(function (x) {
               return x[0] + ' - ' + x[1];
-            }); //console.debug('zLabels=', zLabels);
+            });
+            //console.debug('zLabels=', zLabels);
+
             // [{angle: angle, 0: count-0, ..., n-1: count-n-1, total: count-total} ... ]
-
             var data = [];
-
             for (var _i = 0; _i < angleIntervals.length; _i++) {
               var row = {
                 angle: angleIntervals[_i][0]
               };
               var total = 0;
-
               for (var _j = 0; _j < speedIntervals.length; _j++) {
                 var name = zLabels[_j];
                 total += row[name] = matrix[_i][_j];
               }
-
               row['total'] = total;
               data.push(row);
-            } //console.debug('data=', data);
+            }
+            //console.debug('data=', data);
+
             // Percent
-
-
             if (panel.scale == 'percent') {
               var max = sum(data, function (d) {
                 return d.total;
               });
               var tmpScale = linear([0, max], [0, 1]);
-
               for (var _i2 = 0; _i2 < data.length; _i2++) {
                 for (var key in data[_i2]) {
                   if (key != 'angle') {
                     data[_i2][key] = tmpScale(data[_i2][key]);
                   }
                 }
-              } //console.debug('data(percent)=', data);
+              }
+              //console.debug('data(percent)=', data);
+            }
 
-            } // SVG
-
-
+            // SVG
             var svg = select("svg#windrose-" + panel.id);
             svg.selectAll('*').remove(); // Remove children
-
             var node = svg.node().parentNode,
-                width = node.offsetWidth,
-                height = node.offsetHeight;
+              width = node.offsetWidth,
+              height = node.offsetHeight;
             svg.attr('width', width).attr('height', height); // Set width and height
-
             var g = svg.append("g"); // Add <g>
-
             g.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")"); // Center <g>
+
             // Radius
-
             var margin = {
-              top: 40,
-              right: 80,
-              bottom: 40,
-              left: 40
-            },
-                innerRadius = 0,
-                chartWidth = width - margin.left - margin.right,
-                chartHeight = height - margin.top - margin.bottom,
-                outerRadius = Math.min(chartWidth, chartHeight) / 2;
-            var yRange = [innerRadius, outerRadius]; // X-Axis
+                top: 40,
+                right: 80,
+                bottom: 40,
+                left: 40
+              },
+              innerRadius = 0,
+              chartWidth = width - margin.left - margin.right,
+              chartHeight = height - margin.top - margin.bottom,
+              outerRadius = Math.min(chartWidth, chartHeight) / 2;
+            var yRange = [innerRadius, outerRadius];
 
+            // X-Axis
             var radiansRange = [0, 2 * Math.PI];
-            var getRadiansFromDegrees = linear([0, 360], radiansRange); // Y-axis
+            var getRadiansFromDegrees = linear([0, 360], radiansRange);
 
+            // Y-axis
             var yMax = max$1(data, function (d) {
               return d.total;
             });
-            var getRadius = linear([0, yMax], yRange); // Z-axis: map speed interval labels to colors
+            var getRadius = linear([0, yMax], yRange);
 
-            var getColor = ordinal(zLabels, ["#4242f4", "#42c5f4", "#42f4ce", "#42f456", "#adf442", "#f4e242", "#f4a142", "#f44242"]); // Draw 1 arc for every speed interval in every direction
+            // Z-axis: map speed interval labels to colors
+            var getColor = ordinal(zLabels, ["#4242f4", "#42c5f4", "#42f4ce", "#42f456", "#adf442", "#f4e242", "#f4a142", "#f44242"]);
 
+            // Draw 1 arc for every speed interval in every direction
             var arcWidth = band(data.map(function (d) {
               return d.angle;
             }), radiansRange).align(0).bandwidth();
-            g.append("g") // One <g> element per speed interval (color)
+            g.append("g")
+            // One <g> element per speed interval (color)
             .selectAll("g").data(stack().keys(zLabels)(data)).enter().append("g").attr("fill", function (d) {
               return getColor(d.key);
-            }) // One <path> (arc) per spee-interval and direction
+            })
+            // One <path> (arc) per spee-interval and direction
             .selectAll("path").data(function (d) {
               return d;
             }).enter().append("path").attr("d", arc().innerRadius(function (d) {
@@ -6587,13 +6598,14 @@ System.register(['app/plugins/sdk'], (function (exports) {
               return getRadiansFromDegrees(d.data.angle);
             }).endAngle(function (d) {
               return getRadiansFromDegrees(d.data.angle) + arcWidth;
-            }).padAngle(0.01).padRadius(innerRadius)); // X axis (angle)
+            }).padAngle(0.01).padRadius(innerRadius));
 
+            // X axis (angle)
             var gridN = 8;
             var gridX = range$2(0, 360, 360 / gridN);
             var xScale = linear([0, gridN], radiansRange); // Extend the domain slightly to match the range [0, 2π]
-            // Draw the text label (degrees)
 
+            // Draw the text label (degrees)
             var xGridWidth = band(gridX, radiansRange).align(0).bandwidth();
             var angleOffset = -360.0 / gridX.length / 2.0;
             var degrees2compass = {
@@ -6606,11 +6618,13 @@ System.register(['app/plugins/sdk'], (function (exports) {
               270: 'W',
               315: 'NW'
             };
-            g.append("g") // One <g> element per x-grid line
+            g.append("g")
+            // One <g> element per x-grid line
             .selectAll("g").data(gridX).enter().append("g").attr("text-anchor", "middle").attr("transform", function (d) {
               var rotate = (getRadiansFromDegrees(d) + xGridWidth / 2) * 180 / Math.PI - (90 - angleOffset);
               return "rotate(" + rotate + ")translate(" + (outerRadius + 30) + ",0)";
-            }) // <text> element
+            })
+            // <text> element
             .append("text").attr("transform", function (d) {
               return "rotate(".concat(90 - d, ")");
             }).attr('fill', 'white').text(function (d) {
@@ -6621,19 +6635,23 @@ System.register(['app/plugins/sdk'], (function (exports) {
             })], yRange);
             g.selectAll(".axis").data(range(xScale.domain()[1])).enter().append("g").attr("class", "axis").attr("transform", function (d) {
               return "rotate(" + xScale(d) * 180 / Math.PI + ")";
-            }).call(axisLeft().scale(radius.copy().range([-innerRadius, -(outerRadius + 10)]))); // Y axis
+            }).call(axisLeft().scale(radius.copy().range([-innerRadius, -(outerRadius + 10)])));
 
+            // Y axis
             var yAxis = g.append("g").attr("text-anchor", "middle");
-            var yTick = yAxis.selectAll("g").data(getRadius.ticks(5).slice(1)).enter().append("g"); // Y axis: circles
+            var yTick = yAxis.selectAll("g").data(getRadius.ticks(5).slice(1)).enter().append("g");
 
-            yTick.append("circle").attr("fill", "none").attr("stroke", "gray").attr("stroke-dasharray", "4,4").attr("r", getRadius); // Y axis: labels
+            // Y axis: circles
+            yTick.append("circle").attr("fill", "none").attr("stroke", "gray").attr("stroke-dasharray", "4,4").attr("r", getRadius);
 
+            // Y axis: labels
             yTick.append("text").attr("y", function (d) {
               return -getRadius(d);
             }).attr("dy", "-0.35em").attr("x", function () {
               return -10;
-            }).text(getRadius.tickFormat(5, panel.scale == 'percent' ? "%" : "s")).attr('fill', 'white').style("font-size", '14px'); // Legend
+            }).text(getRadius.tickFormat(5, panel.scale == 'percent' ? "%" : "s")).attr('fill', 'white').style("font-size", '14px');
 
+            // Legend
             var legend = g.append("g").selectAll("g").data(zLabels.slice().reverse()).enter().append("g").attr("transform", function (d, i) {
               var translate_x = outerRadius + 30;
               var translate_y = -outerRadius + 40 + (i - zLabels.length / 2) * 20;
@@ -6645,10 +6663,8 @@ System.register(['app/plugins/sdk'], (function (exports) {
             }).attr('fill', 'white').style("font-size", '12px');
           }
         }]);
-
         return WindroseCtrl;
       }(MetricsPanelCtrl));
-
       WindroseCtrl.templateUrl = 'module.html';
 
     })
