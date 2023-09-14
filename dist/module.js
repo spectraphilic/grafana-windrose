@@ -6253,8 +6253,6 @@ System.register(['app/plugins/sdk'], (function (exports) {
         }
       };
 
-      new Transform(1, 0, 0);
-
       Transform.prototype;
 
       //import "./css/base.css"

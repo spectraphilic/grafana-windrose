@@ -11,14 +11,15 @@
   "devDependencies": {
     "@babel/core": "^7.6.2",
     "@babel/preset-env": "^7.6.2",
-    "rollup": "^2.1.0",
-    "rollup-plugin-babel": "^4.3.3",
-    "rollup-plugin-copy": "^3.1.0",
-    "rollup-plugin-node-resolve": "^5.2.0",
-    "systemjs": "^6.1.2"
+    "@rollup/plugin-babel": "^6.0",
+    "@rollup/plugin-node-resolve": "^15.0",
+    "rollup": "^3.0",
+    "rollup-plugin-copy": "^3.0",
+    "systemjs": "^6.0"
   },
   "dependencies": {
     "d3": "^7.0.0",
     "lodash-es": "^4.17.21"
-  }
+  },
+  "type": "module"
 }
