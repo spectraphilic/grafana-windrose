@@ -1,0 +1,94 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "testdata",
+        "uid": "ef504235-0b50-4b41-9f66-53db140369b6"
+      },
+      "description": "",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "opacity": 0.6,
+        "rings": 7,
+        "scale": "percent",
+        "slices": 32,
+        "start": 0,
+        "step": "",
+        "unit": "velocityms",
+        "x_grid": "compass"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "testdata",
+            "uid": "ef504235-0b50-4b41-9f66-53db140369b6"
+          },
+          "max": 15,
+          "refId": "A",
+          "scenarioId": "random_walk",
+          "seriesCount": 1,
+          "spread": 3
+        },
+        {
+          "datasource": {
+            "type": "testdata",
+            "uid": "ef504235-0b50-4b41-9f66-53db140369b6"
+          },
+          "hide": false,
+          "max": 359,
+          "refId": "B",
+          "scenarioId": "random_walk",
+          "seriesCount": 1,
+          "spread": 12,
+          "startValue": 135
+        }
+      ],
+      "title": "Example Windrose",
+      "type": "spectraphilic-windrose-panel"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Test dashboard",
+  "uid": "e5680d15-4155-42f4-abdc-68d7886e7ebd",
+  "version": 5,
+  "weekStart": ""
+}

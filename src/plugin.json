@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "id": "spectraphilic-windrose-panel",
   "name": "Windrose",
   "type": "panel",
@@ -17,14 +18,15 @@
       }
     ],
     "logos": {
-      "small": "logo.svg",
-      "large": "logo.svg"
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
     },
-    "updated": "2019-09-30",
-    "version": "0.0.1"
+    "updated": "%TODAY%",
+    "screenshots": [],
+    "version": "%VERSION%"
   },
   "dependencies": {
-    "grafanaVersion": "6.3.x",
+    "grafanaDependency": ">=10.0.3",
     "plugins": []
   }
 }
