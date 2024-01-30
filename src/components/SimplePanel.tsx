@@ -41,7 +41,7 @@ const getIntervals = (start: number, end: number, step: number): Array<[number, 
   return Array.from({ length: n }, (_, i) => [start + i * step, start + (i + 1) * step]);
 };
 
-const range = (start: number, end?: number, step: number = 1): number[] => {
+const range = (start: number, end?: number, step = 1): number[] => {
   const output = [];
 
   if (end === undefined) {
@@ -70,10 +70,10 @@ const range = (start: number, end?: number, step: number = 1): number[] => {
 };
 
 
-const getIntervalIndex = (value: number, intervals: [number, number][], max = 0): number | null => {
+const getIntervalIndex = (value: number, intervals: Array<[number, number]>, max = 0): number | null => {
   // Check value
   if (value === null) {
-    console.debug('Unexpected value is null');
+    console.log('Unexpected value is null');
     return null;
   }
 
@@ -133,7 +133,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
   // Configuration
   const slices = +options.slices;
   const start = +options.start;
-  const step = (options.step == '') ? Math.ceil(speedMax / 8) : +parseInt(options.step);
+  const step = (options.step === '') ? Math.ceil(speedMax / 8) : +parseInt(options.step, 10);
   const unit = options.unit;
 
   // Intervals
@@ -176,12 +176,12 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
   //console.debug('data=', data);
 
   // Percent
-  if (options.scale == 'percent') {
+  if (options.scale === 'percent') {
     const max = d3.sum(renderData, d => d.total);
     const tmpScale = d3.scaleLinear([0, max], [0, 1]);
     for (let i = 0; i < renderData.length; i++) {
       for (let key in renderData[i]) {
-        if (key != 'angle') {
+        if (key !== 'angle') {
           renderData[i][key] = tmpScale(renderData[i][key]);
         }
       }
@@ -245,7 +245,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       }
     }, [transform]);
 
-    return <g ref={axisRef} transform={transform} className={styles.axis}/>;
+    return <g ref={axisRef} transform={transform} className={styles.axis} />;
   };
 
   return (

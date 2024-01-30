@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://web.resource.org/cc/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.0" width="800" height="800" id="windrose" sodipodi:version="0.32" inkscape:version="0.45.1" sodipodi:docname="Windrose.svg" inkscape:output_extension="org.inkscape.output.svg.inkscape" sodipodi:docbase="C:\Documents and Settings\Dylan Kane\Desktop">
+  <metadata id="metadata124">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview inkscape:window-height="998" inkscape:window-width="1122" inkscape:pageshadow="2" inkscape:pageopacity="0.0" guidetolerance="10.0" gridtolerance="10.0" objecttolerance="10.0" borderopacity="1.0" bordercolor="#666666" pagecolor="#ffffff" id="base" inkscape:zoom="0.9425" inkscape:cx="400" inkscape:cy="400" inkscape:window-x="154" inkscape:window-y="-4" inkscape:current-layer="windrose"/>
+  <defs id="defs4"/>
+  <g id="kreisebene">
+    <rect width="800" height="800" x="0" y="0" style="fill:none;stroke:#000000" id="rahmen"/>
+    <path d="M 700 400 A 300 300 0 1 1  100,400 A 300 300 0 1 1  700 400 z" style="fill:none;stroke:#000000" id="kreis"/>
+    <path d="M 612,188 L 640,160" style="fill:none;stroke:#000000;stroke-width:2" id="linie045"/>
+    <path d="M 740,400 L 700,400" style="fill:none;stroke:#000000;stroke-width:2" id="linie090"/>
+    <path d="M 612,612 L 640,640" style="fill:none;stroke:#000000;stroke-width:2" id="linie135"/>
+    <path d="M 400,740 L 400,700" style="fill:none;stroke:#000000;stroke-width:2" id="linie180"/>
+    <path d="M 188,612 L 160,640" style="fill:none;stroke:#000000;stroke-width:2" id="linie225"/>
+    <path d="M 60,400 L 100,400" style="fill:none;stroke:#000000;stroke-width:2" id="linie270"/>
+    <path d="M 188,188 L 160,160" style="fill:none;stroke:#000000;stroke-width:2" id="linie315"/>
+    <path d="M 400,60 L 400,100" style="fill:none;stroke:#000000;stroke-width:2" id="linie360"/>
+    <path d="M 426,101 L 428,81" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie005"/>
+    <path d="M 452,105 L 456,85" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie010"/>
+    <path d="M 478,110 L 483,91" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie015"/>
+    <path d="M 503,118 L 509,99" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie020"/>
+    <path d="M 527,128 L 535,110" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie025"/>
+    <path d="M 550,140 L 560,123" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie030"/>
+    <path d="M 572,154 L 584,138" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie035"/>
+    <path d="M 593,170 L 606,155" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie040"/>
+    <path d="M 630,207 L 645,194" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie050"/>
+    <path d="M 646,228 L 662,216" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie055"/>
+    <path d="M 660,250 L 677,240" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie060"/>
+    <path d="M 672,273 L 690,265" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie065"/>
+    <path d="M 682,297 L 701,291" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie070"/>
+    <path d="M 690,322 L 709,317" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie075"/>
+    <path d="M 695,348 L 715,344" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie080"/>
+    <path d="M 699,374 L 719,372" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie085"/>
+    <path d="M 699,426 L 719,428" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie095"/>
+    <path d="M 695,452 L 715,456" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie100"/>
+    <path d="M 690,478 L 709,483" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie105"/>
+    <path d="M 682,503 L 701,509" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie110"/>
+    <path d="M 672,527 L 690,535" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie115"/>
+    <path d="M 660,550 L 677,560" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie120"/>
+    <path d="M 646,572 L 662,584" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie125"/>
+    <path d="M 630,593 L 645,606" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie130"/>
+    <path d="M 593,630 L 606,645" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie140"/>
+    <path d="M 572,646 L 584,662" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie145"/>
+    <path d="M 550,660 L 560,677" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie150"/>
+    <path d="M 527,672 L 535,690" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie155"/>
+    <path d="M 503,682 L 509,701" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie160"/>
+    <path d="M 478,690 L 483,709" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie165"/>
+    <path d="M 452,695 L 456,715" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie170"/>
+    <path d="M 426,699 L 428,719" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie175"/>
+    <path d="M 374,699 L 372,719" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie185"/>
+    <path d="M 348,695 L 344,715" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie190"/>
+    <path d="M 322,690 L 317,709" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie195"/>
+    <path d="M 297,682 L 291,701" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie200"/>
+    <path d="M 273,672 L 265,690" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie205"/>
+    <path d="M 250,660 L 240,677" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie210"/>
+    <path d="M 228,646 L 216,662" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie215"/>
+    <path d="M 207,630 L 194,645" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie220"/>
+    <path d="M 170,593 L 155,606" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie230"/>
+    <path d="M 154,572 L 138,584" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie235"/>
+    <path d="M 140,550 L 123,560" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie240"/>
+    <path d="M 128,527 L 110,535" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie245"/>
+    <path d="M 118,503 L 99,509" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie250"/>
+    <path d="M 110,478 L 91,483" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie255"/>
+    <path d="M 105,452 L 85,456" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie260"/>
+    <path d="M 101,426 L 81,428" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie265"/>
+    <path d="M 101,374 L 81,372" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie275"/>
+    <path d="M 105,348 L 85,344" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie280"/>
+    <path d="M 110,322 L 91,317" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie285"/>
+    <path d="M 118,297 L 99,291" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie290"/>
+    <path d="M 128,273 L 110,265" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie295"/>
+    <path d="M 140,250 L 123,240" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie300"/>
+    <path d="M 154,228 L 138,216" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie305"/>
+    <path d="M 170,207 L 155,194" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie310"/>
+    <path d="M 207,170 L 194,155" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie320"/>
+    <path d="M 228,154 L 216,138" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie325"/>
+    <path d="M 250,140 L 240,123" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie330"/>
+    <path d="M 273,128 L 265,110" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie335"/>
+    <path d="M 297,118 L 291,99" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie340"/>
+    <path d="M 322,110 L 317,91" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie345"/>
+    <path d="M 348,105 L 344,85" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie350"/>
+    <path d="M 374,101 L 372,81" style="fill:none;stroke:#000000;stroke-width:1;stroke-opacity:1" id="linie355"/>
+  </g>
+  <g id="g2294">
+    <path d="M 400,400 L 400,335 L 555,245 L 400,400 z " style="fill:#000000;stroke:#000000;stroke-width:1" id="pfeil-rechtsoben-oben"/>
+    <path d="M 400,400 L 465,400 L 555,245 L 400,400 z " style="fill:#ffffff;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" id="pfeil-rechtsoben-rechts"/>
+    <path d="M 400,400 L 465,400 L 555,555 L 400,400 z " style="fill:#000000;stroke:#000000;stroke-width:1" id="pfeil-rechtsunten-rechts"/>
+    <path d="M 400,400 L 400,465 L 555,555 L 400,400 z " style="fill:#ffffff;stroke:#000000;stroke-width:1" id="pfeil-rechtsunten-unten"/>
+    <path d="M 400,400 L 400,465 L 245,555 L 400,400 z " style="fill:#000000;stroke:#000000;stroke-width:1" id="pfeil-linksunten-unten"/>
+    <path d="M 400,400 L 335,400 L 245,555 L 400,400 z " style="fill:#ffffff;stroke:#000000;stroke-width:1" id="pfeil-linksunten-links"/>
+    <path d="M 400,400 L 335,400 L 245,245 L 400,400 z " style="fill:#000000;stroke:#000000;stroke-width:1" id="pfeil-linksoben-links"/>
+    <path d="M 400,400 L 400,335 L 245,245 L 400,400 z " style="fill:#ffffff;stroke:#000000;stroke-width:1" id="pfeil-linksoben-oben"/>
+    <path d="M 400,100 L 355,355 L 400,400 L 400,100 z " style="fill:#000000;stroke:#000000;stroke-width:1" id="pfeil-oben-links"/>
+    <path d="M 400,100 L 445,355 L 400,400 L 400,100 z " style="fill:#ffffff;stroke:#000000;stroke-width:1" id="pfeil-oben-rechts"/>
+    <path d="M 700,400 L 445,355 L 400,400 L 700,400 z " style="fill:#000000;stroke:#000000;stroke-width:1" id="pfeil-rechts-oben"/>
+    <path d="M 700,400 L 445,445 L 400,400 L 700,400 z " style="fill:#ffffff;stroke:#000000;stroke-width:1" id="pfeil-rechts-unten"/>
+    <path d="M 400,700 L 445,445 L 400,400 L 400,700 z " style="fill:#000000;stroke:#000000;stroke-width:1" id="pfeil-unten-rechts"/>
+    <path d="M 400,700 L 355,445 L 400,400 L 400,700 z " style="fill:#ffffff;stroke:#000000;stroke-width:1" id="pfeil-unten-links"/>
+    <path d="M 100,400 L 355,445 L 400,400 L 100,400 z " style="fill:#000000;stroke:#000000;stroke-width:1" id="pfeil-links-unten"/>
+    <path d="M 100,400 L 355,355 L 400,400 L 100,400 z " style="fill:#ffffff;stroke:#000000;stroke-width:1" id="pfeil-links-oben"/>
+  </g>
+  <g id="rotekreisebene">
+    <path d="M 424.78125,166.3125 L 429.90625,197.1875 C 463.15599,202.05328 493.80774,214.91626 519.875,233.75 L 545.09375,215.1875 C 511.23977,188.5683 469.90872,171.04733 424.78125,166.3125 z M 371.90625,166.6875 C 326.92279,172.05589 285.8137,190.13949 252.3125,217.25 L 277.78125,235.46875 C 303.59573,216.25591 334.05575,202.96065 367.1875,197.625 L 371.90625,166.6875 z M 582.75,252.3125 L 564.53125,277.78125 C 583.74409,303.59573 597.03935,334.05575 602.375,367.1875 L 633.3125,371.90625 C 627.94411,326.92279 609.86051,285.8137 582.75,252.3125 z M 215.1875,254.90625 C 188.5683,288.76023 171.04733,330.09128 166.3125,375.21875 L 197.1875,370.09375 C 202.05328,336.84401 214.91626,306.19226 233.75,280.125 L 215.1875,254.90625 z M 633.6875,424.78125 L 602.8125,429.90625 C 597.94672,463.15599 585.08374,493.80774 566.25,519.875 L 584.8125,545.09375 C 611.4317,511.23977 628.95267,469.90872 633.6875,424.78125 z M 166.6875,428.09375 C 172.05589,473.07721 190.13949,514.1863 217.25,547.6875 L 235.46875,522.21875 C 216.25591,496.40427 202.96065,465.94425 197.625,432.8125 L 166.6875,428.09375 z M 522.21875,564.53125 C 496.40427,583.74409 465.94425,597.03935 432.8125,602.375 L 428.09375,633.3125 C 473.07721,627.94411 514.1863,609.86051 547.6875,582.75 L 522.21875,564.53125 z M 280.125,566.25 L 254.90625,584.8125 C 288.76023,611.4317 330.09128,628.95267 375.21875,633.6875 L 370.09375,602.8125 C 336.84401,597.94672 306.19226,585.08374 280.125,566.25 z " style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-opacity:1" id="kreisinnen"/>
+  </g>
+  <g id="beschriftungsebene">
+    <text x="0" y="0" transform="translate(400,20)" style="font-size:18px;text-align:center;text-anchor:middle;fill:#000000;stroke:none;font-family:Sans" id="Text-Nord" xml:space="preserve"><tspan x="0" y="0" id="tspan2318">N</tspan><tspan x="0" y="22.5" id="tspan2320">360°</tspan></text>
+    <text x="0" y="0" transform="matrix(0.7071068,0.7071068,-0.7071068,0.7071068,669,131)" style="font-size:18px;text-align:center;text-anchor:middle;fill:#000000;stroke:none;font-family:Sans" id="Text-Nordost" xml:space="preserve"><tspan x="0" y="0" id="tspan2327">NO</tspan><tspan x="0" y="22.5" id="tspan2329">045°</tspan></text>
+    <text x="0" y="0" transform="matrix(0,1,-1,0,780,400)" style="font-size:18px;text-align:center;text-anchor:middle;fill:#000000;stroke:none;font-family:Sans" id="Text-Ost" xml:space="preserve"><tspan x="0" y="0" id="tspan3204">O</tspan><tspan x="0" y="22.5" id="tspan3206">090°</tspan></text>
+    <text x="0" y="0" transform="matrix(-0.7071068,0.7071068,-0.7071068,-0.7071068,669,669)" style="font-size:18px;text-align:center;text-anchor:middle;fill:#000000;stroke:none;font-family:Sans" id="Text-Südost" xml:space="preserve"><tspan x="0" y="0" id="tspan3218">SO</tspan><tspan x="0" y="22.5" id="tspan3220">135°</tspan></text>
+    <text x="0" y="0" transform="matrix(-1,0,0,-1,400,780)" style="font-size:18px;text-align:center;text-anchor:middle;fill:#000000;stroke:none;font-family:Sans" id="Text-Süd" xml:space="preserve"><tspan x="0" y="0" id="tspan3212">S</tspan><tspan x="0" y="22.5" id="tspan3214">180°</tspan></text>
+    <text x="0" y="0" transform="matrix(-0.7071068,-0.7071068,0.7071068,-0.7071068,131,669)" style="font-size:18px;text-align:center;text-anchor:middle;fill:#000000;stroke:none;font-family:Sans" id="Text-Südwest" xml:space="preserve"><tspan x="0" y="0" id="tspan3224">SW</tspan><tspan x="0" y="22.5" id="tspan3226">225°</tspan></text>
+    <text x="0" y="0" transform="matrix(0,-1,1,0,20,400)" style="font-size:18px;text-align:center;text-anchor:middle;fill:#000000;stroke:none;font-family:Sans" id="Test-West" xml:space="preserve"><tspan x="0" y="0" id="tspan3230">W</tspan><tspan x="0" y="22.5" id="tspan3232">270°</tspan></text>
+    <text x="0" y="0" transform="matrix(0.7071068,-0.7071068,0.7071068,0.7071068,131,131)" style="font-size:18px;text-align:center;text-anchor:middle;fill:#000000;stroke:none;font-family:Sans" id="Text-Nordwest" xml:space="preserve"><tspan x="0" y="0" id="tspan3236">NW</tspan><tspan x="0" y="22.5" id="tspan3238">315°</tspan></text>
+  </g>
+</svg>
