@@ -77,6 +77,11 @@ const getIntervalIndex = (value: number, intervals: Array<[number, number]>, max
     return null;
   }
 
+  // Empty intervals
+  if (!Array.isArray(intervals[0])) {
+    return null;
+  }
+  
   // Below lower limit
   if (value < intervals[0][0]) {
     return null;
