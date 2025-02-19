@@ -116,8 +116,6 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
   const theme = useTheme2();
   const styles = useStyles2(getStyles);
 
-  console.log(data.series);
-
   let speeds: number[];
   let angles: number[];
 
