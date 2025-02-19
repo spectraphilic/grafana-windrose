@@ -116,20 +116,31 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
   const theme = useTheme2();
   const styles = useStyles2(getStyles);
 
-  if (data.series.length < 2) {
-    throw new Error("Minimum of 2 series required");
+  console.log(data.series);
+
+  let speeds: number[];
+  let angles: number[];
+
+  if (data.series.length === 0) {
+    throw new Error("Minimum of 1 series required");
   }
+  else if (data.series.length === 1) {
+    const fields = data.series[0].fields;
+    speeds = fields.find((field, index) => field.name === "speed")?.values || [];
+    angles = fields.find((field, index) => field.name === "direction")?.values || [];
+  }
+  else {
+    const speedSeries = data.series.find((series, index) => {
+      series.fields.some(field => field.name === "speed")
+    }) || data.series[0]; // Default to first series if no "speed" field found
 
-  const speedSeries = data.series.find((series, index) => {
-    series.fields.some(field => field.name === "speed")
-  }) || data.series[0]; // Default to first series if no "speed" field found
+    const directionSeries = data.series.find((series, index) => {
+      series.fields.some(field => field.name === "direction")
+    }) || data.series[1]; // Default to second series if no "direction" field found
 
-  const directionSeries = data.series.find((series, index) => {
-    series.fields.some(field => field.name === "direction")
-  }) || data.series[1]; // Default to second series if no "direction" field found
-
-  const speeds = speedSeries.fields[1].values;
-  const angles = directionSeries.fields[1].values;
+    speeds = speedSeries.fields[1].values;
+    angles = directionSeries.fields[1].values;
+  }
 
   const speedMax = speeds.length > 0 ? Math.max(...speeds) : 0;
   const raw = angles.map((angle, index) => [angle, speeds[index]])
