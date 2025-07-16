@@ -202,8 +202,13 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     }
   }
 
-  const margin = { top: 40, right: 40, bottom: 40, left: 40 },
-    innerRadius = 0,
+  const margin = React.useMemo(() => ({
+    top: 40,
+    right: 40,
+    bottom: 40,
+    left: 40,
+  }), []);
+  const innerRadius = 0,
     chartWidth = width - margin.left - margin.right,
     chartHeight = height - margin.top - margin.bottom,
     outerRadius = Math.min(chartWidth, chartHeight) / 2;
@@ -262,15 +267,47 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     return <g ref={axisRef} transform={transform} className={styles.axis} />;
   };
 
-  useEffect(() => {
-    const legendGroup = document.querySelector('.legend-group');
-    if (legendGroup instanceof SVGGElement) {
-      const bbox = legendGroup.getBBox();
-      const legendWidth = bbox.width;
-      const legendX = width / 2 - legendWidth;
-      legendGroup.setAttribute('transform', `translate(${legendX}, 0)`);
+  const windroseTransform = (() => {
+    switch (options.windroseAlignment) {
+      case 'left':
+        return `translate(${-width / 2 + outerRadius + margin.left}, 0)`;
+      case 'top':
+        return `translate(0, ${-height / 2 + outerRadius + margin.top})`;
+      case 'bottom':
+        return `translate(0, ${height / 2 - outerRadius - margin.bottom})`;
+      case 'center':
+      default:
+        return 'translate(0, 0)';
     }
-  }, [width, zLabels, options.legendFontSize, options.speedFontSize, options.directionFontSize]);
+  })();
+
+  const [legendTransform, setLegendTransform] = React.useState<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    const legendGroup = document.querySelector('.legend-group');
+    if (!(legendGroup instanceof SVGGElement)) {
+      return;
+    }
+    const bbox = legendGroup.getBBox();
+    const legendWidth = bbox.width;
+    const legendHeight = bbox.height;
+
+    let transform;
+    switch (options.windroseAlignment) {
+      case 'top':
+        transform = `translate(${-legendWidth/2}, ${height / 2 - legendHeight})`;
+        break;
+      case 'bottom':
+        transform = `translate(${-legendWidth/2}, ${-height / 2 + margin.top})`;
+        break;
+      case 'left':
+      case 'center':
+      default:
+        transform = `translate(${width / 2 - legendWidth}, ${-height / 2 + margin.top})`;
+    }
+
+    setLegendTransform(transform);
+  }, [width, height, margin, outerRadius, options.windroseAlignment, options.legendFontSize, zLabels]);
 
   return (
     <div
@@ -289,7 +326,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         width={width}
         height={height}
       >
-        <g>
+        <g transform={windroseTransform}>
           {d3.stack().keys(zLabels)(renderData).map((d, i) => (
             <g key={i} fill={getColor(d.key)} fillOpacity={options.opacity}>
               {d.map((pathData, index) => {
@@ -364,25 +401,25 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
             ))}
           </g>
 
-          <g className="legend-group">
-            {zLabels.slice().reverse().map((d, i) => (
-              <g
-                key={i}
-                transform={`translate(0, ${40-height/2 + (i - zLabels.length / 2) * 20})`}
+        </g>
+        <g className="legend-group" transform={legendTransform}>
+          {zLabels.slice().reverse().map((d, i) => (
+            <g
+              key={i}
+              transform={`translate(0, ${i* 20})`}
+            >
+              <rect width={18} height={18} fill={getColor(d)} />
+              <text
+                x={24}
+                y={9}
+                dy="0.35em"
+                fill={theme.colors.text.primary}
+                className={styles.zLabel}
               >
-                <rect width={18} height={18} fill={getColor(d)} />
-                <text
-                  x={24}
-                  y={9}
-                  dy="0.35em"
-                  fill={theme.colors.text.primary}
-                  className={styles.zLabel}
-                >
-                  {`${d}${unitFormatter(i).suffix}`}
-                </text>
-              </g>
-            ))}
-          </g>
+                {`${d}${unitFormatter(i).suffix}`}
+              </text>
+            </g>
+          ))}
         </g>
       </svg>
     </div>

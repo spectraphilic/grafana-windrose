@@ -93,6 +93,20 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).setPanelOption
         ],
       }
     })
+    .addRadio({
+      category: ["Alignment"],
+      path: 'windroseAlignment',
+      name: 'Windrose Alignment',
+      defaultValue: 'center',
+      settings: {
+        options: [
+          { value: 'center', label: 'Center' },
+          { value: 'left', label: 'Left' },
+          { value: 'top', label: 'Top' },
+          { value: 'bottom', label: 'Bottom' },
+        ],
+      },
+    })
     .addSliderInput({
       category: ["Font Sizes"],
       path: 'legendFontSize',

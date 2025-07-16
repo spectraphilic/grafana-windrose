@@ -10,6 +10,7 @@ export interface SimpleOptions {
   step: string,
   unit: string,
   scale: Scale,
+  windroseAlignment: 'center' | 'left' | 'top'| 'bottom';
   legendFontSize: number;
   speedFontSize: number;
   directionFontSize: number;
