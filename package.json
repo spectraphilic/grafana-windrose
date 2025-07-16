@@ -1,6 +1,6 @@
 {
   "name": "grafana-windrose",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Windrose panel plugin for Grafana",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
