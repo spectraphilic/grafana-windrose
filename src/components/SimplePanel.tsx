@@ -202,7 +202,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     }
   }
 
-  const margin = { top: 40, right: 80, bottom: 40, left: 40 },
+  const margin = { top: 40, right: 40, bottom: 40, left: 40 },
     innerRadius = 0,
     chartWidth = width - margin.left - margin.right,
     chartHeight = height - margin.top - margin.bottom,
@@ -261,6 +261,16 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
 
     return <g ref={axisRef} transform={transform} className={styles.axis} />;
   };
+
+  useEffect(() => {
+    const legendGroup = document.querySelector('.legend-group');
+    if (legendGroup instanceof SVGGElement) {
+      const bbox = legendGroup.getBBox();
+      const legendWidth = bbox.width;
+      const legendX = width / 2 - legendWidth;
+      legendGroup.setAttribute('transform', `translate(${legendX}, 0)`);
+    }
+  }, [width, zLabels, options.legendFontSize, options.speedFontSize, options.directionFontSize]);
 
   return (
     <div
@@ -354,23 +364,25 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
             ))}
           </g>
 
-          {zLabels.slice().reverse().map((d, i) => (
-            <g
-              key={i}
-              transform={`translate(${outerRadius + 30}, ${-outerRadius + 40 + (i - zLabels.length / 2) * 20})`}
-            >
-              <rect width={18} height={18} fill={getColor(d)} />
-              <text
-                x={24}
-                y={9}
-                dy="0.35em"
-                fill={theme.colors.text.primary}
-                className={styles.zLabel}
+          <g className="legend-group">
+            {zLabels.slice().reverse().map((d, i) => (
+              <g
+                key={i}
+                transform={`translate(0, ${40-height/2 + (i - zLabels.length / 2) * 20})`}
               >
-                {`${d}${unitFormatter(i).suffix}`}
-              </text>
-            </g>
-          ))}
+                <rect width={18} height={18} fill={getColor(d)} />
+                <text
+                  x={24}
+                  y={9}
+                  dy="0.35em"
+                  fill={theme.colors.text.primary}
+                  className={styles.zLabel}
+                >
+                  {`${d}${unitFormatter(i).suffix}`}
+                </text>
+              </g>
+            ))}
+          </g>
         </g>
       </svg>
     </div>
