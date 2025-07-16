@@ -7,7 +7,7 @@ import * as d3 from 'd3';
 
 interface Props extends PanelProps<SimpleOptions> { }
 
-const getStyles = (theme: GrafanaTheme2) => {
+const getStyles = (theme: GrafanaTheme2, options: SimpleOptions) => {
   return {
     wrapper: css({
       position: "relative",
@@ -18,13 +18,13 @@ const getStyles = (theme: GrafanaTheme2) => {
       left: 0;
     `,
     zLabel: css({
-      fontSize: "12px",
+      fontSize: `${options.legendFontSize}px`,
     }),
     speedLabel: css({
-      fontSize: "14px",
+      fontSize: `${options.speedFontSize}px`,
     }),
     directionLabel: css({
-      fontSize: "14px",
+      fontSize: `${options.directionFontSize}px`,
     }),
     axis: css({
       opacity: 0.7,
@@ -114,7 +114,7 @@ const getIntervalIndex = (value: number, intervals: Array<[number, number]>, max
 
 export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) => {
   const theme = useTheme2();
-  const styles = useStyles2(getStyles);
+  const styles = useStyles2(() => getStyles(theme, options));
 
   let speeds: number[];
   let angles: number[];

@@ -93,4 +93,37 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).setPanelOption
         ],
       }
     })
+    .addSliderInput({
+      category: ["Font Sizes"],
+      path: 'legendFontSize',
+      name: 'Legend Font Size',
+      settings: {
+        min: 8,
+        max: 16,
+        step: 1,
+      },
+      defaultValue: 12,
+    })
+    .addSliderInput({
+      category: ["Font Sizes"],
+      path: 'speedFontSize',
+      name: 'Speed Font Size',
+      settings: {
+        min: 8,
+        max: 16,
+        step: 1,
+      },
+      defaultValue: 14,
+    })
+    .addSliderInput({
+      category: ["Font Sizes"],
+      path: 'directionFontSize',
+      name: 'Direction Font Size',
+      settings: {
+        min: 8,
+        max: 16,
+        step: 1,
+      },
+      defaultValue: 14,
+    })
 });

@@ -10,4 +10,7 @@ export interface SimpleOptions {
   step: string,
   unit: string,
   scale: Scale,
+  legendFontSize: number;
+  speedFontSize: number;
+  directionFontSize: number;
 }
