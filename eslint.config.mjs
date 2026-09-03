@@ -4,6 +4,7 @@ import baseConfig from './.config/eslint.config.mjs';
 export default defineConfig([
   {
     ignores: [
+      'dist/',
       'node_modules/',
       '**/.*.swp',
       '**/logs',
