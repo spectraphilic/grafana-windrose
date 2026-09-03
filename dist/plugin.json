@@ -1,32 +1,35 @@
 {
-  "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
-  "id": "spectraphilic-windrose-panel",
-  "name": "Windrose",
-  "type": "panel",
-
-  "info": {
-    "author": {
-      "name": "Spectraphilic",
-      "url": "https://github.com/spectraphilic/"
+    "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
+    "id": "spectraphilic-windrose-panel",
+    "name": "Windrose",
+    "type": "panel",
+    "info": {
+        "author": {
+            "name": "Spectraphilic",
+            "url": "https://github.com/spectraphilic/"
+        },
+        "description": "Windrose panel",
+        "keywords": [
+            "windrose",
+            "panel"
+        ],
+        "links": [
+            {
+                "name": "Github",
+                "url": "https://github.com/spectraphilic/grafana-windrose/"
+            }
+        ],
+        "logos": {
+            "small": "img/logo.svg",
+            "large": "img/logo.svg"
+        },
+        "updated": "2026-09-03",
+        "screenshots": [],
+        "version": "0.1.0"
     },
-    "description": "Windrose panel",
-    "keywords": ["windrose", "panel"],
-    "links": [
-      {
-        "name": "Github",
-        "url": "https://github.com/spectraphilic/grafana-windrose/"
-      }
-    ],
-    "logos": {
-      "small": "img/logo.svg",
-      "large": "img/logo.svg"
+    "dependencies": {
+        "grafanaDependency": ">=10.0.3",
+        "plugins": []
     },
-    "updated": "2026-03-05",
-    "screenshots": [],
-    "version": "0.1.0"
-  },
-  "dependencies": {
-    "grafanaDependency": ">=10.0.3",
-    "plugins": []
-  }
+    "buildMode": "production"
 }
